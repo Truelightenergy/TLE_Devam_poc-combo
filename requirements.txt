@@ -1,2 +1,3 @@
 pandas
-pyodbc
+psycopg2-binary
+sqlalchemy
