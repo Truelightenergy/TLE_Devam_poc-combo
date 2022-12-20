@@ -1,0 +1,66 @@
+services:
+  ingestor:
+    build: .
+  postgres:
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    image: "postgres:15"
+    ports:
+      - "0.0.0.0:5432:5432"
+  postgres-setup-1:
+    depends_on:
+      - postgres
+    environment:
+      - PGPASSWORD=postgres
+    image: "postgres:15"
+    command:
+      - /bin/bash
+      - -c 
+      - | 
+        set -e
+        psql -v ON_ERROR_STOP=1 --username postgres --dbname postgres --host host.docker.internal --port 5432 <<-EOSQL
+            CREATE USER docker;
+            CREATE DATABASE trueprice;
+            GRANT ALL PRIVILEGES ON DATABASE trueprice TO docker;
+            -- GRANT ALL ON SCHEMA public TO demo;
+            alter user docker with encrypted password 'docker';
+        EOSQL
+  postgres-setup-2:
+    depends_on:
+      - postgres-setup-1
+    environment:
+      - PGPASSWORD=docker
+    image: "postgres:15"
+    command:
+    - /bin/bash
+    - -c
+    - |
+      set -e
+      psql -v ON_ERROR_STOP=1 --username docker --dbname trueprice --host host.docker.internal --port 5432 <<-EOSQL
+          \c trueprice;
+          create schema trueprice;
+          create table trueprice.data (id serial PRIMARY KEY, amount numeric(12,8), hour TIMESTAMP);
+          insert into trueprice.data (amount, hour) values (1.0, TO_TIMESTAMP('6/1/2022', 'MM/DD/YYYY'));
+          select * from trueprice.data;      
+      EOSQL
+  adminer: # for postgres, php admin interface
+    image: adminer
+    restart: always
+    ports:
+      - "0.0.0.0:8080:8080"
+  grafana:
+    image: "grafana/grafana-oss"
+    ports:
+      - "0.0.0.0:3000:3000"
+
+
+# --- postgres
+# docker container run --name some-postgres -e POSTGRES_PASSWORD=postgres -p 0.0.0.0:5432:5432 -d postgres
+# create database trueprice;
+# \c trueprice;
+# create table data (id serial PRIMARY KEY, amount numeric(12,8), hour TIMESTAMP);
+# insert into data (amount, hour) values (1.0, TO_TIMESTAMP('6/1/2022', 'MM/DD/YYYY'));
+# select * from data;
+# --- grafana
+# for grafana, use host.docker.internal:5432
+# docker container run -p 3000:3000 grafana/grafana-oss     
