@@ -1,7 +1,7 @@
 import pandas as pd
 import re
-import psycopg2
 import sqlalchemy as sa
+import os
 
 class ParseError(Exception):
     pass
@@ -57,7 +57,10 @@ def ingestion(f, r):
     print(len(df.index))
     print(df.dtypes)
 
-    engine = sa.create_engine("postgresql://docker:docker@localhost:5432/trueprice")
+    database = os.environ["DATABASE"]
+    pgpassword = os.environ["PGPASSWORD"]
+    pguser = os.environ["PGUSER"]
+    engine = sa.create_engine(f"postgresql://{pguser}:{pgpassword}@{database}:5432/trueprice")
     r = pd.read_sql(sa.text("SELECT * FROM trueprice.data"), engine)
     print(r)
 

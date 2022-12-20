@@ -1,8 +1,7 @@
 services:
-  ingestor:
-    build: .
   postgres:
     environment:
+      - PGUSER=postgres
       - POSTGRES_PASSWORD=postgres
     image: "postgres:15"
     ports:
@@ -11,14 +10,17 @@ services:
     depends_on:
       - postgres
     environment:
+      - PGUSER=postgres
       - PGPASSWORD=postgres
+      - DATABASE=host.docker.internal
     image: "postgres:15"
     command:
       - /bin/bash
       - -c 
       - | 
         set -e
-        psql -v ON_ERROR_STOP=1 --username postgres --dbname postgres --host host.docker.internal --port 5432 <<-EOSQL
+        sleep 5 # postgres is not up at 0
+        psql -v ON_ERROR_STOP=1 --username $${PGUSER} --dbname postgres --host $${DATABASE} --port 5432 <<-EOSQL
             CREATE USER docker;
             CREATE DATABASE trueprice;
             GRANT ALL PRIVILEGES ON DATABASE trueprice TO docker;
@@ -29,14 +31,17 @@ services:
     depends_on:
       - postgres-setup-1
     environment:
+      - PGUSER=docker
       - PGPASSWORD=docker
+      - DATABASE=host.docker.internal
     image: "postgres:15"
     command:
     - /bin/bash
     - -c
     - |
       set -e
-      psql -v ON_ERROR_STOP=1 --username docker --dbname trueprice --host host.docker.internal --port 5432 <<-EOSQL
+      sleep 5
+      psql -v ON_ERROR_STOP=1 --username $${PGUSER} --dbname trueprice --host host.docker.internal --port 5432 <<-EOSQL
           \c trueprice;
           create schema trueprice;
           create table trueprice.data (id serial PRIMARY KEY, amount numeric(12,8), hour TIMESTAMP);
@@ -52,6 +57,14 @@ services:
     image: "grafana/grafana-oss"
     ports:
       - "0.0.0.0:3000:3000"
+  ingestor:
+    environment:      
+      - PGUSER=docker
+      - PGPASSWORD=docker
+      - DATABASE=host.docker.internal
+    depends_on:
+      - postgres-setup-2
+    build: .
 
 
 # --- postgres
