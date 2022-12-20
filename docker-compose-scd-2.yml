@@ -1,0 +1,47 @@
+services:
+  scd-2:
+#    depends_on:
+#      - postgres
+    environment:
+      - PGUSER=postgres
+      - PGPASSWORD=postgres
+      - DATABASE=host.docker.internal
+    image: "postgres:15"
+    command:
+      - /bin/bash
+      - -c 
+      - | 
+        set -e
+        sleep 5 # postgres is not up at 0
+        psql -v ON_ERROR_STOP=1 --username $${PGUSER} --dbname postgres --host $${DATABASE} --port 5432 <<EOSQL
+        -- drop
+        drop table if exists test_data;
+        drop table if exists test_data_history;
+        
+        -- create
+        create table test_data (id serial PRIMARY KEY, amount numeric(12,8), hour TIMESTAMP);
+        create table test_data_history (id serial PRIMARY KEY, amount numeric(12,8), hour TIMESTAMP);
+
+        -- insert
+        insert into test_data (amount, hour) values (1.0, TO_TIMESTAMP('6/1/2022', 'MM/DD/YYYY'));
+
+        -- confirm 1
+        select id,amount from test_data;
+
+        -- update (via scd2)
+        with data as (
+            select * from test_data where id = '1' -- index whatever fields we are using
+        ),
+        update as (
+            insert into test_data_history select * from data
+        )
+        update test_data set amount = 2.0 where id = 1;
+
+        -- confirm 2
+        select * from test_data;
+        select * from test_data_history;
+
+        -- TODO -- failure txs/rollback sql
+        -- TODO -- covert to panda
+        -- TODO -- failure txs/rollback panda
+        EOSQL

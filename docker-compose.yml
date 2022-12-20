@@ -46,7 +46,7 @@ services:
           create schema trueprice;
           create table trueprice.data (id serial PRIMARY KEY, amount numeric(12,8), hour TIMESTAMP);
           insert into trueprice.data (amount, hour) values (1.0, TO_TIMESTAMP('6/1/2022', 'MM/DD/YYYY'));
-          select * from trueprice.data;      
+          select * from trueprice.data;
       EOSQL
   adminer: # for postgres, php admin interface
     image: adminer
