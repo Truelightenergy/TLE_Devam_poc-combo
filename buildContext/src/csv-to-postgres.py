@@ -99,9 +99,9 @@ if __name__ == "__main__":
     print("Starting")
 
     files = [
-        "ForwardCurve_NYISO_2X16_20221209.csv",
-        "ForwardCurve_NYISO_5X16_20221209.csv",
-        "ForwardCurve_NYISO_7X8_20221209.csv"
+        "/data/ForwardCurve_NYISO_2X16_20221209.csv",
+        "/data/ForwardCurve_NYISO_5X16_20221209.csv",
+        "/data/ForwardCurve_NYISO_7X8_20221209.csv"
     ]
 
     # v == validate files names/shape

@@ -58,13 +58,27 @@ services:
     ports:
       - "0.0.0.0:3000:3000"
   ingestor:
-    environment:      
+    environment:
       - PGUSER=docker
       - PGPASSWORD=docker
       - DATABASE=host.docker.internal
     depends_on:
       - postgres-setup-2
-    build: .
+    build:
+      context: ../buildContext # relative to vscode project
+      dockerfile: ./src/Dockerfile-ingestor # relative to context directory
+  trueprice-api:
+    environment:
+      - PGUSER=docker
+      - PGPASSWORD=docker
+      - DATABASE=host.docker.internal
+    depends_on:
+      - postgres-setup-2
+    build:
+      context: ../buildContext
+      dockerfile: ./src/Dockerfile-trueprice-api
+    ports:
+      - "0.0.0.0:5050:5000"
 
 
 # --- postgres
