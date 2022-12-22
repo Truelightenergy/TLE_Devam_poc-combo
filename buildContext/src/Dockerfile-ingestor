@@ -3,4 +3,4 @@ WORKDIR /
 COPY /data /data
 COPY /src /src
 RUN pip install --no-cache-dir -r /src/requirements.txt
-ENTRYPOINT /usr/local/bin/python3 /src/csv-to-postgres.py
+ENTRYPOINT /usr/local/bin/python3 /src/ingestor.py
