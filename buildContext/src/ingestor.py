@@ -53,14 +53,39 @@ def ingestion(f, r):
         # 'Zone K': pd.Float64Dtype
     }, parse_dates=date_cols).dropna() # acts as context manager
     df[df.columns[1:]] = df[df.columns[1:]].replace('[\$,]', '', regex=True).astype(float) # see warning on Float64Dtype, this removes money and converts to float
-    print(df)
-    print(len(df.index))
-    print(df.dtypes)
+#    print(df)
+#    print(len(df.index))
+#    print(df.dtypes)
+
+    #create table test_data ( -- history table differs
+    # id serial PRIMARY KEY, 
+    # zone_a_amount numeric(12,8), 
+    # zone_b_amount numeric(12,8),
+    # zone_c_amount numeric(12,8),
+    # zone_d_amount numeric(12,8), 
+    # zone_e_amount numeric(12,8),     
+    # zone_f_amount numeric(12,8), 
+    # zone_g_amount numeric(12,8),
+    # zone_h_amount numeric(12,8),
+    # zone_i_amount numeric(12,8), 
+    # zone_j_amount numeric(12,8),     
+    # zone_k_amount numeric(12,8),    
+    # curveStart TIMESTAMP
+    # );
 
     database = os.environ["DATABASE"]
     pgpassword = os.environ["PGPASSWORD"]
     pguser = os.environ["PGUSER"]
-    engine = sa.create_engine(f"postgresql://{pguser}:{pgpassword}@{database}:5432/trueprice")
+    engine = sa.create_engine(f"postgresql://{pguser}:{pgpassword}@{database}:5432/trueprice",
+    #connect_args={'options': '-csearch_path=trueprice'}
+    )
+
+    r = df.to_sql('data', con = engine, if_exists = 'replace', chunksize=1000, schema="trueprice")
+
+    if r is None:
+        print("failed to insert")
+        return
+
     r = pd.read_sql(sa.text("SELECT * FROM trueprice.data"), engine)
     print(r)
 
@@ -99,9 +124,9 @@ if __name__ == "__main__":
     print("Starting")
 
     files = [
-        "/data/ForwardCurve_NYISO_2X16_20221209.csv",
-        "/data/ForwardCurve_NYISO_5X16_20221209.csv",
-        "/data/ForwardCurve_NYISO_7X8_20221209.csv"
+        "./buildContext/data/ForwardCurve_NYISO_2X16_20221209.csv",
+        "./buildContext/data/ForwardCurve_NYISO_5X16_20221209.csv",
+        "./buildContext/data/ForwardCurve_NYISO_7X8_20221209.csv"
     ]
 
     # v == validate files names/shape
