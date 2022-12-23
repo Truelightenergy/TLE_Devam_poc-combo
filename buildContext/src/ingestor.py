@@ -26,6 +26,24 @@ def validate(f):
 
     return results
 
+def scd_2_panda():
+    database = os.environ["DATABASE"]
+    pgpassword = os.environ["PGPASSWORD"]
+    pguser = os.environ["PGUSER"]
+    engine = sa.create_engine(f"postgresql://{pguser}:{pgpassword}@{database}:5432/trueprice",
+    #connect_args={'options': '-csearch_path=trueprice'}
+    )
+
+    # new_data = receive new data
+    # if new_data not in current_db -> insert new to current_db (if fails???) // save data to local disk before next step?
+    # else new_data in current_db -> copy existing_data to history_db then update existing_data with new_data (if fails???) // save data to local disk before next step?
+
+    r1 = pd.read_sql(sa.text("SELECT * FROM test_data"), engine) # current
+    r2 = pd.read_sql(sa.text("SELECT * FROM test_data_history"), engine) # history
+    
+    r3 = r2.join(r1, on="id", )
+    print(r3)
+
 def ingestion(f, r):
     # using file name instead of rows to infer things like control zone and strip
     # this assumes the headers are like this:

@@ -1,3 +1,17 @@
+todo
+
+* add columns for control area, strip, etc
+* historical updates working from code
+* read only user for API (no updates from API at this point)
+* basic dashboard
+
+
+
+
+
+--- old notes
+
+
 Tracking poc for:
 
 * influxdb
