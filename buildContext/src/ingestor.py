@@ -7,6 +7,12 @@ import datetime
 class ParseError(Exception):
     pass
 
+class ExistingDataError(Exception):
+    pass
+
+class SQLError(Exception):
+    pass
+
 def storage(m):
     pass
 
@@ -112,7 +118,7 @@ def ingestion(m):
         create table nyiso_forwardcurve ( -- history table differs
         id serial PRIMARY KEY,
         strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
-        curveStart TIMESTAMPTZ, -- per file name (sans tz)
+        curvestart TIMESTAMPTZ, -- per file name (sans tz)
         zone_a_amount numeric(12,8), -- varies by iso, unclear best approach, single table or per iso table
         zone_b_amount numeric(12,8),
         zone_c_amount numeric(12,8),
@@ -131,8 +137,8 @@ def ingestion(m):
         create table nyiso_forwardcurve_history ( -- current table differs
         id serial, -- not primary, this is fk to nyiso_forwardcurve
         strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
-        curveStart TIMESTAMPTZ, -- per original file name
-        curveEnd TIMESTAMPTZ, -- per new file name
+        curvestart TIMESTAMPTZ, -- per original file name
+        curveend TIMESTAMPTZ, -- per new file name
         zone_a_amount numeric(12,8), -- varies by iso, unclear best approach, single table or per iso table
         zone_b_amount numeric(12,8),
         zone_c_amount numeric(12,8),
@@ -169,17 +175,60 @@ def ingestion(m):
     startOfCurveStart = m.curveStart.strftime('%Y-%m-%d') # drop time, since any update should be new
     check_query = f"select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart='{startOfCurveStart}' and strip='{m.strip}')"
     r = pd.read_sql(check_query, engine)
-    if r.exists[0]: # backup
-        print("found it")
-    else: # insert
-        print("not found")
+    if not r.exists[0]: # new data
         # index/col broken
         r = df.to_sql('nyiso_forwardcurve', con = engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
         if r is None:
             print("failed to insert")
+    else:
+        # check if data is same versus just existing
+        check_query_2 = f"select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart='{startOfCurveStart}' and curvestart>='{m.curveStart}' and strip='{m.strip}')"        
+        r = pd.read_sql(check_query_2, engine)
+        if r.exists[0]: # same or newer data, so throw error (someone is doing something funky)            
+            return ExistingDataError(f"Error {m.fileName} already exists in database")
 
-    #r = pd.read_sql(sa.text("SELECT * FROM trueprice.data"), engine)
-    #print(r)
+        tmp_table_name = f"nyiso_forwardcurve_{m.snake_timestamp()}"
+
+        r = df.to_sql(f'{tmp_table_name}', con = engine, if_exists = 'replace', chunksize=1000, schema="trueprice", index=False)
+        if r is None:
+            return SQLError(f"failed to create {tmp_table_name}")
+        # r = con.execute(f"select * from trueprice.{tmp_table_name}")
+        # for l in r:
+        #     print(l)
+
+        with engine.connect() as con:
+            curveend = m.curveStart # file f is update to file f-1 where f is same date but f is updated time
+            backup_query = f'''
+with current as (
+    select id, strip, curvestart, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount from trueprice.nyiso_forwardcurve where curvestart='{startOfCurveStart}' and strip='{m.strip}'
+),
+backup as (
+    insert into trueprice.nyiso_forwardcurve_history (id, strip, curvestart, curveend, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount)
+    select id, strip, curvestart, '{curveend}' as curveend, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount
+    from current
+)
+update trueprice.nyiso_forwardcurve set
+curvestart = newdata.curveStart,
+zone_a_amount = newdata.zone_a_amount,
+zone_b_amount = newdata.zone_b_amount,
+zone_c_amount = newdata.zone_c_amount,
+zone_d_amount = newdata.zone_d_amount,
+zone_e_amount = newdata.zone_e_amount,
+zone_f_amount = newdata.zone_f_amount,
+zone_g_amount = newdata.zone_g_amount,
+zone_h_amount = newdata.zone_h_amount,
+zone_i_amount = newdata.zone_i_amount,
+zone_j_amount = newdata.zone_j_amount,
+zone_k_amount = newdata.zone_k_amount
+from trueprice.{tmp_table_name} as newdata
+where trueprice.nyiso_forwardcurve.strip = newdata.strip and trueprice.nyiso_forwardcurve.month = newdata.month and trueprice.nyiso_forwardcurve.curvestart='{startOfCurveStart}'
+'''
+            print(backup_query)
+            r = con.execute(backup_query)            
+            #r = pd.read_sql(sa.text("SELECT * FROM trueprice.nyiso_forwardcurve"), engine)
+            print(r)
+            con.execute(f"drop table trueprice.{tmp_table_name}")
+            
 
     None
 
@@ -193,6 +242,9 @@ class TLE_Meta:
         self.controlArea = controlArea
         self.strip = strip
         self.curveStart = curveTimestamp
+    
+    def snake_timestamp(self):
+        return self.curveStart.strftime("%Y_%m_%d_%H_%M_%S")
     
 def process(files, steps):
     meta = None
@@ -228,12 +280,12 @@ if __name__ == "__main__":
     print("Starting")
 
     files = [
-        "./buildContext/data/ForwardCurve_NYISO_2X16_20221209.csv", # strip 1 assuming no HHMMSS is 000000 (midnight)
-        "./buildContext/data/ForwardCurve_NYISO_5X16_20221209.csv", # strip 2
-        "./buildContext/data/ForwardCurve_NYISO_7X8_20221209.csv", # strip 3
+#        "./buildContext/data/ForwardCurve_NYISO_2X16_20221209.csv", # strip 1 assuming no HHMMSS is 000000 (midnight)
+#        "./buildContext/data/ForwardCurve_NYISO_5X16_20221209.csv", # strip 2
+#        "./buildContext/data/ForwardCurve_NYISO_7X8_20221209.csv", # strip 3
         "./buildContext/data/ForwardCurve_NYISO_7X8_20221209_121212.csv", # strip 3 interday HHMMSS
-        "./buildContext/data/ForwardCurve_NYISO_7X8_20221209_cob.csv", # strip 3 cob
-        "./buildContext/data/ForwardCurve_NYISO_7X8_20221209_121212.csv", # strip 3 interday (should not do it)
+        #"./buildContext/data/ForwardCurve_NYISO_7X8_20221209_cob.csv", # strip 3 cob
+        #"./buildContext/data/ForwardCurve_NYISO_7X8_20221209_121212.csv", # strip 3 interday (should not do it)
     ]
 
     # v == validate files names/shape
@@ -242,7 +294,7 @@ if __name__ == "__main__":
     # va == validate the data can be retrieved via API
     result = process(files, {"v":validate, "s":storage, "i":ingestion, "va": validate_api})
     if result is not None:
-        print("Ingestion Failed")
+        print(f"Ingestion Failed: {result}")
     else:
         print("Ingestion Succeeded")
 
