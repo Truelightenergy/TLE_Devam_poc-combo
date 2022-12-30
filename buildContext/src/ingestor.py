@@ -76,15 +76,34 @@ def ingestion(m):
     # WARNING the provided CSV has many empty rows which are not skipped because they are empty strings
     date_cols = ['Zone']
     df = pd.read_csv(m.fileName, header=[2], skiprows=(3,3), dtype={
-        'Zone': str, # Month aka Zone due to bad header
+        'Zone': str, # Bad CSV header (should be curveStart or Month)
         # 'Zone A': pd.Float64Dtype, # ask guys on precision https://beepscore.com/website/2018/10/12/using-pandas-with-python-decimal.html
 # ...
         # 'Zone K': pd.Float64Dtype
     }, parse_dates=date_cols).dropna() # acts as context manager
     df[df.columns[1:]] = df[df.columns[1:]].replace('[\$,]', '', regex=True).astype(float) # see warning on Float64Dtype, this removes money and converts to float
-#    print(df)
-#    print(len(df.index))
-#    print(df.dtypes)
+
+    df.rename(inplace=True, columns={
+        'Zone': 'month',
+        'ZONE A': 'zone_a_amount',
+        'ZONE B': 'zone_b_amount',
+        'ZONE C': 'zone_c_amount',
+        'ZONE D': 'zone_d_amount',
+        'ZONE E': 'zone_e_amount',
+        'ZONE F': 'zone_f_amount',
+        'ZONE G': 'zone_g_amount',
+        'ZONE H': 'zone_h_amount',
+        'ZONE I': 'zone_i_amount',
+        'ZONE J': 'zone_j_amount',
+        'ZONE K': 'zone_k_amount'
+        })
+
+    df.insert(0, 'strip', m.strip) # stored as object, don't freak on dtypes
+    df.insert(0, 'curvestart', m.curveStart) # date on file, not the internal zone/month column
+    
+    print(df)
+    print(len(df.index))
+    print(df.dtypes)
 
     """
     \c trueprice
@@ -93,7 +112,7 @@ def ingestion(m):
         create table nyiso_forwardcurve ( -- history table differs
         id serial PRIMARY KEY,
         strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
-        curveStart TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54-05', -- per file name (sans tz)
+        curveStart TIMESTAMPTZ, -- per file name (sans tz)
         zone_a_amount numeric(12,8), -- varies by iso, unclear best approach, single table or per iso table
         zone_b_amount numeric(12,8),
         zone_c_amount numeric(12,8),
@@ -112,8 +131,8 @@ def ingestion(m):
         create table nyiso_forwardcurve_history ( -- current table differs
         id serial, -- not primary, this is fk to nyiso_forwardcurve
         strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
-        curveStart TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54-05', -- per original file name
-        curveEnd TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54-05', -- per new file name
+        curveStart TIMESTAMPTZ, -- per original file name
+        curveEnd TIMESTAMPTZ, -- per new file name
         zone_a_amount numeric(12,8), -- varies by iso, unclear best approach, single table or per iso table
         zone_b_amount numeric(12,8),
         zone_c_amount numeric(12,8),
@@ -146,19 +165,18 @@ def ingestion(m):
     #connect_args={'options': '-csearch_path=trueprice'}
     )
 
-    check_query = f"select exists(select 1 from trueprice.nyiso_forwardcurve where curveStart='{m.curveStart}' and strip='{m.strip}')"
+    # using exists always return true or false versus empty/None
+    startOfCurveStart = m.curveStart.strftime('%Y-%m-%d') # drop time, since any update should be new
+    check_query = f"select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart='{startOfCurveStart}' and strip='{m.strip}')"
     r = pd.read_sql(check_query, engine)
-
-    if r is False:
+    if r.exists[0]: # backup
         print("found it")
-    else:
+    else: # insert
         print("not found")
-
-    #r = df.to_sql('data', con = engine, if_exists = 'replace', chunksize=1000, schema="trueprice")
-
-    #if r is None:
-    #    print("failed to insert")
-    #    return
+        # index/col broken
+        r = df.to_sql('nyiso_forwardcurve', con = engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
+        if r is None:
+            print("failed to insert")
 
     #r = pd.read_sql(sa.text("SELECT * FROM trueprice.data"), engine)
     #print(r)
