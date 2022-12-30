@@ -44,9 +44,63 @@ services:
       psql -v ON_ERROR_STOP=1 --username $${PGUSER} --dbname trueprice --host host.docker.internal --port 5432 <<-EOSQL
           \c trueprice;
           create schema trueprice;
-          create table trueprice.data (id serial PRIMARY KEY, amount numeric(12,8), hour TIMESTAMP);
+          create table trueprice.data (id serial PRIMARY KEY, amount NUMERIC(12,8), hour TIMESTAMP);
           insert into trueprice.data (amount, hour) values (1.0, TO_TIMESTAMP('6/1/2022', 'MM/DD/YYYY'));
           select * from trueprice.data;
+      EOSQL
+  postgres-setup-3:
+    depends_on:
+      - postgres-setup-1
+    environment:
+      - PGUSER=docker
+      - PGPASSWORD=docker
+      - DATABASE=host.docker.internal
+    image: "postgres:15"
+    command:
+    - bin/bash
+    - -c
+    - |
+      set -e
+      sleep 5
+      psql -v ON_ERROR_STOP=1 --username $${PGUSER} --dbname trueprice --host host.docker.internal --port 5432 <<-EOSQL
+        \c trueprice;
+        CREATE SCHEMA trueprice;
+        CREATE TABLE trueprice.nyiso_forwardcurve ( -- history table differs
+          id serial PRIMARY KEY,
+          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          curveStart TIMESTAMPTZ, -- per file name (sans tz)
+          zone_a_amount NUMERIC(12,8), -- varies by iso, unclear best approach, single table or per iso table
+          zone_b_amount NUMERIC(12,8),
+          zone_c_amount NUMERIC(12,8),
+          zone_d_amount NUMERIC(12,8), 
+          zone_e_amount NUMERIC(12,8),     
+          zone_f_amount NUMERIC(12,8), 
+          zone_g_amount NUMERIC(12,8),
+          zone_h_amount NUMERIC(12,8),
+          zone_i_amount NUMERIC(12,8), 
+          zone_j_amount NUMERIC(12,8),     
+          zone_k_amount NUMERIC(12,8)
+        );
+
+        -- old data
+        -- union old and new data for all data (versus is_current column)
+        CREATE TABLE trueprice.nyiso_forwardcurve_history ( -- current table differs
+          id serial, -- not primary, this is fk to nyiso_forwardcurve
+          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          curveStart TIMESTAMPTZ, -- per original file name
+          curveEnd TIMESTAMPTZ, -- per new file name
+          zone_a_amount NUMERIC(12,8), -- varies by iso, unclear best approach, single table or per iso table
+          zone_b_amount NUMERIC(12,8),
+          zone_c_amount NUMERIC(12,8),
+          zone_d_amount NUMERIC(12,8), 
+          zone_e_amount NUMERIC(12,8),     
+          zone_f_amount NUMERIC(12,8), 
+          zone_g_amount NUMERIC(12,8),
+          zone_h_amount NUMERIC(12,8),
+          zone_i_amount NUMERIC(12,8), 
+          zone_j_amount NUMERIC(12,8),     
+          zone_k_amount NUMERIC(12,8)
+          );
       EOSQL
   adminer: # for postgres, php admin interface
     image: adminer
@@ -85,7 +139,7 @@ services:
 # docker container run --name some-postgres -e POSTGRES_PASSWORD=postgres -p 0.0.0.0:5432:5432 -d postgres
 # create database trueprice;
 # \c trueprice;
-# create table data (id serial PRIMARY KEY, amount numeric(12,8), hour TIMESTAMP);
+# create table data (id serial PRIMARY KEY, amount NUMERIC(12,8), hour TIMESTAMP);
 # insert into data (amount, hour) values (1.0, TO_TIMESTAMP('6/1/2022', 'MM/DD/YYYY'));
 # select * from data;
 # --- grafana

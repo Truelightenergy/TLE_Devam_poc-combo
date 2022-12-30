@@ -2,6 +2,7 @@ import pandas as pd
 import re
 import sqlalchemy as sa
 import os
+import datetime
 
 class ParseError(Exception):
     pass
@@ -41,7 +42,8 @@ def validate(f):
         else:
             return ParseError(f"failed to parse {f} - time component")
 
-    return TLE_Meta(f, curveType, controlArea, strip, curveDate+timeComponent)
+    timestamp = datetime.datetime.strptime(curveDate+timeComponent, "%Y%m%d%H%M%S")
+    return TLE_Meta(f, curveType, controlArea, strip, timestamp)
 
 def scd_2_panda():
     database = os.environ["DATABASE"]
@@ -91,7 +93,7 @@ def ingestion(m):
         create table nyiso_forwardcurve ( -- history table differs
         id serial PRIMARY KEY,
         strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
-        curveStart TIMESTAMP, -- per file name
+        curveStart TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54-05', -- per file name (sans tz)
         zone_a_amount numeric(12,8), -- varies by iso, unclear best approach, single table or per iso table
         zone_b_amount numeric(12,8),
         zone_c_amount numeric(12,8),
@@ -110,8 +112,8 @@ def ingestion(m):
         create table nyiso_forwardcurve_history ( -- current table differs
         id serial, -- not primary, this is fk to nyiso_forwardcurve
         strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
-        curveStart TIMESTAMP, -- per original file name
-        curveEnd TIMESTAMP, -- per new file name
+        curveStart TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54-05', -- per original file name
+        curveEnd TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54-05', -- per new file name
         zone_a_amount numeric(12,8), -- varies by iso, unclear best approach, single table or per iso table
         zone_b_amount numeric(12,8),
         zone_c_amount numeric(12,8),
@@ -136,7 +138,7 @@ def ingestion(m):
     # curve & iso & strip & date (not price as it changes)
     #
 
-    database = os.environ["DATABASE"] if "DATABASE" in os.environ else "postgres"
+    database = os.environ["DATABASE"] if "DATABASE" in os.environ else "localhost"
     pgpassword = os.environ["PGPASSWORD"] if "PGPASSWORD" in os.environ else "postgres"
     pguser = os.environ["PGUSER"] if "PGUSER" in os.environ else "postgres"
 
@@ -144,7 +146,13 @@ def ingestion(m):
     #connect_args={'options': '-csearch_path=trueprice'}
     )
 
-    check_query = f"select exists(select 1 from nyiso_forwardcurve where curveStart={m.curveDate} and strip={m.strip})"
+    check_query = f"select exists(select 1 from trueprice.nyiso_forwardcurve where curveStart='{m.curveStart}' and strip='{m.strip}')"
+    r = pd.read_sql(check_query, engine)
+
+    if r is False:
+        print("found it")
+    else:
+        print("not found")
 
     #r = df.to_sql('data', con = engine, if_exists = 'replace', chunksize=1000, schema="trueprice")
 
@@ -161,12 +169,12 @@ def validate_api(m):
     None
 
 class TLE_Meta:
-    def __init__(self, fileName, curveType, controlArea, strip, curveDate):
+    def __init__(self, fileName, curveType, controlArea, strip, curveTimestamp):
         self.fileName = fileName
         self.curveType = curveType
         self.controlArea = controlArea
         self.strip = strip
-        self.curveDate = curveDate
+        self.curveStart = curveTimestamp
     
 def process(files, steps):
     meta = None
@@ -216,10 +224,10 @@ if __name__ == "__main__":
     # va == validate the data can be retrieved via API
     result = process(files, {"v":validate, "s":storage, "i":ingestion, "va": validate_api})
     if result is not None:
-        print("Failed")
+        print("Ingestion Failed")
     else:
-        print("Succeeded")
+        print("Ingestion Succeeded")
 
-    print("Finished")
+    print("Finished Ingestion")
 else:
     print("Not a module {}", __name__)
