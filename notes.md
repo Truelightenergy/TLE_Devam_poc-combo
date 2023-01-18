@@ -2,8 +2,9 @@ todo
 
 * add columns for control area, strip, etc
 * historical updates working from code
-* read only user for API (no updates from API at this point)
 * basic dashboard
+* read only user for API (no updates from API at this point)
+* confirm date is handled correctly (vm time/tz, db time/tz, api time/tz)
 
 
 
@@ -205,3 +206,23 @@ trueprice=# select * from data;
 ### API
 
 ## event sourcing
+
+
+
+
+
+
+--- scratch
+
+select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart='2022-12-09 11:59:59'and strip='7X8')
+UNION ALL
+select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart>='2022-12-09' and curvestart<'2022-12-09 11:59:59' and strip='7X8')
+UNION ALL
+select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart>'2022-12-09 11:59:59' and curvestart<'2022-12-10' and strip='7X8')
+
+
+select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart='2023-01-09 08:47:00'and strip='5X16')
+UNION ALL
+select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart>='2023-01-09' and curvestart<'2023-01-09 08:47:00' and strip='5X16')
+UNION ALL
+select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart>'2023-01-09 08:47:00' and curvestart<'2023-01-10' and strip='5X16')

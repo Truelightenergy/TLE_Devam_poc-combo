@@ -71,16 +71,31 @@ def scd_2_panda():
     r3 = r2.join(r1, on="id", )
     print(r3)
 
+
+ca = {
+    "nyiso": {
+        "table": "trueprice.nyiso_forwardcurve",
+        "zones": []
+    },
+    "miso": {
+        "table": "trueprice.miso_forwardcurve",
+        "zones": []
+    },
+    "pjm": {
+        "table": "trueprice.pjm_forwardcurve",
+        "zones": []
+    },
+    "isone": {
+        "table": "trueprice.isone_forwardcurve",
+        "zones": []
+    },
+    "ercot": {
+        "table": "trueprice.ercot_forwardcurve",
+        "zones": ["north_amount","houston_amount","south_amount","west_amount"],
+    }
+}
+
 def ingestion(m):
-    # using file name instead of rows to infer things like control zone and strip
-    # this assumes the headers are like this:
-    # Control Area	NYISO	NYISO	NYISO	NYISO	NYISO	NYISO	NYISO	NYISO	NYISO	NYISO	NYISO
-    # ZoneID	28	29	30	31	32	33	34	35	36	37	38
-    # Zone	ZONE A	ZONE B	ZONE C	ZONE D	ZONE E	ZONE F	ZONE G	ZONE H	ZONE I	ZONE J	ZONE K
-    # Month	FWD CURVE	FWD CURVE	FWD CURVE	FWD CURVE	FWD CURVE	FWD CURVE	FWD CURVE	FWD CURVE	FWD CURVE	FWD CURVE	FWD CURVE
-    # 12/1/22	$54.42 	$54.42 	$55.47 	$52.99 	$49.77 	$98.78 	$84.39 	$83.88 	$81.92 	$89.62 	$89.39 
-    # 1/1/23	$78.26 	$89.19 	$84.10 	$81.02 	$71.02 	$229.99 	$207.18 	$195.14 	$198.00 	$203.89 	$203.40 
-    # ...
     # WARNING the provided CSV has many empty rows which are not skipped because they are empty strings
     date_cols = ['Zone']
     df = pd.read_csv(m.fileName, header=[2], skiprows=(3,3), dtype={
@@ -91,27 +106,38 @@ def ingestion(m):
     }, parse_dates=date_cols).dropna() # acts as context manager
     df[df.columns[1:]] = df[df.columns[1:]].replace('[\$,]', '', regex=True).astype(float) # see warning on Float64Dtype, this removes money and converts to float
 
-    df.rename(inplace=True, columns={
-        'Zone': 'month',
-        'ZONE A': 'zone_a_amount',
-        'ZONE B': 'zone_b_amount',
-        'ZONE C': 'zone_c_amount',
-        'ZONE D': 'zone_d_amount',
-        'ZONE E': 'zone_e_amount',
-        'ZONE F': 'zone_f_amount',
-        'ZONE G': 'zone_g_amount',
-        'ZONE H': 'zone_h_amount',
-        'ZONE I': 'zone_i_amount',
-        'ZONE J': 'zone_j_amount',
-        'ZONE K': 'zone_k_amount'
+    if m.controlArea == "nyiso":
+        df.rename(inplace=True, columns={
+            'Zone': 'month',
+            'ZONE A': 'zone_a_amount',
+            'ZONE B': 'zone_b_amount',
+            'ZONE C': 'zone_c_amount',
+            'ZONE D': 'zone_d_amount',
+            'ZONE E': 'zone_e_amount',
+            'ZONE F': 'zone_f_amount',
+            'ZONE G': 'zone_g_amount',
+            'ZONE H': 'zone_h_amount',
+            'ZONE I': 'zone_i_amount',
+            'ZONE J': 'zone_j_amount',
+            'ZONE K': 'zone_k_amount'
+            })
+    elif m.controlArea == "miso":
+        df.rename(inplace=True, columns={
+            'Zone': 'month',
+            'AMILCIPS': 'amilcips_amount',
+            'AMILCILCO': 'amilcilco_amount',
+            'AMILIP': 'amilip_amount',
+            'INDY HUB': 'indy_amount'
         })
+    else:
+        return # error
 
     df.insert(0, 'strip', m.strip) # stored as object, don't freak on dtypes
     df.insert(0, 'curvestart', m.curveStart) # date on file, not the internal zone/month column
     
     print(df)
     print(len(df.index))
-    print(df.dtypes)
+    print(df.dtypes)    
 
     # 
     # if data in current -> backup
@@ -141,21 +167,23 @@ def ingestion(m):
     #check_query = f"select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart>='{m.curveStart}' and curvestart<'{tomorrow}' and strip='{m.strip}')"
     # first is sod to now (in/ex) -- if eq then we just ignore it
     # second is now to eod (ex/ex)
+
     check_query = f"""
 -- if nothing found, new data, insert it, or do one of these
-select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart='{now}'and strip='{m.strip}') -- ignore, db == file based on timestamp
+select exists(select 1 from trueprice.{m.controlArea}_forwardcurve where curvestart='{now}'and strip='{m.strip}') -- ignore, db == file based on timestamp
 UNION ALL
-select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart>='{sod}' and curvestart<'{now}' and strip='{m.strip}') -- update, db is older
+select exists(select 1 from trueprice.{m.controlArea}_forwardcurve where curvestart>='{sod}' and curvestart<'{now}' and strip='{m.strip}') -- update, db is older
 UNION ALL
-select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart>'{now}' and curvestart<'{eod}' and strip='{m.strip}') -- ignore, db is newer
+select exists(select 1 from trueprice.{m.controlArea}_forwardcurve where curvestart>'{now}' and curvestart<'{eod}' and strip='{m.strip}') -- ignore, db is newer
 """
     r = pd.read_sql(check_query, engine)
     same, old_exists, new_exists = r.exists[0], r.exists[1], r.exists[2]
+
     if same:
         print("Data already exists based on timestamp and strip")
         return
     elif not same and not new_exists and not old_exists:
-        r = df.to_sql('nyiso_forwardcurve', con = engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
+        r = df.to_sql(f"{m.controlArea}_forwardcurve", con = engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
         if r is None:
             print("Failed to insert")
             return # add error
@@ -232,9 +260,9 @@ def validate_api(m):
 class TLE_Meta:
     def __init__(self, fileName, curveType, controlArea, strip, curveTimestamp):
         self.fileName = fileName
-        self.curveType = curveType
-        self.controlArea = controlArea
-        self.strip = strip
+        self.curveType = curveType.lower()
+        self.controlArea = controlArea.lower()
+        self.strip = strip.lower()
         self.curveStart = curveTimestamp
     
     def snake_timestamp(self):
@@ -282,7 +310,8 @@ if __name__ == "__main__":
         #"./buildContext/data/ForwardCurve_NYISO_7X8_20221209_121211.csv", # sneak old past cob
         #"./buildContext/data/ForwardCurve_NYISO_7X8_20221209_121212.csv", # strip 3 interday (should not do it)
         #"./buildContext/data/ForwardCurve_NYISO_5X16_20221209.csv", # trying new strip same date
-         "./buildContext/data/ForwardCurve_NYISO_5X16_20230109_084700.csv", # new days data
+        # "./buildContext/data/ForwardCurve_NYISO_5X16_20230109_084700.csv", # new days data
+        "./buildContext/data/ForwardCurve_MISO_5X16_20230109_084700.csv", # refactoring for MISO from NYISO only
     ]
 
     # v == validate files names/shape
