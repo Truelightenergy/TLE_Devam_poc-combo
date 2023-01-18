@@ -143,11 +143,11 @@ def ingestion(m):
     # second is now to eod (ex/ex)
     check_query = f"""
 -- if nothing found, new data, insert it, or do one of these
-select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart='{now}'and strip='7X8') -- ignore, db == file based on timestamp
+select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart='{now}'and strip='{m.strip}') -- ignore, db == file based on timestamp
 UNION ALL
-select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart>='{sod}' and curvestart<'{now}' and strip='7X8') -- update, db is older
+select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart>='{sod}' and curvestart<'{now}' and strip='{m.strip}') -- update, db is older
 UNION ALL
-select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart>'{now}' and curvestart<'{eod}' and strip='7X8') -- ignore, db is newer
+select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart>'{now}' and curvestart<'{eod}' and strip='{m.strip}') -- ignore, db is newer
 """
     r = pd.read_sql(check_query, engine)
     same, old_exists, new_exists = r.exists[0], r.exists[1], r.exists[2]
@@ -279,8 +279,10 @@ if __name__ == "__main__":
         #"./buildContext/data/ForwardCurve_NYISO_7X8_20221209.csv", # new 
         #"./buildContext/data/ForwardCurve_NYISO_7X8_20221209_121212.csv", # strip 3 interday HHMMSS
         #"./buildContext/data/ForwardCurve_NYISO_7X8_20221209_cob.csv", # strip 3 cob
-        "./buildContext/data/ForwardCurve_NYISO_7X8_20221209_121211.csv", # sneak old past cob
+        #"./buildContext/data/ForwardCurve_NYISO_7X8_20221209_121211.csv", # sneak old past cob
         #"./buildContext/data/ForwardCurve_NYISO_7X8_20221209_121212.csv", # strip 3 interday (should not do it)
+        #"./buildContext/data/ForwardCurve_NYISO_5X16_20221209.csv", # trying new strip same date
+         "./buildContext/data/ForwardCurve_NYISO_5X16_20230109_084700.csv", # new days data
     ]
 
     # v == validate files names/shape
