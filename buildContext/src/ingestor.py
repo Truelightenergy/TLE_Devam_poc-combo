@@ -71,7 +71,7 @@ def scd_2_panda():
     r3 = r2.join(r1, on="id", )
     print(r3)
 
-
+# for potential refactor
 ca = {
     "nyiso": {
         "table": "trueprice.nyiso_forwardcurve",
@@ -129,6 +129,55 @@ def ingestion(m):
             'AMILIP': 'amilip_amount',
             'INDY HUB': 'indy_amount'
         })
+    elif m.controlArea == "ercot":
+        df.rename(inplace=True, columns={
+            'Zone': 'month',  
+            'NORTH ZONE':'north_amount',
+            'HOUSTON ZONE':'houston_amount',
+            'SOUTH ZONE':'south_amount',
+            'WEST ZONE':'west_amount'
+        })
+    elif m.controlArea == "pjm":
+          df.rename(inplace=True, columns={
+            'Zone': 'month',
+            'AECO':'aeco_amount',
+            'AEP':'aep_amount',
+            'APS':'aps_amount', 
+            'ATSI':'atsi_amount', 
+            'BGE':'bge_amount', 
+            'COMED':'comed_amount', 
+            'DAY':'day_amount', 
+            'DEOK':'deok_amount', 
+            'DOM':'dom_amount', 
+            'DPL':'dpl_amount', 
+            'DUQ':'duq_amount', 
+            'JCPL':'jcpl_amount', 
+            'METED':'meted_amount', 
+            'PECO':'peco_amount', 
+            'PENELEC':'penelec_amount', 
+            'PEPCO':'pepco_amount', 
+            'PPL':'ppl_amount', 
+            'PSEG':'pseg_amount', 
+            'RECO':'reco_amount', 
+            'WEST HUB':'west_amount', 
+            'AD HUB':'ad_amount', 
+            'NI HUB':'ni_amount', 
+            'EAST HUB':'east_amount'
+          })
+    elif m.controlArea == "isone":
+        #Zone,MAINE,NEWHAMPSHIRE,VERMONT,CONNECTICUT,RHODEISLAND,SEMASS,WCMASS,NEMASSBOST,MASS HUB
+        df.rename(inplace=True, columns={
+            'Zone': 'month',
+            'MAINE':'maine_amount',
+            'NEWHAMPSHIRE': 'newhampshire_amount',
+            'VERMONT':'vermont_amount',
+            'CONNECTICUT':'connecticut_amount', 
+            'RHODEISLAND':'rhodeisland_amount', 
+            'SEMASS':'semass_amount', 
+            'WCMASS':'wcmass_amount', 
+            'NEMASSBOST':'nemassbost_amount', 
+            'MASS HUB':'mass_amount'
+        })
     else:
         return # error
 
@@ -164,7 +213,7 @@ def ingestion(m):
     # if no current data, accept new data (even yesterday/backfill or tomorrow/cob)
     # if current data is newer (i.e. curvedate) than new data (i.e. fileanme), ignore it
     # else scd-2
-    #check_query = f"select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart>='{m.curveStart}' and curvestart<'{tomorrow}' and strip='{m.strip}')"
+    #check_query = f"select exists(select 1 from trueprice.{m.controlArea}_forwardcurve where curvestart>='{m.curveStart}' and curvestart<'{tomorrow}' and strip='{m.strip}')"
     # first is sod to now (in/ex) -- if eq then we just ignore it
     # second is now to eod (ex/ex)
 
@@ -190,12 +239,12 @@ select exists(select 1 from trueprice.{m.controlArea}_forwardcurve where curvest
     elif old_exists:
         # data exists that is older than us for this day
         # # check if data is same versus just existing
-        # check_query_2 = f"select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart='{startOfCurveStart}' and curvestart>='{m.curveStart}' and strip='{m.strip}')"        
+        # check_query_2 = f"select exists(select 1 from trueprice.{m.controlArea}_forwardcurve where curvestart='{startOfCurveStart}' and curvestart>='{m.curveStart}' and strip='{m.strip}')"        
         # r = pd.read_sql(check_query_2, engine)
         # if r.exists[0]: # same or newer data, so throw error (someone is doing something funky i.e. existing file with new data not just updated data)            
         #     return ExistingDataError(f"Error {m.fileName} already exists in database")
 
-        tmp_table_name = f"nyiso_forwardcurve_{m.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
+        tmp_table_name = f"{m.controlArea}_forwardcurve_{m.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
         r = df.to_sql(f'{tmp_table_name}', con = engine, if_exists = 'replace', chunksize=1000, schema="trueprice", index=False)
         if r is None:
             return SQLError(f"failed to create {tmp_table_name}")
@@ -210,11 +259,11 @@ select exists(select 1 from trueprice.{m.controlArea}_forwardcurve where curvest
             backup_query = f'''
 with current as (
     -- get the current rows in the database, all of them, not just things that will change
-    select id, strip, curvestart, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount from trueprice.nyiso_forwardcurve where curvestart>='{sod}' and curvestart<='{eod}' and strip='{m.strip}'
+    select id, strip, curvestart, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount from trueprice.{m.controlArea}_forwardcurve where curvestart>='{sod}' and curvestart<='{eod}' and strip='{m.strip}'
 ),
 backup as (
     -- take current rows and insert into database but with a new "curveend" timestamp
-    insert into trueprice.nyiso_forwardcurve_history (id, strip, curvestart, curveend, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount)
+    insert into trueprice.{m.controlArea}_forwardcurve_history (id, strip, curvestart, curveend, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount)
     select id, strip, curvestart, '{curveend}' as curveend, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount
     from current
 ),
@@ -222,7 +271,7 @@ single as (
     select curvestart from current limit 1
 )
 -- update the existing "current" with the new "csv"
-update trueprice.nyiso_forwardcurve set
+update trueprice.{m.controlArea}_forwardcurve set
 curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
 zone_a_amount = newdata.zone_a_amount, -- mindless update all cols, we don't know which ones updated so try them all
 zone_b_amount = newdata.zone_b_amount,
@@ -238,13 +287,13 @@ zone_k_amount = newdata.zone_k_amount
 from 
     trueprice.{tmp_table_name} as newdata -- our csv data
 where 
-    trueprice.nyiso_forwardcurve.strip = newdata.strip 
-    and trueprice.nyiso_forwardcurve.month = newdata.month 
-    and trueprice.nyiso_forwardcurve.curvestart=(select curvestart from single)
+    trueprice.{m.controlArea}_forwardcurve.strip = newdata.strip 
+    and trueprice.{m.controlArea}_forwardcurve.month = newdata.month 
+    and trueprice.{m.controlArea}_forwardcurve.curvestart=(select curvestart from single)
 '''
             print(backup_query)
             r = con.execute(backup_query)            
-            #r = pd.read_sql(sa.text("SELECT * FROM trueprice.nyiso_forwardcurve"), engine)
+            #r = pd.read_sql(sa.text(f"SELECT * FROM trueprice.{m.controlArea}_forwardcurve"), engine)
             print(r)
             con.execute(f"drop table trueprice.{tmp_table_name}")
     elif new_exists:
@@ -311,7 +360,10 @@ if __name__ == "__main__":
         #"./buildContext/data/ForwardCurve_NYISO_7X8_20221209_121212.csv", # strip 3 interday (should not do it)
         #"./buildContext/data/ForwardCurve_NYISO_5X16_20221209.csv", # trying new strip same date
         # "./buildContext/data/ForwardCurve_NYISO_5X16_20230109_084700.csv", # new days data
-        "./buildContext/data/ForwardCurve_MISO_5X16_20230109_084700.csv", # refactoring for MISO from NYISO only
+        #"./buildContext/data/ForwardCurve_MISO_5X16_20230109_084700.csv", # refactoring for MISO from NYISO only
+        #"./buildContext/data/ForwardCurve_ISONE_5X16_20230109_084700.csv",
+        #"./buildContext/data/ForwardCurve_ERCOT_5X16_20230109_084700.csv",
+        "./buildContext/data/ForwardCurve_PJM_5x16_20230109_084700.csv",
     ]
 
     # v == validate files names/shape
