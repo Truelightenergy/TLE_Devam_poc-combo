@@ -220,7 +220,7 @@ services:
         );
         -- old data
         -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.miso_forwardcurve_history ( -- current table differs
+        CREATE TABLE trueprice.pjm_forwardcurve_history ( -- current table differs
           id serial, -- not primary, this is fk to nyiso_forwardcurve
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per original file name
