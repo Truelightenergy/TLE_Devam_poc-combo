@@ -23,9 +23,9 @@ def validate(f):
     # curveType_iso_strip_curveDate.csv
     # curveType_iso_strip_curveDate_curveTime.csv
     # curveType_iso_strip_curveDate_cob.csv
-    file_name_components_pattern = re.compile("(.+?)_(.+?)_(.+?)_(.+?)(_.+)?.csv$") # len(4)
+    file_name_components_pattern = re.compile(".*/(.+?)_(.+?)_(.+?)_(.+?)_(.+)?.csv$") # len(4) , check windows users :(
     
-    print(f"Checking file name {f}")        
+    print(f"Checking file name {f}")
     matched = file_name_components = file_name_components_pattern.search(f)
     if matched == None:
         return ParseError(f"failed to parse {f} - regex")
@@ -492,6 +492,19 @@ def process(files, steps):
 
     return None
 
+def call_ingestor(file):
+    import sys
+    print(f"Processing {file}", file=sys.stderr) # flask capture stdout so need to use stderr for now, fix later
+    files = [file]
+    result = process(files, {"v":validate, "s":storage, "i":ingestion, "va": validate_api})
+    if result is not None:
+        print(f"Ingestion Failed: {result}")
+    else:
+        print("Ingestion Succeeded")
+
+    print("Finished Ingestion")
+
+
 if __name__ == "__main__":
     print("Starting")
 
@@ -508,7 +521,7 @@ if __name__ == "__main__":
         #"./buildContext/data/ForwardCurve_MISO_5X16_20230109_084700.csv", # refactoring for MISO from NYISO only
         #"./buildContext/data/ForwardCurve_ISONE_5X16_20230109_084700.csv",
         #"./buildContext/data/ForwardCurve_ERCOT_5X16_20230109_084700.csv",
-        "./buildContext/data/ForwardCurve_PJM_5x16_20230109_084700.csv",
+        # "./buildContext/data/ForwardCurve_PJM_5x16_20230109_084700.csv",
     ]
 
     # v == validate files names/shape
@@ -523,4 +536,4 @@ if __name__ == "__main__":
 
     print("Finished Ingestion")
 else:
-    print("Not a module {}", __name__)
+    print("Running ingestor via API {}", __name__)

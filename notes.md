@@ -1,12 +1,17 @@
+next
+
+* scd-2 testing all control areas
+* api upload for individual files
+* api download for simple filters
+
 todo
 
-* add columns for control area, strip, etc
 * historical updates working from code
 * basic dashboard
 * read only user for API (no updates from API at this point)
 * confirm date is handled correctly (vm time/tz, db time/tz, api time/tz)
-
-
+* move to aws
+* backup process
 
 
 
@@ -226,3 +231,234 @@ UNION ALL
 select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart>='2023-01-09' and curvestart<'2023-01-09 08:47:00' and strip='5X16')
 UNION ALL
 select exists(select 1 from trueprice.nyiso_forwardcurve where curvestart>'2023-01-09 08:47:00' and curvestart<'2023-01-10' and strip='5X16')
+
+
+# NYISO (done)
+            backup_query = f'''
+with current as (
+    -- get the current rows in the database, all of them, not just things that will change
+    select id, strip, curvestart, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount from trueprice.{m.controlArea}_forwardcurve where curvestart>='{sod}' and curvestart<='{eod}' and strip='{m.strip}'
+),
+backup as (
+    -- take current rows and insert into database but with a new "curveend" timestamp
+    insert into trueprice.{m.controlArea}_forwardcurve_history (id, strip, curvestart, curveend, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount)
+    select id, strip, curvestart, '{curveend}' as curveend, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount
+    from current
+),
+single as (
+    select curvestart from current limit 1
+)
+-- update the existing "current" with the new "csv"
+update trueprice.{m.controlArea}_forwardcurve set
+curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
+zone_a_amount = newdata.zone_a_amount, -- mindless update all cols, we don't know which ones updated so try them all
+zone_b_amount = newdata.zone_b_amount,
+zone_c_amount = newdata.zone_c_amount,
+zone_d_amount = newdata.zone_d_amount,
+zone_e_amount = newdata.zone_e_amount,
+zone_f_amount = newdata.zone_f_amount,
+zone_g_amount = newdata.zone_g_amount,
+zone_h_amount = newdata.zone_h_amount,
+zone_i_amount = newdata.zone_i_amount,
+zone_j_amount = newdata.zone_j_amount,
+zone_k_amount = newdata.zone_k_amount
+from 
+    trueprice.{tmp_table_name} as newdata -- our csv data
+where 
+    trueprice.{m.controlArea}_forwardcurve.strip = newdata.strip 
+    and trueprice.{m.controlArea}_forwardcurve.month = newdata.month 
+    and trueprice.{m.controlArea}_forwardcurve.curvestart=(select curvestart from single)
+'''
+
+# ERCOT
+        df.rename(inplace=True, columns={
+            'Zone': 'month',  
+            'NORTH ZONE':'north_amount',
+            'HOUSTON ZONE':'houston_amount',
+            'SOUTH ZONE':'south_amount',
+            'WEST ZONE':'west_amount'
+        })
+            backup_query = f'''
+with current as (
+    -- get the current rows in the database, all of them, not just things that will change
+    select id, strip, curvestart, north_amount, houston_amount, south_amount, west_amount from trueprice.{m.controlArea}_forwardcurve where curvestart>='{sod}' and curvestart<='{eod}' and strip='{m.strip}'
+),
+backup as (
+    -- take current rows and insert into database but with a new "curveend" timestamp
+    insert into trueprice.{m.controlArea}_forwardcurve_history (id, strip, curvestart, curveend, north_amount, houston_amount, south_amount, west_amount)
+    select id, strip, curvestart, '{curveend}' as curveend, north_amount, houston_amount, south_amount, west_amount
+    from current
+),
+single as (
+    select curvestart from current limit 1
+)
+-- update the existing "current" with the new "csv"
+--north_amount, houston_amount, south_amount, west_amount
+update trueprice.{m.controlArea}_forwardcurve set
+curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
+north_amount = newdata.north_amount, -- mindless update all cols, we don't know which ones updated so try them all
+houston_amount = newdata.houston_amount,
+south_amount = newdata.south_amount,
+west_amount = newdata.west_amount
+from 
+    trueprice.{tmp_table_name} as newdata -- our csv data
+where 
+    trueprice.{m.controlArea}_forwardcurve.strip = newdata.strip 
+    and trueprice.{m.controlArea}_forwardcurve.month = newdata.month 
+    and trueprice.{m.controlArea}_forwardcurve.curvestart=(select curvestart from single)
+'''
+# ISONE
+        df.rename(inplace=True, columns={
+            'Zone': 'month',
+            'MAINE':'maine_amount',
+            'NEWHAMPSHIRE': 'newhampshire_amount',
+            'VERMONT':'vermont_amount',
+            'CONNECTICUT':'connecticut_amount', 
+            'RHODEISLAND':'rhodeisland_amount', 
+            'SEMASS':'semass_amount', 
+            'WCMASS':'wcmass_amount', 
+            'NEMASSBOST':'nemassbost_amount', 
+            'MASS HUB':'nemassbost_amount'
+        })
+            backup_query = f'''
+with current as (
+    -- get the current rows in the database, all of them, not just things that will change
+    select id, strip, curvestart, maine_amount, newhampshire_amount, vermont_amount, connecticut_amount, rhodeisland_amount, semass_amount, wcmass_amount, nemassbost_amount, nemassbost_amount from trueprice.{m.controlArea}_forwardcurve where curvestart>='{sod}' and curvestart<='{eod}' and strip='{m.strip}'
+),
+backup as (
+    -- take current rows and insert into database but with a new "curveend" timestamp
+    insert into trueprice.{m.controlArea}_forwardcurve_history (id, strip, curvestart, curveend, maine_amount, newhampshire_amount, vermont_amount, connecticut_amount, rhodeisland_amount, semass_amount, wcmass_amount, nemassbost_amount, nemassbost_amount)
+    select id, strip, curvestart, '{curveend}' as curveend, maine_amount, newhampshire_amount, vermont_amount, connecticut_amount, rhodeisland_amount, semass_amount, wcmass_amount, nemassbost_amount, nemassbost_amount
+    from current
+),
+single as (
+    select curvestart from current limit 1
+)
+-- update the existing "current" with the new "csv"
+update trueprice.{m.controlArea}_forwardcurve set
+curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
+maine_amount = newdata.maine_amount, -- mindless update all cols, we don't know which ones updated so try them all
+newhampshire_amount = newdata.newhampshire_amount,
+vermont_amount = newdata.vermont_amount,
+connecticut_amount = newdata.connecticut_amount,
+rhodeisland_amount = newdata.rhodeisland_amount,
+semass_amount = newdata.semass_amount,
+wcmass_amount = newdata.wcmass_amount,
+nemassbost_amount = newdata.nemassbost_amount
+from 
+    trueprice.{tmp_table_name} as newdata -- our csv data
+where 
+    trueprice.{m.controlArea}_forwardcurve.strip = newdata.strip 
+    and trueprice.{m.controlArea}_forwardcurve.month = newdata.month 
+    and trueprice.{m.controlArea}_forwardcurve.curvestart=(select curvestart from single)
+'''
+# MISO
+        df.rename(inplace=True, columns={
+            'Zone': 'month',
+            'AMILCIPS': 'amilcips_amount',
+            'AMILCILCO': 'amilcilco_amount',
+            'AMILIP': 'amilip_amount',
+            'INDY HUB': 'indy_amount'
+        })
+            backup_query = f'''
+with current as (
+    -- get the current rows in the database, all of them, not just things that will change
+    select id, strip, curvestart, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount from trueprice.{m.controlArea}_forwardcurve where curvestart>='{sod}' and curvestart<='{eod}' and strip='{m.strip}'
+),
+backup as (
+    -- take current rows and insert into database but with a new "curveend" timestamp
+    insert into trueprice.{m.controlArea}_forwardcurve_history (id, strip, curvestart, curveend, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount)
+    select id, strip, curvestart, '{curveend}' as curveend, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount
+    from current
+),
+single as (
+    select curvestart from current limit 1
+)
+-- update the existing "current" with the new "csv"
+update trueprice.{m.controlArea}_forwardcurve set
+curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
+amilcips_amount = newdata.amilcips_amount, -- mindless update all cols, we don't know which ones updated so try them all
+amilcilco_amount = newdata.amilcilco_amount,
+amilip_amount = newdata.amilip_amount,
+indy_amount = newdata.indy_amount
+from 
+    trueprice.{tmp_table_name} as newdata -- our csv data
+where 
+    trueprice.{m.controlArea}_forwardcurve.strip = newdata.strip 
+    and trueprice.{m.controlArea}_forwardcurve.month = newdata.month 
+    and trueprice.{m.controlArea}_forwardcurve.curvestart=(select curvestart from single)
+'''
+# PJM
+df.rename(inplace=True, columns={
+            'Zone': 'month',
+            'AECO':'aeco_amount',
+            'AEP':'aep_amount',
+            'APS':'aps_amount', 
+            'ATSI':'atsi_amount', 
+            'BGE':'bge_amount', 
+            'COMED':'comed_amount', 
+            'DAY':'day_amount', 
+            'DEOK':'deok_amount', 
+            'DOM':'dom_amount', 
+            'DPL':'dpl_amount', 
+            'DUQ':'duq_amount', 
+            'JCPL':'jcpl_amount', 
+            'METED':'meted_amount', 
+            'PECO':'peco_amount', 
+            'PENELEC':'penelec_amount', 
+            'PEPCO':'pepco_amount', 
+            'PPL':'ppl_amount', 
+            'PSEG':'pseg_amount', 
+            'RECO':'reco_amount', 
+            'WEST HUB':'west_amount', 
+            'AD HUB':'ad_amount', 
+            'NI HUB':'ni_amount', 
+            'EAST HUB':'east_amount'
+          })
+            backup_query = f'''
+with current as (
+    -- get the current rows in the database, all of them, not just things that will change
+    select id, strip, curvestart, aeco_amount, aep_amount, aps_amount, atsi_amount, bge_amount, comed_amount, day_amount, deok_amount, dom_amount, dpl_amount, duq_amount, jcpl_amount, meted_amount, peco_amount, penelec_amount, pepco_amount, ppl_amount, pseg_amount, reco_amount, west_amount, ad_amount, ni_amount, east_amount from trueprice.{m.controlArea}_forwardcurve where curvestart>='{sod}' and curvestart<='{eod}' and strip='{m.strip}'
+),
+backup as (
+    -- take current rows and insert into database but with a new "curveend" timestamp
+    insert into trueprice.{m.controlArea}_forwardcurve_history (id, strip, curvestart, curveend, aeco_amount, aep_amount, aps_amount, atsi_amount, bge_amount, comed_amount, day_amount, deok_amount, dom_amount, dpl_amount, duq_amount, jcpl_amount, meted_amount, peco_amount, penelec_amount, pepco_amount, ppl_amount, pseg_amount, reco_amount, west_amount, ad_amount, ni_amount, east_amount)
+    select id, strip, curvestart, '{curveend}' as curveend, aeco_amount, aep_amount, aps_amount, atsi_amount, bge_amount, comed_amount, day_amount, deok_amount, dom_amount, dpl_amount, duq_amount, jcpl_amount, meted_amount, peco_amount, penelec_amount, pepco_amount, ppl_amount, pseg_amount, reco_amount, west_amount, ad_amount, ni_amount, east_amount
+    from current
+),
+single as (
+    select curvestart from current limit 1
+)
+-- update the existing "current" with the new "csv"
+update trueprice.{m.controlArea}_forwardcurve set
+curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
+aeco_amount = newdata.aeco_amount,
+aep_amount = newdata.aep_amount,
+aps_amount = newdata.aps_amount,
+atsi_amount = newdata.atsi_amount,
+bge_amount = newdata.bge_amount,
+comed_amount = newdata.comed_amount,
+day_amount = newdata.day_amount,
+deok_amount = newdata.deok_amount,
+dom_amount = newdata.dom_amount,
+dpl_amount = newdata.dpl_amount,
+duq_amount = newdata.duq_amount,
+jcpl_amount = newdata.jcpl_amount,
+meted_amount = newdata.meted_amount,
+peco_amount = newdata.peco_amount,
+penelec_amount = newdata.penelec_amount,
+pepco_amount = newdata.pepco_amount,
+ppl_amount = newdata.ppl_amount,
+pseg_amount = newdata.pseg_amount,
+reco_amount = newdata.reco_amount,
+west_amount = newdata.west_amount,
+ad_amount = newdata.ad_amount,
+ni_amount = newdata.ni_amount,
+east_amount = newdata.east_amount
+from 
+    trueprice.{tmp_table_name} as newdata -- our csv data
+where 
+    trueprice.{m.controlArea}_forwardcurve.strip = newdata.strip 
+    and trueprice.{m.controlArea}_forwardcurve.month = newdata.month 
+    and trueprice.{m.controlArea}_forwardcurve.curvestart=(select curvestart from single)
+'''
