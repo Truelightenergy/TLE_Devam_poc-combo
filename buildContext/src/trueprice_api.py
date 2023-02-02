@@ -1,4 +1,4 @@
-import ingestor
+import ingestors.ingestor as ingestor
 
 import trueprice_database as tpdb
 
@@ -58,4 +58,4 @@ def hello_world():
 
 if __name__ == "__main__":
     print("Starting")
-    app.run()
+    app.run(port=5555)
