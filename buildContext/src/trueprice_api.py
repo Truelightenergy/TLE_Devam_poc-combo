@@ -3,8 +3,9 @@ import ingestors.ingestor as ingestor
 import trueprice_database as tpdb
 
 import os
-from flask import Flask, flash, request, redirect, url_for
+from flask import Flask, flash, request, redirect, url_for, flash, render_template
 from werkzeug.utils import secure_filename
+import zipfile
 
 app = Flask(__name__)
 
@@ -56,6 +57,38 @@ def hello_world():
     #print(df)
     return f"<p>The new TRUEPrice API</p>{df}"
 
+
+UPLOAD_FOLDER = os.path.dirname(os.path.realpath(__file__))
+ALLOWED_EXTENSIONS = set(['zip'])
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/zip', methods=['GET','POST'])
+def upload_zip():    
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            zip_ref = zipfile.ZipFile(os.path.join(UPLOAD_FOLDER, filename), 'r')
+            zip_ref.extractall(UPLOAD_FOLDER + "/unzipped/")
+            zip_ref.close()
+            return redirect(url_for('upload_zip'))
+    return render_template('index.html')
+
 if __name__ == "__main__":
     print("Starting")
+    app.secret_key = 'super secret key'
+    app.config['SESSION_TYPE'] = 'filesystem'
     app.run(port=5555)
