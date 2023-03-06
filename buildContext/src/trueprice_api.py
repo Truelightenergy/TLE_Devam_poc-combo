@@ -3,6 +3,7 @@ import ingestors.ingestor as ingestor
 import trueprice_database as tpdb
 
 import os
+import sys
 from flask import Flask, flash, request, redirect, url_for, flash, render_template
 from werkzeug.utils import secure_filename
 import zipfile
@@ -22,7 +23,9 @@ def allowed_file(filename):
 # figure out how to get with curl as well
 @app.route('/upload', methods=['GET','POST'])
 def upload():
+    print(f"/upload called", file=sys.stderr)
     if request.method == 'POST':
+        print(f"POST: {request}", file=sys.stderr)
         # check if the post request has the file part
         if 'file' not in request.files:
             flash('No file part')
@@ -34,6 +37,7 @@ def upload():
             flash('No selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
+            print(f"Uploading", file=sys.stderr)
             filename = secure_filename(file.filename)
             location = os.path.join(app.config['UPLOAD_FOLDER'], filename) 
             file.save(location)
@@ -55,11 +59,10 @@ def hello_world():
     df = None
     #df = tpdb.get_all_data()
     #print(df)
-    return f"<p>The new TRUEPrice API</p>{df}"
-
+    return f"<p>The new TRUEPrice API, see /upload or /zip</p>{df}"
 
 UPLOAD_FOLDER = os.path.dirname(os.path.realpath(__file__))
-ALLOWED_EXTENSIONS = set(['zip'])
+ALLOWED_EXTENSIONS = set(['zip','csv'])
 
 def allowed_file(filename):
     return '.' in filename and \

@@ -14,18 +14,18 @@ services:
       - PGPASSWORD=postgres
       - DATABASE=host.docker.internal
     image: "postgres:15"
-    command:
+    entrypoint:
       - /bin/bash
       - -c 
       - | 
         set -e
-        sleep 5 # postgres is not up at 0
+        sleep 10 # wait for postgres to be ready
         psql -v ON_ERROR_STOP=1 --username $${PGUSER} --dbname postgres --host $${DATABASE} --port 5432 <<-EOSQL
             CREATE USER docker;
             CREATE DATABASE trueprice;
             GRANT ALL PRIVILEGES ON DATABASE trueprice TO docker;
             -- GRANT ALL ON SCHEMA public TO demo;
-            alter user docker with encrypted password 'docker';
+            ALTER USER docker WITH encrypted password 'docker';
         EOSQL
   postgres-setup-2:
     depends_on:
@@ -35,12 +35,12 @@ services:
       - PGPASSWORD=docker
       - DATABASE=host.docker.internal
     image: "postgres:15"
-    command:
+    entrypoint:
     - bin/bash
     - -c
     - |
       set -e
-      sleep 5
+      sleep 10
       psql -v ON_ERROR_STOP=1 --username $${PGUSER} --dbname trueprice --host host.docker.internal --port 5432 <<-EOSQL
         \c trueprice;
         CREATE SCHEMA trueprice;

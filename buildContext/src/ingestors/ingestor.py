@@ -2,6 +2,7 @@ import pandas as pd
 import re
 import sqlalchemy as sa
 import os
+import sys
 import datetime
 import ingestors.ancillarydata
 import ingestors.ancillarydatadetail
@@ -144,7 +145,6 @@ def process(files, steps):
     return None
 
 def call_ingestor(file):
-    import sys
     print(f"Processing {file}", file=sys.stderr) # flask capture stdout so need to use stderr for now, fix later
     files = [file]
     result = None
