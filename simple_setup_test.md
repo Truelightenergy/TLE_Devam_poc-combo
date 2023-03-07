@@ -2,18 +2,18 @@
 * install Docker
 * install Docker Compose
 * install Git
-* setup GigHub access
+* setup GitHub access
 * `git clone git@github.com:Truelightenergy/poc-combo.git poc-combo`
 * `cd poc-combo`
 
 # running services
-* -- dont run `docker compose -f ./docker/docker-compose.yml run -d postgres`
-* -- dont run `docker compose -f ./docker/docker-compose.yml up postgres-setup-1`
+* -- (ignore for now) `docker compose -f ./docker/docker-compose.yml run -d postgres`
+* -- (ignore for now) `docker compose -f ./docker/docker-compose.yml up postgres-setup-1`
 * `docker compose -f ./docker/docker-compose.yml up postgres-setup-2`
 * `docker image build -t tleapi:v0.0.1 -f ./buildContext/src/Dockerfile-trueprice-api ./buildContext/`
 * `docker container run -e DATABASE=host.docker.internal -e PGPASSWORD=docker -e PGUSER=docker --name tleapi -d -p 0.0.0.0:5001:5000 tleapi:v0.0.1`
  * create docker compose build step versus last two lines, if possible
- * `docker logs -f tleapi`
+ * `docker container logs -f tleapi`
 * `psql -h localhost -U postgres -c 'select * from trueprice.nyiso_forwardcurve;' trueprice` # empty results
 
 # testing service

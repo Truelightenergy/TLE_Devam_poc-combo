@@ -18,6 +18,7 @@ class ExistingDataError(Exception):
 class SQLError(Exception):
     pass
 
+# todo - s3
 def storage(m):
     pass
 
@@ -25,23 +26,25 @@ def validate(f):
     # WARNING 24 hour clock needs to be used when supplying timestamp
     # validate file name (or its one we can normalize)
     # e.g. ForwardCurve_NYISO_2X16_20221209_010101.csv
-    # curveType_iso_strip_curveDate.csv
     # curveType_iso_strip_curveDate_curveTime.csv
-    # curveType_iso_strip_curveDate_cob.csv
-    file_name_components_pattern = re.compile(".*/(.+?)_(.+?)_(.+?)_(.+?)_(.+)?.csv$") # len(4) , check windows users :(
+    # curveType_iso_strip_curveDate_curveTime_cob.csv (cob == close of business)
+    file_name_components_pattern = re.compile(".*/(.+?)_(.+?)_(.+?)_(.+?)_(.+)?.csv$") # len(5-6)
     
     print(f"Checking file name {f}")
     matched = file_name_components = file_name_components_pattern.search(f)
     if matched == None:
         return ParseError(f"failed to parse {f} - regex")
     
-    results = matched.groups() # 5 might be None if original name
-    if len(results) != 5:
+    results = matched.groups()
+    if len(results) != 5: # todo - confirm works with and without "_cob" extension in name
         return ParseError(f"failed to parse {f} - component count")
 
+    # controlArea == iso
+    # issue == curveTime
     (curveType, controlArea, strip, curveDate, issue) = results    
     curveType = os.path.basename(curveType).replace("Curve","")
 
+    # todo - should error if timestamp/date is missing or invalid instead of trying to fix here, so remove this block
     # add default value here for time, maybe not worth it, need to see how it flows
     timeComponent = None
     if issue is None:    
@@ -126,7 +129,7 @@ def process(files, steps):
         else:
             valid.append(meta)
 
-    # storage
+    # todo - storage to s3
     # add sha later
     for m in valid:
         result = steps["s"](m) # store before we place in db

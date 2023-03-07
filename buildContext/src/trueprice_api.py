@@ -87,6 +87,7 @@ def upload_zip():
             zip_ref = zipfile.ZipFile(os.path.join(UPLOAD_FOLDER, filename), 'r')
             zip_ref.extractall(UPLOAD_FOLDER + "/unzipped/")
             zip_ref.close()
+            # todo - ingestion 
             return redirect(url_for('upload_zip'))
     return render_template('index.html')
 
