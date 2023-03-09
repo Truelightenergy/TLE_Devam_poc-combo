@@ -12,7 +12,7 @@ services:
     environment:
       - PGUSER=postgres
       - PGPASSWORD=postgres
-      - DATABASE=host.docker.internal
+      - DATABASE=postgres
     image: "postgres:15"
     entrypoint:
       - /bin/bash
@@ -33,7 +33,7 @@ services:
     environment:
       - PGUSER=docker
       - PGPASSWORD=docker
-      - DATABASE=host.docker.internal
+      - DATABASE=postgres
     image: "postgres:15"
     entrypoint:
     - bin/bash
@@ -41,7 +41,7 @@ services:
     - |
       set -e
       sleep 10
-      psql -v ON_ERROR_STOP=1 --username $${PGUSER} --dbname trueprice --host host.docker.internal --port 5432 <<-EOSQL
+      psql -v ON_ERROR_STOP=1 --username $${PGUSER} --dbname trueprice --host $${DATABASE} --port 5432 <<-EOSQL
         \c trueprice;
         CREATE SCHEMA trueprice;
         -- NYISO
