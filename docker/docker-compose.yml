@@ -289,7 +289,7 @@ services:
     environment:
       - PGUSER=docker
       - PGPASSWORD=docker
-      - DATABASE=host.docker.internal
+      - DATABASE=$${DATABASE}
     depends_on:
       - postgres-setup-2
     build:
@@ -299,7 +299,7 @@ services:
     environment:
       - PGUSER=docker
       - PGPASSWORD=docker
-      - DATABASE=host.docker.internal
+      - DATABASE=$${DATABASE}
     depends_on:
       - postgres-setup-2
     build:
@@ -317,5 +317,5 @@ services:
 # insert into data (amount, hour) values (1.0, TO_TIMESTAMP('6/1/2022', 'MM/DD/YYYY'));
 # select * from data;
 # --- grafana
-# for grafana, use host.docker.internal:5432
+# for grafana, use $${DATABASE}:5432
 # docker container run -p 3000:3000 grafana/grafana-oss     
