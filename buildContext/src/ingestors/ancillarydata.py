@@ -69,12 +69,12 @@ select exists(select 1 from trueprice.{m.controlArea}_ancillarydata where curves
                 backup_query = f'''
 with current as (
     -- get the current rows in the database, all of them, not just things that will change
-    select id, strip, curvestart, load_zone, rtlo_mwh, dalo_mwh, deviations_mwh, ncp_mw from trueprice.{m.controlArea}_ancillarydata where curvestart>='{sod}' and curvestart<='{eod}' and strip='{m.strip}'
+    select id, strip, curvestart, month, load_zone, rtlo_mwh, dalo_mwh, deviations_mwh, ncp_mw from trueprice.{m.controlArea}_ancillarydata where curvestart>='{sod}' and curvestart<='{eod}' and strip='{m.strip}'
 ),
 backup as (
     -- take current rows and insert into database but with a new "curveend" timestamp
-    insert into trueprice.{m.controlArea}_ancillarydata_history (id, strip, curvestart, curveend, load_zone, rtlo_mwh, dalo_mwh, deviations_mwh, ncp_mw)
-    select id, strip, curvestart, '{curveend}' as curveend, load_zone, rtlo_mwh, dalo_mwh, deviations_mwh, ncp_mw
+    insert into trueprice.{m.controlArea}_ancillarydata_history (id, strip, curvestart, curveend, month, load_zone, rtlo_mwh, dalo_mwh, deviations_mwh, ncp_mw)
+    select id, strip, curvestart, '{curveend}' as curveend, month, load_zone, rtlo_mwh, dalo_mwh, deviations_mwh, ncp_mw
     from current
 ),
 single as (
@@ -83,6 +83,7 @@ single as (
 -- update the existing "current" with the new "csv"
 update trueprice.{m.controlArea}_ancillarydata set
 curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
+month = newdata.month,
 load_zone = newdata.load_zone, -- mindless update all cols, we don't know which ones updated so try them all
 rtlo_mwh = newdata.rtlo_mwh,
 dalo_mwh = newdata.dalo_mwh,
