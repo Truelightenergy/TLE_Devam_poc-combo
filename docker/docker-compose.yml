@@ -276,37 +276,37 @@ services:
           billing_determinant varchar(20) -- may be to big
         );        
       EOSQL
-  adminer: # for postgres, php admin interface
-    image: adminer
-    restart: always
-    ports:
-      - "0.0.0.0:8080:8080"
-  grafana:
-    image: "grafana/grafana-oss"
-    ports:
-      - "0.0.0.0:3000:3000"
-  ingestor:
-    environment:
-      - PGUSER=docker
-      - PGPASSWORD=docker
-      - DATABASE=host.docker.internal
-    depends_on:
-      - postgres-setup-2
-    build:
-      context: ../buildContext # relative to vscode project
-      dockerfile: ./src/Dockerfile-ingestor # relative to context directory
-  trueprice-api:
-    environment:
-      - PGUSER=docker
-      - PGPASSWORD=docker
-      - DATABASE=host.docker.internal
-    depends_on:
-      - postgres-setup-2
-    build:
-      context: ../buildContext
-      dockerfile: ./src/Dockerfile-trueprice-api
-    ports:
-      - "0.0.0.0:5050:5000"
+  # adminer: # for postgres, php admin interface
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - "0.0.0.0:8080:8080"
+  # grafana:
+  #   image: "grafana/grafana-oss"
+  #   ports:
+  #     - "0.0.0.0:3000:3000"
+  # ingestor:
+  #   environment:
+  #     - PGUSER=docker
+  #     - PGPASSWORD=docker
+  #     - DATABASE=$${DATABASE}
+  #   depends_on:
+  #     - postgres-setup-2
+  #   build:
+  #     context: ../buildContext # relative to vscode project
+  #     dockerfile: ./src/Dockerfile-ingestor # relative to context directory
+  # trueprice-api:
+  #   environment:
+  #     - PGUSER=docker
+  #     - PGPASSWORD=docker
+  #     - DATABASE=$${DATABASE}
+  #   depends_on:
+  #     - postgres-setup-2
+  #   build:
+  #     context: ../buildContext
+  #     dockerfile: ./src/Dockerfile-trueprice-api
+  #   ports:
+  #     - "0.0.0.0:5050:5000"
 
 
 # --- postgres
@@ -317,5 +317,5 @@ services:
 # insert into data (amount, hour) values (1.0, TO_TIMESTAMP('6/1/2022', 'MM/DD/YYYY'));
 # select * from data;
 # --- grafana
-# for grafana, use host.docker.internal:5432
+# for grafana, use $${DATABASE}:5432
 # docker container run -p 3000:3000 grafana/grafana-oss     
