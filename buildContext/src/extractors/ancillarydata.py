@@ -35,7 +35,7 @@ class AncillaryData:
 
             if control_area == "isone":
                 data_frame = None
-            psql_query = f"select * from trueprice.{control_area}_ancillarydata_history where strip = '{strip}' and curvestart::date >= '{start_date}' and curveend::date <= '{end_date}';"
+            psql_query = f"select * from trueprice.{control_area}_ancillarydata where strip = '{strip}' and month::date >= '{start_date}' and month::date <= '{end_date}';"
             data_frame = pd.read_sql_query(sql=psql_query, con=self.engine.connect())
             return data_frame, "success"  
         
