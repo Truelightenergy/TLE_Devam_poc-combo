@@ -1,13 +1,10 @@
-import pandas as pd
 import re
-import sqlalchemy as sa
 import os
-import sys
 import datetime
-import ingestors.ancillarydata
-import ingestors.ancillarydatadetail
-import ingestors.energy
-import ingestors.rec
+from ingestors.ancillarydata import AncillaryData
+from ingestors.ancillarydatadetail import AncillaryDataDetails
+from ingestors.energy import ForwardCurve
+from ingestors.rec import RecData 
 
 class ParseError(Exception):
     pass
@@ -18,93 +15,122 @@ class ExistingDataError(Exception):
 class SQLError(Exception):
     pass
 
-# todo - s3
-def storage(m):
-    pass
 
-def validate(f):
-    # WARNING 24 hour clock needs to be used when supplying timestamp
-    # validate file name (or its one we can normalize)
-    # e.g. ForwardCurve_NYISO_2X16_20221209_010101.csv
-    # curveType_iso_strip_curveDate_curveTime.csv
-    # curveType_iso_strip_curveDate_curveTime_cob.csv (cob == close of business)
-    file_name_components_pattern = re.compile(".*/(.+?)_(.+?)_(.+?)_(.+?)_(.+)?.csv$") # len(5-6)
-    
-    print(f"Checking file name {f}")
-    matched = file_name_components = file_name_components_pattern.search(f)
-    if matched == None:
-        return ParseError(f"failed to parse {f} - regex")
-    
-    results = matched.groups()
-    if len(results) != 5: # todo - confirm works with and without "_cob" extension in name
-        return ParseError(f"failed to parse {f} - component count")
+class Ingestion:
+    def __init__(self):
+        self.anci_data = AncillaryData()
+        self.anci_data_detail = AncillaryDataDetails()
+        self.forward_curve = ForwardCurve()
+        self.rec_data = RecData()
 
-    # controlArea == iso
-    # issue == curveTime
-    (curveType, controlArea, strip, curveDate, issue) = results    
-    curveType = os.path.basename(curveType).replace("Curve","")
+    def validate(self, file_name):
+        """
+        validates the incoming data file name
+        """
+        file_name_components_pattern = re.compile(".*/(.+?)_(.+?)_(.+?)_(.+?)_(.+)?.csv$") # len(5-6)
+        
+        matched = file_name_components_pattern.search(file_name)
+        if matched == None:
+            return ParseError(f"failed to parse {file_name} - regex")
+        
+        results = matched.groups()
+        if len(results) != 5: # todo - confirm works with and without "_cob" extension in name
+            return ParseError(f"failed to parse {file_name} - component count")
 
-    # todo - should error if timestamp/date is missing or invalid instead of trying to fix here, so remove this block
-    # add default value here for time, maybe not worth it, need to see how it flows
-    timeComponent = None
-    if issue is None:    
-        timeComponent = "000000"
-    else:
-        timeStamp = issue[1:] # drop leading underscore; else fix regex above
-        if timeStamp == "cob":
-            timeComponent = "235959" # 24h clock, convert to last possible second so we can sort properly
-        elif int(timeStamp):
-            timeComponent = timeStamp
+        # controlArea == iso
+        # issue == curveTime
+        (curveType, controlArea, strip, curveDate, issue) = results    
+        curveType = os.path.basename(curveType).replace("Curve","")
+
+        # todo - should error if timestamp/date is missing or invalid instead of trying to fix here, so remove this block
+        # add default value here for time, maybe not worth it, need to see how it flows
+        timeComponent = None
+        if issue is None:    
+            timeComponent = "000000"
         else:
-            return ParseError(f"failed to parse {f} - time component")
+            timeStamp = issue[1:] # drop leading underscore; else fix regex above
+            if timeStamp == "cob":
+                timeComponent = "235959" # 24h clock, convert to last possible second so we can sort properly
+            elif int(timeStamp):
+                timeComponent = timeStamp
+            else:
+                return ParseError(f"failed to parse {file_name} - time component")
 
-    timestamp = datetime.datetime.strptime(curveDate+timeComponent, "%Y%m%d%H%M%S")
-    return TLE_Meta(f, curveType, controlArea, strip, timestamp)
-
-# def scd_2_panda():
-#     database = os.environ["DATABASE"]
-#     pgpassword = os.environ["PGPASSWORD"]
-#     pguser = os.environ["PGUSER"]
-#     engine = sa.create_engine(f"postgresql://{pguser}:{pgpassword}@{database}:5432/trueprice",
-#     #connect_args={'options': '-csearch_path=trueprice'}
-#     )
-
-#     # new_data = receive new data
-#     # if new_data not in current_db -> insert new to current_db (if fails???) // save data to local disk before next step?
-#     # else new_data in current_db -> copy existing_data to history_db then update existing_data with new_data (if fails???) // save data to local disk before next step?
-
-#     r1 = pd.read_sql(sa.text("SELECT * FROM test_data"), engine) # current
-#     r2 = pd.read_sql(sa.text("SELECT * FROM test_data_history"), engine) # history
+        timestamp = datetime.datetime.strptime(curveDate+timeComponent, "%Y%m%d%H%M%S")
+        return TLE_Meta(file_name, curveType, controlArea, strip, timestamp)
     
-#     r3 = r2.join(r1, on="id", )
-#     print(r3)
 
-# # for potential refactor
-# ca = {
-#     "nyiso": {
-#         "table": "trueprice.nyiso_forwardcurve",
-#         "zones": []
-#     },
-#     "miso": {
-#         "table": "trueprice.miso_forwardcurve",
-#         "zones": []
-#     },
-#     "pjm": {
-#         "table": "trueprice.pjm_forwardcurve",
-#         "zones": []
-#     },
-#     "isone": {
-#         "table": "trueprice.isone_forwardcurve",
-#         "zones": []
-#     },
-#     "ercot": {
-#         "table": "trueprice.ercot_forwardcurve",
-#         "zones": ["north_amount","houston_amount","south_amount","west_amount"],
-#     }
-# }
+    def process(self, files, steps):
+        """
+        Performs the validation 
+        """
+        meta = None
 
-def validate_api(m):
-    None
+        # validate
+        valid = []
+        for f in files:
+            meta = steps["validate_data"](f)
+            if meta is None or isinstance(meta, ParseError):
+                return meta # all files must pass, in case systematic errors
+            else:
+                valid.append(meta)
+
+        # todo - storage to s3
+        # add sha later
+        for m in valid:
+            result = steps["storage"](m) # store before we place in db
+            if result is not None :
+                return result
+
+        # insert db / api check each as we go (need to find way to redo/short-circuit/single file, etc.)
+        for m in valid:
+            result = steps["ingestion"](m) # insert/update db
+            if result is not None:
+                return result
+            result = steps["validate_api"](m) # validate data made it to db via api
+            if result is not None:
+                return result
+
+        return None
+    
+    # todo - s3
+    def storage(self, file_name):
+        """
+        store the data to s3 bucket
+        """
+        pass
+
+    def validate_api(self, file_name):
+        """
+        validate api request
+        """
+        pass
+
+
+    def call_ingestor(self,file):
+        """
+        performing several operations based on the file type
+        """
+
+        files = [file]
+        result = None
+        if re.search("forward", file, re.IGNORECASE):
+            result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.forward_curve.ingestion, "validate_api": self.validate_api})
+        elif re.search("ancillarydatadetails", file, re.IGNORECASE):
+            result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.anci_data_detail.ingestion, "validate_api": self.validate_api})
+        elif re.search("ancillarydata", file, re.IGNORECASE):
+            result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.anci_data.ingestion, "validate_api": self.validate_api})
+        else:
+            print("Shouldn't be here")
+            return
+
+        if result is not None:
+            print(f"Ingestion Failed: {result}")
+        else:
+            print("Ingestion Succeeded")
+
+        print("Finished Ingestion")
+
 
 class TLE_Meta:
     def __init__(self, fileName, curveType, controlArea, strip, curveTimestamp):
@@ -116,88 +142,3 @@ class TLE_Meta:
     
     def snake_timestamp(self):
         return self.curveStart.strftime("%Y_%m_%d_%H_%M_%S")
-    
-def process(files, steps):
-    meta = None
-
-    # validate
-    valid = []
-    for f in files:
-        meta = steps["v"](f)
-        if meta is None or isinstance(meta, ParseError):
-            return meta # all files must pass, in case systematic errors
-        else:
-            valid.append(meta)
-
-    # todo - storage to s3
-    # add sha later
-    for m in valid:
-        result = steps["s"](m) # store before we place in db
-        if result is not None :
-            return result
-
-    # insert db / api check each as we go (need to find way to redo/short-circuit/single file, etc.)
-    for m in valid:
-        result = steps["i"](m) # insert/update db
-        if result is not None:
-            return result
-        result = steps["va"](m) # validate data made it to db via api
-        if result is not None:
-            return result
-
-    return None
-
-def call_ingestor(file):
-    print(f"Processing {file}", file=sys.stderr) # flask capture stdout so need to use stderr for now, fix later
-    files = [file]
-    result = None
-    if re.search("forward", file, re.IGNORECASE):
-        result = process(files, {"v":validate, "s":storage, "i":ingestors.energy.ingestion, "va": validate_api})
-    elif re.search("ancillarydatadetails", file, re.IGNORECASE):
-        result = process(files, {"v":validate, "s":storage, "i":ingestors.ancillarydatadetail.ingestion, "va": validate_api})
-    elif re.search("ancillarydata", file, re.IGNORECASE):
-        result = process(files, {"v":validate, "s":storage, "i":ingestors.ancillarydata.ingestion, "va": validate_api})
-    else:
-        print("Shouldn't be here")
-        return
-
-    if result is not None:
-        print(f"Ingestion Failed: {result}")
-    else:
-        print("Ingestion Succeeded")
-
-    print("Finished Ingestion")
-
-
-if __name__ == "__main__":
-    print("Starting")
-
-    files = [
-#        "./buildContext/data/ForwardCurve_NYISO_2X16_20221209.csv", # strip 1 assuming no HHMMSS is 000000 (midnight)
-#        "./buildContext/data/ForwardCurve_NYISO_5X16_20221209.csv", # strip 2
-        #"./buildContext/data/ForwardCurve_NYISO_7X8_20221209.csv", # new 
-        #"./buildContext/data/ForwardCurve_NYISO_7X8_20221209_121212.csv", # strip 3 interday HHMMSS
-        #"./buildContext/data/ForwardCurve_NYISO_7X8_20221209_cob.csv", # strip 3 cob
-        #"./buildContext/data/ForwardCurve_NYISO_7X8_20221209_121211.csv", # sneak old past cob
-        #"./buildContext/data/ForwardCurve_NYISO_7X8_20221209_121212.csv", # strip 3 interday (should not do it)
-        #"./buildContext/data/ForwardCurve_NYISO_5X16_20221209.csv", # trying new strip same date
-        # "./buildContext/data/ForwardCurve_NYISO_5X16_20230109_084700.csv", # new days data
-        #"./buildContext/data/ForwardCurve_MISO_5X16_20230109_084700.csv", # refactoring for MISO from NYISO only
-        #"./buildContext/data/ForwardCurve_ISONE_5X16_20230109_084700.csv",
-        #"./buildContext/data/ForwardCurve_ERCOT_5X16_20230109_084700.csv",
-        # "./buildContext/data/ForwardCurve_PJM_5x16_20230109_084700.csv",
-    ]
-
-    # v == validate files names/shape
-    # s == store in AWS s3
-    # i == ingest into postgres
-    # va == validate the data can be retrieved via API
-    result = process(files, {"v":validate, "s":storage, "i":ingestors.energy.ingestion, "va": validate_api})
-    if result is not None:
-        print(f"Ingestion Failed: {result}")
-    else:
-        print("Ingestion Succeeded")
-
-    print("Finished Ingestion")
-else:
-    print("Running ingestor via API {}", __name__)
