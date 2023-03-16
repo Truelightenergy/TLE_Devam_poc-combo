@@ -12,6 +12,7 @@
 * `docker compose -f ./docker/docker-compose.yml up postgres-setup-2`
 * `docker image build -t tleapi:v0.0.1 -f ./buildContext/src/Dockerfile-trueprice-api ./buildContext/`
 * `docker container run -e DATABASE=host.docker.internal -e PGPASSWORD=docker -e PGUSER=docker --name tleapi -d -p 0.0.0.0:5001:5000 tleapi:v0.0.1`
+* -- (for linux os) `sudo docker container run -e DATABASE=postgres -e PGPASSWORD=postgres -e PGUSER=postgres --name tleapi -d -p 0.0.0.0:5001:5000 tleapi:v0.0.1`
  * create docker compose build step versus last two lines, if possible
  * `docker container logs -f tleapi`
 * `psql -h localhost -U postgres -c 'select * from trueprice.nyiso_forwardcurve;' trueprice` # empty results
