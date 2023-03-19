@@ -7,6 +7,7 @@ from .database_conection import ConnectDatabase
 from .ancillarydata import AncillaryData
 from .ancillarydatadetails import AncillaryDataDetails
 from .energy import ForwardCurve
+from .rec import RecData
 
 class Extractor:
     """
@@ -23,6 +24,7 @@ class Extractor:
         self.ancillary_data = AncillaryData()
         self.anciallary_data_details = AncillaryDataDetails()
         self.forward_curve = ForwardCurve()
+        self.rec_data = RecData()
 
     def get_custom_data(self, query_strings):
         """
@@ -36,6 +38,8 @@ class Extractor:
             dataframe, status = self.anciallary_data_details.extraction(query_strings)
         elif query_strings["curve_type"] == "forwardcurve":
             dataframe, status = self.forward_curve.extraction(query_strings)
+        elif query_strings["curve_type"] == "rec":
+            dataframe, status = self.rec_data.extraction(query_strings)
             
         return dataframe, status
 

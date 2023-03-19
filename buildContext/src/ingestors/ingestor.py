@@ -120,6 +120,8 @@ class Ingestion:
             result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.anci_data_detail.ingestion, "validate_api": self.validate_api})
         elif re.search("ancillarydata", file, re.IGNORECASE):
             result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.anci_data.ingestion, "validate_api": self.validate_api})
+        elif re.search("rec", file, re.IGNORECASE):
+            result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.rec_data.ingestion, "validate_api": self.validate_api})
         else:
             print("Shouldn't be here")
             return
