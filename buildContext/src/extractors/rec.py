@@ -7,7 +7,7 @@ from datetime import datetime
 from .database_conection import ConnectDatabase
 
 
-class RecData:
+class Rec:
     """
     constructor which will makes the connection to the database
     """
@@ -35,9 +35,11 @@ class RecData:
 
             if control_area == "pjm":
                 data_frame = None
-            psql_query = f"select * from trueprice.{control_area}_recdata where strip = '{strip}' and month::date >= '{start_date}' and month::date <= '{end_date}';"
-            data_frame = pd.read_sql_query(sql=psql_query, con=self.engine.connect())
-            return data_frame, "success"  
+                psql_query = f"select * from trueprice.{control_area}_rec where strip = '{strip}' and month::date >= '{start_date}' and month::date <= '{end_date}';"
+                data_frame = pd.read_sql_query(sql=psql_query, con=self.engine.connect())
+                return data_frame, "success"  
+            else:
+                return None, "Unable to Fetch Results"
   
         except:
             return None, "Unable to Fetch Results"

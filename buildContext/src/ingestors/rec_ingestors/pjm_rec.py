@@ -6,7 +6,7 @@ import pandas as pd
 import datetime
 from ..database_conection import ConnectDatabase
 
-class Pjm_RecData:
+class Pjm_Rec:
     """
     constructor which will makes the connection to the database
     """
@@ -111,7 +111,7 @@ class Pjm_RecData:
     
     def ingestion(self, data):
         """
-        Handling Ingestion for recdata
+        Handling Ingestion for rec
         """
 
         df = pd.read_csv(data.fileName)
@@ -133,11 +133,11 @@ class Pjm_RecData:
         check_query = f"""
             -- if nothing found, new data, insert it, or do one of these
             
-            select exists(select 1 from trueprice.{data.controlArea}_recdata where curvestart='{now}'and strip='{data.strip}') -- ignore, db == file based on timestamp
+            select exists(select 1 from trueprice.{data.controlArea}_rec where curvestart='{now}'and strip='{data.strip}') -- ignore, db == file based on timestamp
             UNION ALL
-            select exists(select 1 from trueprice.{data.controlArea}_recdata where curvestart>='{sod}' and curvestart<'{now}' and strip='{data.strip}') -- update, db is older
+            select exists(select 1 from trueprice.{data.controlArea}_rec where curvestart>='{sod}' and curvestart<'{now}' and strip='{data.strip}') -- update, db is older
             UNION ALL
-            select exists(select 1 from trueprice.{data.controlArea}_recdata where curvestart>'{now}' and curvestart<'{eod}' and strip='{data.strip}') -- ignore, db is newer
+            select exists(select 1 from trueprice.{data.controlArea}_rec where curvestart>'{now}' and curvestart<'{eod}' and strip='{data.strip}') -- ignore, db is newer
         """
         query_result = pd.read_sql(check_query, self.engine)
         same, old_exists, new_exists = query_result.exists[0], query_result.exists[1], query_result.exists[2]
@@ -146,12 +146,12 @@ class Pjm_RecData:
             return "Data already exists based on timestamp and strip"
         
         elif not same and not new_exists and not old_exists: # if data is new then insert it
-            r = df.to_sql(f"{data.controlArea}_recdata", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
+            r = df.to_sql(f"{data.controlArea}_rec", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
             if r is None:
                 return "Failed to insert"         
 
         elif old_exists: # if there exists old data, handle it with slowly changing dimensions
-            tmp_table_name = f"{data.controlArea}_recdata{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
+            tmp_table_name = f"{data.controlArea}_rec{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
             r = df.to_sql(f'{tmp_table_name}', con = self.engine, if_exists = 'replace', chunksize=1000, schema="trueprice", index=False)
             if r is None:
                 return "Unable to create data"
@@ -171,12 +171,12 @@ class Pjm_RecData:
                         DC_Tier_I_percent, DC_Tier_I_amount, DC_Tier_II_percent, DC_Tier_II_amount, DE_Total_Cost_per_MWh_amount,
                         DE_Solar_percent, DE_Solar_amount, DE_RECs_percent, DE_REC_amount, IL_Total_Cost_per_MWh_amount,
                         IL_PER_o_load_covered_by_Supplier_vs_Utility_percent, IL_Total_Standard_percent, IL_Solar_percent,
-                        IL_Solar_amount, IL_Wind_percent, IL_Wind_amount, IL_ACP_percent, IL_ACP_amount from trueprice.{data.controlArea}_recdata where curvestart>='{sod}' and curvestart<='{eod}' and strip='{data.strip}'
+                        IL_Solar_amount, IL_Wind_percent, IL_Wind_amount, IL_ACP_percent, IL_ACP_amount from trueprice.{data.controlArea}_rec where curvestart>='{sod}' and curvestart<='{eod}' and strip='{data.strip}'
                     ),
                     backup as (
                         -- take current rows and insert into database but with a new "curveend" timestamp
 
-                        insert into trueprice.{data.controlArea}_recdata_history (id, strip, curvestart, curveend, Month, NJ_Total_Cost_per_MWh_amount, NJ_Solar_percent, NJ_Solar_amount, NJ_Class_I_percent, NJ_Class_I_amount, 
+                        insert into trueprice.{data.controlArea}_rec_history (id, strip, curvestart, curveend, Month, NJ_Total_Cost_per_MWh_amount, NJ_Solar_percent, NJ_Solar_amount, NJ_Class_I_percent, NJ_Class_I_amount, 
                         NJ_Class_II_percent, NJ_Class_II_amount, OH_Total_Cost_per_MWh_amount, OH_Solar_percent, OH_Solar_In_State_amount,
                         OH_Solar_Adj_amount, OH_RECs_percent, OH_In_State_amount, OH_Adj_amount, PA_Total_Cost_per_MWh_amount,
                         PA_Solar_percent, PA_Solar_amount, PA_Tier_I_percent, PA_Tier_I_amount, PA_Tier_II_percent, PA_Tier_II_amount,
@@ -204,7 +204,7 @@ class Pjm_RecData:
                     )
                     -- update the existing "current" with the new "csv"
 
-                    update trueprice.{data.controlArea}_recdata set
+                    update trueprice.{data.controlArea}_rec set
                     curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
                     Month = newdata.Month,
                     NJ_Total_Cost_per_MWh_amount = newdata.NJ_Total_Cost_per_MWh_amount,
@@ -260,9 +260,9 @@ class Pjm_RecData:
                     from 
                         trueprice.{tmp_table_name} as newdata -- our csv data
                     where 
-                        trueprice.{data.controlArea}_recdata.strip = newdata.strip 
-                        and trueprice.{data.controlArea}_recdata.month = newdata.month 
-                        and trueprice.{data.controlArea}_recdata.curvestart=(select curvestart from single)
+                        trueprice.{data.controlArea}_rec.strip = newdata.strip 
+                        and trueprice.{data.controlArea}_rec.month = newdata.month 
+                        and trueprice.{data.controlArea}_rec.curvestart=(select curvestart from single)
                 '''        
             
 

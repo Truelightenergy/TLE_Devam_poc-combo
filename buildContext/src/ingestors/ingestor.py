@@ -1,10 +1,9 @@
 import re
 import os
 import datetime
-from ingestors.ancillarydata import AncillaryData
-from ingestors.ancillarydatadetail import AncillaryDataDetails
-from ingestors.energy import ForwardCurve
-from ingestors.rec import RecData 
+from ingestors.nonenrgy import NonEnergy
+from ingestors.energy import Energy
+from ingestors.rec import Rec
 
 class ParseError(Exception):
     pass
@@ -18,10 +17,10 @@ class SQLError(Exception):
 
 class Ingestion:
     def __init__(self):
-        self.anci_data = AncillaryData()
-        self.anci_data_detail = AncillaryDataDetails()
-        self.forward_curve = ForwardCurve()
-        self.rec_data = RecData()
+
+        self.non_energy = NonEnergy()
+        self.energy = Energy()
+        self.rec = Rec()
 
     def validate(self, file_name):
         """
@@ -115,13 +114,11 @@ class Ingestion:
         files = [file]
         result = None
         if re.search("forward", file, re.IGNORECASE):
-            result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.forward_curve.ingestion, "validate_api": self.validate_api})
+            result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.energy.ingestion, "validate_api": self.validate_api})
         elif re.search("ancillarydatadetails", file, re.IGNORECASE):
-            result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.anci_data_detail.ingestion, "validate_api": self.validate_api})
-        elif re.search("ancillarydata", file, re.IGNORECASE):
-            result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.anci_data.ingestion, "validate_api": self.validate_api})
+            result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.non_energy.ingestion, "validate_api": self.validate_api})
         elif re.search("rec", file, re.IGNORECASE):
-            result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.rec_data.ingestion, "validate_api": self.validate_api})
+            result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.rec.ingestion, "validate_api": self.validate_api})
         else:
             print("Shouldn't be here")
             return

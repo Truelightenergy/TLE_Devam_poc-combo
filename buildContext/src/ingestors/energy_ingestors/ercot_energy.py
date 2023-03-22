@@ -5,7 +5,7 @@ import datetime
 import pandas as pd
 from ..database_conection import ConnectDatabase
 
-class Ercot_ForwardCurve:
+class Ercot_Energy:
     """
     constructor which will makes the connection to the database
     """
@@ -19,7 +19,7 @@ class Ercot_ForwardCurve:
 
     def ingestion(self, data):
         """
-        Handling Ingestion for ancillarydata
+        Handling Ingestion for energy for iso ercot
         """
 
         # WARNING the provided CSV has many empty rows which are not skipped because they are empty strings
@@ -51,11 +51,11 @@ class Ercot_ForwardCurve:
         check_query = f"""
             -- if nothing found, new data, insert it, or do one of these
         
-            select exists(select 1 from trueprice.{data.controlArea}_forwardcurve where curvestart='{now}'and strip='{data.strip}') -- ignore, db == file based on timestamp
+            select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart='{now}'and strip='{data.strip}') -- ignore, db == file based on timestamp
             UNION ALL
-            select exists(select 1 from trueprice.{data.controlArea}_forwardcurve where curvestart>='{sod}' and curvestart<'{now}' and strip='{data.strip}') -- update, db is older
+            select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<'{now}' and strip='{data.strip}') -- update, db is older
             UNION ALL
-            select exists(select 1 from trueprice.{data.controlArea}_forwardcurve where curvestart>'{now}' and curvestart<'{eod}' and strip='{data.strip}') -- ignore, db is newer
+            select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart>'{now}' and curvestart<'{eod}' and strip='{data.strip}') -- ignore, db is newer
         """
         r = pd.read_sql(check_query, self.engine)
         same, old_exists, new_exists = r.exists[0], r.exists[1], r.exists[2]
@@ -64,13 +64,13 @@ class Ercot_ForwardCurve:
             return "Data already exists based on timestamp and strip"
         
         elif not same and not new_exists and not old_exists: # if data is new then insert it
-            r = df.to_sql(f"{data.controlArea}_forwardcurve", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
+            r = df.to_sql(f"{data.controlArea}_energy", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
             if r is None:
                 if r is None:
                     return "Failed to insert" 
                 
         elif old_exists: # if there exists old data, handle it with slowly changing dimensions
-            tmp_table_name = f"{data.controlArea}_forwardcurve_{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
+            tmp_table_name = f"{data.controlArea}_energy_{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
             r = df.to_sql(f'{tmp_table_name}', con = self.engine, if_exists = 'replace', chunksize=1000, schema="trueprice", index=False)
             if r is None:
                 return "Unable to create data"
@@ -81,11 +81,11 @@ class Ercot_ForwardCurve:
                 backup_query = f'''
                     with current as (
                         -- get the current rows in the database, all of them, not just things that will change
-                        select id, strip, curvestart, north_amount, houston_amount, south_amount, west_amount from trueprice.{data.controlArea}_forwardcurve where curvestart>='{sod}' and curvestart<='{eod}' and strip='{data.strip}'
+                        select id, strip, curvestart, north_amount, houston_amount, south_amount, west_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}' and strip='{data.strip}'
                     ),
                     backup as (
                         -- take current rows and insert into database but with a new "curveend" timestamp
-                        insert into trueprice.{data.controlArea}_forwardcurve_history (id, strip, curvestart, curveend, north_amount, houston_amount, south_amount, west_amount)
+                        insert into trueprice.{data.controlArea}_energy_history (id, strip, curvestart, curveend, north_amount, houston_amount, south_amount, west_amount)
                         select id, strip, curvestart, '{curveend}' as curveend, north_amount, houston_amount, south_amount, west_amount
                         from current
                     ),
@@ -94,7 +94,7 @@ class Ercot_ForwardCurve:
                     )
                     -- update the existing "current" with the new "csv"
                     --north_amount, houston_amount, south_amount, west_amount
-                    update trueprice.{data.controlArea}_forwardcurve set
+                    update trueprice.{data.controlArea}_energy set
                     curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
                     north_amount = newdata.north_amount, -- mindless update all cols, we don't know which ones updated so try them all
                     houston_amount = newdata.houston_amount,
@@ -103,9 +103,9 @@ class Ercot_ForwardCurve:
                     from 
                         trueprice.{tmp_table_name} as newdata -- our csv data
                     where 
-                        trueprice.{data.controlArea}_forwardcurve.strip = newdata.strip 
-                        and trueprice.{data.controlArea}_forwardcurve.month = newdata.month 
-                        and trueprice.{data.controlArea}_forwardcurve.curvestart=(select curvestart from single)
+                        trueprice.{data.controlArea}_energy.strip = newdata.strip 
+                        and trueprice.{data.controlArea}_energy.month = newdata.month 
+                        and trueprice.{data.controlArea}_energy.curvestart=(select curvestart from single)
                 '''                
             
                 

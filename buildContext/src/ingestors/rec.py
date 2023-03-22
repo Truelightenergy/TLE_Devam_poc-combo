@@ -3,9 +3,9 @@ Implements the Slowly Changed Dimensions to insert the data into database
 """
 
 import pandas as pd
-from .rec_ingestors.pjm_rec import Pjm_RecData
+from .rec_ingestors.pjm_rec import Pjm_Rec
 
-class RecData:
+class Rec:
     """
     constructor which will makes the connection to the database
     """
@@ -14,7 +14,7 @@ class RecData:
         """
         makes the constructors
         """
-        self.pjm_ingestor = Pjm_RecData()
+        self.pjm_ingestor = Pjm_Rec()
         
     def ingestion(self, data):
         """

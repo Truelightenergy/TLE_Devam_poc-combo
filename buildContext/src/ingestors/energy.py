@@ -1,15 +1,15 @@
 """
 Implements the Slowly Changed Dimensions to insert the data into database
 """
-import datetime
-import pandas as pd
-from .forwardcurve_ingestors.isone__forwardcurve import Isone_ForwardCurve
-from .forwardcurve_ingestors.ercot_forwardcurve import Ercot_ForwardCurve
-from .forwardcurve_ingestors.pjm__forwardcurve import Pjm_ForwardCurve
-from .forwardcurve_ingestors.miso_forwardcurve import Miso_ForwardCurve
-from .forwardcurve_ingestors.nyiso_forwardcurve import Nyiso_ForwardCurve
 
-class ForwardCurve:
+import pandas as pd
+from .energy_ingestors.isone_energy import Isone_Energy
+from .energy_ingestors.ercot_energy import Ercot_Energy
+from .energy_ingestors.pjm_energy import Pjm_Energy
+from .energy_ingestors.miso_energy import Miso_Energy
+from .energy_ingestors.nyiso_energy import Nyiso_Energy
+
+class Energy:
     """
     constructor which will makes the connection to the database
     """
@@ -18,11 +18,11 @@ class ForwardCurve:
         """
         makes the 
         """
-        self.isone_ingestor = Isone_ForwardCurve()
-        self.ercot_ingestor = Ercot_ForwardCurve()
-        self.pjm_ingestor = Pjm_ForwardCurve()
-        self.miso_ingestor = Miso_ForwardCurve()
-        self.nyiso_ingestor = Nyiso_ForwardCurve()
+        self.isone_ingestor = Isone_Energy()
+        self.ercot_ingestor = Ercot_Energy()
+        self.pjm_ingestor = Pjm_Energy()
+        self.miso_ingestor = Miso_Energy()
+        self.nyiso_ingestor = Nyiso_Energy()
 
     def ingestion(self, data):
         """

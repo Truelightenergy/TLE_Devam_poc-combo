@@ -5,7 +5,7 @@ import datetime
 import pandas as pd
 from ..database_conection import ConnectDatabase
 
-class Pjm_ForwardCurve:
+class Pjm_Energy:
     """
     constructor which will makes the connection to the database
     """
@@ -19,7 +19,7 @@ class Pjm_ForwardCurve:
 
     def ingestion(self, data):
         """
-        Handling Ingestion for ancillarydata
+        Handling Ingestion for pjm energies
         """
 
         # WARNING the provided CSV has many empty rows which are not skipped because they are empty strings
@@ -70,11 +70,11 @@ class Pjm_ForwardCurve:
         check_query = f"""
             -- if nothing found, new data, insert it, or do one of these
         
-            select exists(select 1 from trueprice.{data.controlArea}_forwardcurve where curvestart='{now}'and strip='{data.strip}') -- ignore, db == file based on timestamp
+            select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart='{now}'and strip='{data.strip}') -- ignore, db == file based on timestamp
             UNION ALL
-            select exists(select 1 from trueprice.{data.controlArea}_forwardcurve where curvestart>='{sod}' and curvestart<'{now}' and strip='{data.strip}') -- update, db is older
+            select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<'{now}' and strip='{data.strip}') -- update, db is older
             UNION ALL
-            select exists(select 1 from trueprice.{data.controlArea}_forwardcurve where curvestart>'{now}' and curvestart<'{eod}' and strip='{data.strip}') -- ignore, db is newer
+            select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart>'{now}' and curvestart<'{eod}' and strip='{data.strip}') -- ignore, db is newer
         """
         r = pd.read_sql(check_query, self.engine)
         same, old_exists, new_exists = r.exists[0], r.exists[1], r.exists[2]
@@ -83,13 +83,13 @@ class Pjm_ForwardCurve:
             return "Data already exists based on timestamp and strip"
         
         elif not same and not new_exists and not old_exists: # if data is new then insert it
-            r = df.to_sql(f"{data.controlArea}_forwardcurve", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
+            r = df.to_sql(f"{data.controlArea}_energy", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
             if r is None:
                 if r is None:
                     return "Failed to insert" 
                 
         elif old_exists: # if there exists old data, handle it with slowly changing dimensions
-            tmp_table_name = f"{data.controlArea}_forwardcurve_{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
+            tmp_table_name = f"{data.controlArea}_energy_{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
             r = df.to_sql(f'{tmp_table_name}', con = self.engine, if_exists = 'replace', chunksize=1000, schema="trueprice", index=False)
             if r is None:
                 return "Unable to create data"
@@ -101,11 +101,11 @@ class Pjm_ForwardCurve:
                 backup_query = f'''
                     with current as (
                         -- get the current rows in the database, all of them, not just things that will change
-                        select id, strip, curvestart, aeco_amount, aep_amount, aps_amount, atsi_amount, bge_amount, comed_amount, day_amount, deok_amount, dom_amount, dpl_amount, duq_amount, jcpl_amount, meted_amount, peco_amount, penelec_amount, pepco_amount, ppl_amount, pseg_amount, reco_amount, west_amount, ad_amount, ni_amount, east_amount from trueprice.{data.controlArea}_forwardcurve where curvestart>='{sod}' and curvestart<='{eod}' and strip='{data.strip}'
+                        select id, strip, curvestart, aeco_amount, aep_amount, aps_amount, atsi_amount, bge_amount, comed_amount, day_amount, deok_amount, dom_amount, dpl_amount, duq_amount, jcpl_amount, meted_amount, peco_amount, penelec_amount, pepco_amount, ppl_amount, pseg_amount, reco_amount, west_amount, ad_amount, ni_amount, east_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}' and strip='{data.strip}'
                     ),
                     backup as (
                         -- take current rows and insert into database but with a new "curveend" timestamp
-                        insert into trueprice.{data.controlArea}_forwardcurve_history (id, strip, curvestart, curveend, aeco_amount, aep_amount, aps_amount, atsi_amount, bge_amount, comed_amount, day_amount, deok_amount, dom_amount, dpl_amount, duq_amount, jcpl_amount, meted_amount, peco_amount, penelec_amount, pepco_amount, ppl_amount, pseg_amount, reco_amount, west_amount, ad_amount, ni_amount, east_amount)
+                        insert into trueprice.{data.controlArea}_energy_history (id, strip, curvestart, curveend, aeco_amount, aep_amount, aps_amount, atsi_amount, bge_amount, comed_amount, day_amount, deok_amount, dom_amount, dpl_amount, duq_amount, jcpl_amount, meted_amount, peco_amount, penelec_amount, pepco_amount, ppl_amount, pseg_amount, reco_amount, west_amount, ad_amount, ni_amount, east_amount)
                         select id, strip, curvestart, '{curveend}' as curveend, aeco_amount, aep_amount, aps_amount, atsi_amount, bge_amount, comed_amount, day_amount, deok_amount, dom_amount, dpl_amount, duq_amount, jcpl_amount, meted_amount, peco_amount, penelec_amount, pepco_amount, ppl_amount, pseg_amount, reco_amount, west_amount, ad_amount, ni_amount, east_amount
                         from current
                     ),
@@ -113,7 +113,7 @@ class Pjm_ForwardCurve:
                         select curvestart from current limit 1
                     )
                     -- update the existing "current" with the new "csv"
-                    update trueprice.{data.controlArea}_forwardcurve set
+                    update trueprice.{data.controlArea}_energy set
                     curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
                     aeco_amount = newdata.aeco_amount,
                     aep_amount = newdata.aep_amount,
@@ -141,9 +141,9 @@ class Pjm_ForwardCurve:
                     from 
                         trueprice.{tmp_table_name} as newdata -- our csv data
                     where 
-                        trueprice.{data.controlArea}_forwardcurve.strip = newdata.strip 
-                        and trueprice.{data.controlArea}_forwardcurve.month = newdata.month 
-                        and trueprice.{data.controlArea}_forwardcurve.curvestart=(select curvestart from single)
+                        trueprice.{data.controlArea}_energy.strip = newdata.strip 
+                        and trueprice.{data.controlArea}_energy.month = newdata.month 
+                        and trueprice.{data.controlArea}_energy.curvestart=(select curvestart from single)
                 '''
                 
                 # finally execute the query

@@ -45,7 +45,7 @@ services:
         \c trueprice;
         CREATE SCHEMA trueprice;
         -- NYISO
-        CREATE TABLE trueprice.nyiso_forwardcurve ( -- history table differs
+        CREATE TABLE trueprice.nyiso_energy ( -- history table differs
           id serial PRIMARY KEY,
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
@@ -64,8 +64,8 @@ services:
         );
         -- old data
         -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.nyiso_forwardcurve_history ( -- current table differs
-          id serial, -- not primary, this is fk to nyiso_forwardcurve
+        CREATE TABLE trueprice.nyiso_energy_history ( -- current table differs
+          id serial, -- not primary, this is fk to nyiso_energy
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per original file name
           curveEnd TIMESTAMPTZ, -- per new file name
@@ -83,7 +83,7 @@ services:
           zone_k_amount NUMERIC(12,8)
           );
         -- ERCOT
-        CREATE TABLE trueprice.ercot_forwardcurve ( -- history table differs
+        CREATE TABLE trueprice.ercot_energy ( -- history table differs
           id serial PRIMARY KEY,
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
@@ -95,8 +95,8 @@ services:
         );
         -- old data
         -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.ercot_forwardcurve_history ( -- current table differs
-          id serial, -- not primary, this is fk to nyiso_forwardcurve
+        CREATE TABLE trueprice.ercot_energy_history ( -- current table differs
+          id serial, -- not primary, this is fk to nyiso_energy
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per original file name
           curveEnd TIMESTAMPTZ, -- per new file name
@@ -107,7 +107,7 @@ services:
           west_amount NUMERIC(12,8)
           );
         -- ISONE
-        CREATE TABLE trueprice.isone_forwardcurve ( -- history table differs
+        CREATE TABLE trueprice.isone_energy ( -- history table differs
           id serial PRIMARY KEY,
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
@@ -124,8 +124,8 @@ services:
         );
         -- old data
         -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.isone_forwardcurve_history ( -- current table differs
-          id serial, -- not primary, this is fk to nyiso_forwardcurve
+        CREATE TABLE trueprice.isone_energy_history ( -- current table differs
+          id serial, -- not primary, this is fk to nyiso_energy
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per original file name
           curveEnd TIMESTAMPTZ, -- per new file name
@@ -140,7 +140,7 @@ services:
           mass_amount NUMERIC(12,8)
         );
         -- MISO
-        CREATE TABLE trueprice.miso_forwardcurve ( -- history table differs
+        CREATE TABLE trueprice.miso_energy ( -- history table differs
           id serial PRIMARY KEY,
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
@@ -152,8 +152,8 @@ services:
         );
         -- old data
         -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.miso_forwardcurve_history ( -- current table differs
-          id serial, -- not primary, this is fk to nyiso_forwardcurve
+        CREATE TABLE trueprice.miso_energy_history ( -- current table differs
+          id serial, -- not primary, this is fk to nyiso_energy
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per original file name
           curveEnd TIMESTAMPTZ, -- per new file name
@@ -164,7 +164,7 @@ services:
           indy_amount NUMERIC(12,8)
         );
         -- PJM
-        CREATE TABLE trueprice.pjm_forwardcurve ( -- history table differs
+        CREATE TABLE trueprice.pjm_energy ( -- history table differs
           id serial PRIMARY KEY,
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
@@ -195,8 +195,8 @@ services:
         );
         -- old data
         -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.pjm_forwardcurve_history ( -- current table differs
-          id serial, -- not primary, this is fk to nyiso_forwardcurve
+        CREATE TABLE trueprice.pjm_energy_history ( -- current table differs
+          id serial, -- not primary, this is fk to nyiso_energy
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per original file name
           curveEnd TIMESTAMPTZ, -- per new file name
@@ -225,37 +225,12 @@ services:
           ni_amount NUMERIC(12,8),
           east_amount NUMERIC(12,8)
         ); 
-        -- isone ancillarydata
-        CREATE TABLE trueprice.isone_ancillarydata (
-          id serial PRIMARY KEY,
-          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          load_zone varchar(15),
-          rtlo_mwh NUMERIC(12,8),
-          dalo_mwh NUMERIC(12,8),
-          deviations_mwh NUMERIC(12,8),
-          ncp_mw NUMERIC(12,8)
-        );
-        -- old data
-        -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.isone_ancillarydata_history (
-          id serial, -- not primary, this is fk to nyiso_forwardcurve
-          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
-          curveStart TIMESTAMPTZ, -- per original file name
-          curveEnd TIMESTAMPTZ, -- per new file name
-          month TIMESTAMPTZ,
-          load_zone varchar(15),
-          rtlo_mwh NUMERIC(12,8),
-          dalo_mwh NUMERIC(12,8),
-          deviations_mwh NUMERIC(12,8),
-          ncp_mw NUMERIC(12,8)
-        );
+        
 
-        -- ercot ancillarydata
+        -- ercot nonenergy
         -- new data
-        CREATE TABLE trueprice.ercot_ancillarydata (
-          id serial, -- not primary, this is fk to nyiso_forwardcurve
+        CREATE TABLE trueprice.ercot_nonenergy (
+          id serial, -- not primary, this is fk to nyiso_energy
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per original file name
           month TIMESTAMPTZ,
@@ -271,8 +246,8 @@ services:
 
 
         --old data
-          CREATE TABLE trueprice.ercot_ancillarydata_history (
-            id serial, -- not primary, this is fk to nyiso_forwardcurve
+          CREATE TABLE trueprice.ercot_nonenergy_history (
+            id serial, -- not primary, this is fk to nyiso_energy
             strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
             curveStart TIMESTAMPTZ, -- per original file name
             curveEnd TIMESTAMPTZ, -- per new file name
@@ -287,8 +262,8 @@ services:
             rrs_phys NUMERIC(12,8)
         );
 
-        -- isone ancillarydatadetails
-        CREATE TABLE trueprice.isone_ancillarydatadetails (
+        -- isone nonenergy
+        CREATE TABLE trueprice.isone_nonenergy (
           id serial PRIMARY KEY,
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
@@ -300,8 +275,8 @@ services:
         );
         -- old data
         -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.isone_ancillarydatadetails_history (
-          id serial, -- not primary, this is fk to nyiso_forwardcurve
+        CREATE TABLE trueprice.isone_nonenergy_history (
+          id serial, -- not primary, this is fk to nyiso_energy
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per original file name
           curveEnd TIMESTAMPTZ, -- per new file name
@@ -312,9 +287,9 @@ services:
           billing_determinant varchar(20) -- may be to big
         );
 
-        -- pjm recdata
+        -- pjm rec
         -- new data
-        CREATE TABLE trueprice.pjm_recdata (
+        CREATE TABLE trueprice.pjm_rec(
           id serial PRIMARY KEY,
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
@@ -371,8 +346,8 @@ services:
         );       
 
         -- old data
-        CREATE TABLE trueprice.pjm_recdata_history (
-          id serial, -- not primary, this is fk to pjm_recdata
+        CREATE TABLE trueprice.pjm_rec_history (
+          id serial, -- not primary, this is fk to pjm_rec
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
           curveEnd TIMESTAMPTZ, -- per new file name

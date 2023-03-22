@@ -11,7 +11,7 @@ import pandas as pd
 import datetime
 from ..database_conection import ConnectDatabase
 
-class Isone_AncillaryDataDetails:
+class Isone_NonEnergy:
     """
     constructor which will makes the connection to the database
     """
@@ -50,11 +50,11 @@ class Isone_AncillaryDataDetails:
         check_query = f"""
             -- if nothing found, new data, insert it, or do one of these
             
-            select exists(select 1 from trueprice.{data.controlArea}_ancillarydatadetails where curvestart='{now}'and strip='{data.strip}') -- ignore, db == file based on timestamp
+            select exists(select 1 from trueprice.{data.controlArea}_nonenergy where curvestart='{now}'and strip='{data.strip}') -- ignore, db == file based on timestamp
             UNION ALL
-            select exists(select 1 from trueprice.{data.controlArea}_ancillarydatadetails where curvestart>='{sod}' and curvestart<'{now}' and strip='{data.strip}') -- update, db is older
+            select exists(select 1 from trueprice.{data.controlArea}_nonenergy where curvestart>='{sod}' and curvestart<'{now}' and strip='{data.strip}') -- update, db is older
             UNION ALL
-            select exists(select 1 from trueprice.{data.controlArea}_ancillarydatadetails where curvestart>'{now}' and curvestart<'{eod}' and strip='{data.strip}') -- ignore, db is newer
+            select exists(select 1 from trueprice.{data.controlArea}_nonenergy where curvestart>'{now}' and curvestart<'{eod}' and strip='{data.strip}') -- ignore, db is newer
         """
         r = pd.read_sql(check_query, self.engine)
         same, old_exists, new_exists = r.exists[0], r.exists[1], r.exists[2]
@@ -63,12 +63,12 @@ class Isone_AncillaryDataDetails:
             return "Data already exists based on timestamp and strip"
         
         elif not same and not new_exists and not old_exists:
-            r = df.to_sql(f"{data.controlArea}_ancillarydatadetails", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
+            r = df.to_sql(f"{data.controlArea}_nonenergy", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
             if r is None:
                 return "Failed to insert"
             
         elif old_exists: # if there exists old data, handle it with slowly changing dimensions
-            tmp_table_name = f"{data.controlArea}_ancillarydatadetails_{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
+            tmp_table_name = f"{data.controlArea}_nonenergy_{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
             r = df.to_sql(f'{tmp_table_name}', con = self.engine, if_exists = 'replace', chunksize=1000, schema="trueprice", index=False)
             if r is None:
                 return "Failed to insert"
@@ -79,11 +79,11 @@ class Isone_AncillaryDataDetails:
                 backup_query = f'''
                     with current as (
                         -- get the current rows in the database, all of them, not just things that will change
-                        select id, strip, curvestart, load_zone, ancillary, month, price, billing_determinant from trueprice.{data.controlArea}_ancillarydatadetails where curvestart>='{sod}' and curvestart<='{eod}' and strip='{data.strip}'
+                        select id, strip, curvestart, load_zone, ancillary, month, price, billing_determinant from trueprice.{data.controlArea}_nonenergy where curvestart>='{sod}' and curvestart<='{eod}' and strip='{data.strip}'
                     ),
                     backup as (
                         -- take current rows and insert into database but with a new "curveend" timestamp
-                        insert into trueprice.{data.controlArea}_ancillarydatadetails_history (id, strip, curvestart, curveend, load_zone, ancillary, month, price, billing_determinant)
+                        insert into trueprice.{data.controlArea}_nonenergy_history (id, strip, curvestart, curveend, load_zone, ancillary, month, price, billing_determinant)
                         select id, strip, curvestart, '{curveend}' as curveend, load_zone, ancillary, month, price, billing_determinant
                         from current
                     ),
@@ -91,7 +91,7 @@ class Isone_AncillaryDataDetails:
                         select curvestart from current limit 1
                     )
                     -- update the existing "current" with the new "csv"
-                    update trueprice.{data.controlArea}_ancillarydatadetails set
+                    update trueprice.{data.controlArea}_nonenergy set
                     curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
                     load_zone = newdata.load_zone, -- mindless update all cols, we don't know which ones updated so try them all
                     ancillary = newdata.ancillary,
@@ -100,9 +100,9 @@ class Isone_AncillaryDataDetails:
                     from 
                         trueprice.{tmp_table_name} as newdata -- our csv data
                     where 
-                        trueprice.{data.controlArea}_ancillarydatadetails.strip = newdata.strip 
-                        and trueprice.{data.controlArea}_ancillarydatadetails.month = newdata.month 
-                        and trueprice.{data.controlArea}_ancillarydatadetails.curvestart=(select curvestart from single)
+                        trueprice.{data.controlArea}_nonenergy.strip = newdata.strip 
+                        and trueprice.{data.controlArea}_nonenergy.month = newdata.month 
+                        and trueprice.{data.controlArea}_nonenergy.curvestart=(select curvestart from single)
                 
                 '''        
 

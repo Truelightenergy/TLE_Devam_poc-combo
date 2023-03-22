@@ -4,10 +4,9 @@ makes query to the database and returns to the database
 
 import pandas as pd
 from .database_conection import ConnectDatabase
-from .ancillarydata import AncillaryData
-from .ancillarydatadetails import AncillaryDataDetails
-from .energy import ForwardCurve
-from .rec import RecData
+from .nonenergy import NonEnergy
+from .energy import Energy
+from .rec import Rec
 
 class Extractor:
     """
@@ -21,10 +20,9 @@ class Extractor:
         data_base = ConnectDatabase()
         self.engine = data_base.get_engine()
 
-        self.ancillary_data = AncillaryData()
-        self.anciallary_data_details = AncillaryDataDetails()
-        self.forward_curve = ForwardCurve()
-        self.rec_data = RecData()
+        self.non_energy = NonEnergy()
+        self.energy = Energy()
+        self.rec= Rec()
 
     def get_custom_data(self, query_strings):
         """
@@ -32,14 +30,12 @@ class Extractor:
         """
         dataframe = None
         status = "Unable to Fetch Data"
-        if query_strings["curve_type"] == "ancillarydata":
-            dataframe, status = self.ancillary_data.extraction(query_strings)
-        elif query_strings["curve_type"] == "ancillarydatadetails":
-            dataframe, status = self.anciallary_data_details.extraction(query_strings)
+        if query_strings["curve_type"] == "ancillarydatadetails":
+            dataframe, status = self.non_energy.extraction(query_strings)
         elif query_strings["curve_type"] == "forwardcurve":
-            dataframe, status = self.forward_curve.extraction(query_strings)
+            dataframe, status = self.energy.extraction(query_strings)
         elif query_strings["curve_type"] == "rec":
-            dataframe, status = self.rec_data.extraction(query_strings)
+            dataframe, status = self.rec.extraction(query_strings)
             
         return dataframe, status
 

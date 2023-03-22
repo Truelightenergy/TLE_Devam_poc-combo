@@ -6,7 +6,7 @@ import pandas as pd
 from ..database_conection import ConnectDatabase
 
 
-class Ercot_AncillaryData:
+class Ercot_NonEnergy:
     """
     constructor which will makes the connection to the database
     """
@@ -54,7 +54,7 @@ class Ercot_AncillaryData:
 
     def ingestion(self, data):
         """
-        Handling Ingestion for ancillarydata
+        Handling Ingestion for nonenergy
         """
         df = pd.read_csv(data.fileName, skiprows=2)
         df.drop(index=[0,1,2], inplace=True, axis='rows')
@@ -74,11 +74,11 @@ class Ercot_AncillaryData:
         check_query = f"""
             -- if nothing found, new data, insert it, or do one of these
             
-            select exists(select 1 from trueprice.{data.controlArea}_ancillarydata where curvestart='{now}'and strip='{data.strip}') -- ignore, db == file based on timestamp
+            select exists(select 1 from trueprice.{data.controlArea}_nonenergy where curvestart='{now}'and strip='{data.strip}') -- ignore, db == file based on timestamp
             UNION ALL
-            select exists(select 1 from trueprice.{data.controlArea}_ancillarydata where curvestart>='{sod}' and curvestart<'{now}' and strip='{data.strip}') -- update, db is older
+            select exists(select 1 from trueprice.{data.controlArea}_nonenergy where curvestart>='{sod}' and curvestart<'{now}' and strip='{data.strip}') -- update, db is older
             UNION ALL
-            select exists(select 1 from trueprice.{data.controlArea}_ancillarydata where curvestart>'{now}' and curvestart<'{eod}' and strip='{data.strip}') -- ignore, db is newer
+            select exists(select 1 from trueprice.{data.controlArea}_nonenergy where curvestart>'{now}' and curvestart<'{eod}' and strip='{data.strip}') -- ignore, db is newer
         """
         query_result = pd.read_sql(check_query, self.engine)
         same, old_exists, new_exists = query_result.exists[0], query_result.exists[1], query_result.exists[2]
@@ -86,12 +86,12 @@ class Ercot_AncillaryData:
             return "Data already exists based on timestamp and strip"
         
         elif not same and not new_exists and not old_exists: # if data is new then insert it
-            r = df.to_sql(f"{data.controlArea}_ancillarydata", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
+            r = df.to_sql(f"{data.controlArea}_nonenergy", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
             if r is None:
                 return "Failed to insert"            
 
         elif old_exists: # if there exists old data, handle it with slowly changing dimensions
-            tmp_table_name = f"{data.controlArea}_ancillarydata_{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
+            tmp_table_name = f"{data.controlArea}_nonenergy_{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
             r = df.to_sql(f'{tmp_table_name}', con = self.engine, if_exists = 'replace', chunksize=1000, schema="trueprice", index=False)
             
             if r is None:
@@ -105,12 +105,12 @@ class Ercot_AncillaryData:
                     with current as (
                         -- get the current rows in the database, all of them, not just things that will change
 
-                        select id, strip, curvestart, month, rrs_future, ns_future, ru_future, rd_future, rd_phys, ns_phys, ru_phys, rrs_phys from trueprice.{data.controlArea}_ancillarydata where curvestart>='{sod}' and curvestart<='{eod}' and strip='{data.strip}'
+                        select id, strip, curvestart, month, rrs_future, ns_future, ru_future, rd_future, rd_phys, ns_phys, ru_phys, rrs_phys from trueprice.{data.controlArea}_nonenergy where curvestart>='{sod}' and curvestart<='{eod}' and strip='{data.strip}'
                     ),
                     backup as (
                         -- take current rows and insert into database but with a new "curveend" timestamp
 
-                        insert into trueprice.{data.controlArea}_ancillarydata_history (id, strip, curvestart, curveend, month, rrs_future, ns_future, ru_future, rd_future, rd_phys, ns_phys, ru_phys, rrs_phys)
+                        insert into trueprice.{data.controlArea}_nonenergy_history (id, strip, curvestart, curveend, month, rrs_future, ns_future, ru_future, rd_future, rd_phys, ns_phys, ru_phys, rrs_phys)
                         select id, strip, curvestart, '{curveend}' as curveend, month, rrs_future, ns_future, ru_future, rd_future, rd_phys, ns_phys, ru_phys, rrs_phys
                         from current
                     ),
@@ -119,7 +119,7 @@ class Ercot_AncillaryData:
                     )
                     -- update the existing "current" with the new "csv"
 
-                    update trueprice.{data.controlArea}_ancillarydata set
+                    update trueprice.{data.controlArea}_nonenergy set
                     curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
                     month = newdata.month,
                     rrs_future = newdata.rrs_future,
@@ -133,9 +133,9 @@ class Ercot_AncillaryData:
                     from 
                         trueprice.{tmp_table_name} as newdata -- our csv data
                     where 
-                        trueprice.{data.controlArea}_ancillarydata.strip = newdata.strip 
-                        and trueprice.{data.controlArea}_ancillarydata.month = newdata.month 
-                        and trueprice.{data.controlArea}_ancillarydata.curvestart=(select curvestart from single)
+                        trueprice.{data.controlArea}_nonenergy.strip = newdata.strip 
+                        and trueprice.{data.controlArea}_nonenergy.month = newdata.month 
+                        and trueprice.{data.controlArea}_nonenergy.curvestart=(select curvestart from single)
                 '''        
                 
                 

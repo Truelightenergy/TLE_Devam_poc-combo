@@ -5,7 +5,7 @@ import datetime
 import pandas as pd
 from ..database_conection import ConnectDatabase
 
-class Miso_ForwardCurve:
+class Isone_Energy:
     """
     constructor which will makes the connection to the database
     """
@@ -19,7 +19,7 @@ class Miso_ForwardCurve:
 
     def ingestion(self, data):
         """
-        Handling Ingestion for ancillarydata
+        Handling Ingestion for isone energy
         """
 
         # WARNING the provided CSV has many empty rows which are not skipped because they are empty strings
@@ -30,12 +30,19 @@ class Miso_ForwardCurve:
         
         df[df.columns[1:]] = df[df.columns[1:]].replace('[\$,]', '', regex=True).astype(float) # see warning on Float64Dtype, this removes money and converts to float
 
+    
+        #Zone,MAINE,NEWHAMPSHIRE,VERMONT,CONNECTICUT,RHODEISLAND,SEMASS,WCMASS,NEMASSBOST,MASS HUB
         df.rename(inplace=True, columns={
             'Zone': 'month',
-            'AMILCIPS': 'amilcips_amount',
-            'AMILCILCO': 'amilcilco_amount',
-            'AMILIP': 'amilip_amount',
-            'INDY HUB': 'indy_amount'
+            'MAINE':'maine_amount',
+            'NEWHAMPSHIRE': 'newhampshire_amount',
+            'VERMONT':'vermont_amount',
+            'CONNECTICUT':'connecticut_amount', 
+            'RHODEISLAND':'rhodeisland_amount', 
+            'SEMASS':'semass_amount', 
+            'WCMASS':'wcmass_amount', 
+            'NEMASSBOST':'nemassbost_amount', 
+            'MASS HUB':'mass_amount'
         })
     
         df.insert(0, 'strip', data.strip) # stored as object, don't freak on dtypes
@@ -51,11 +58,11 @@ class Miso_ForwardCurve:
         check_query = f"""
             -- if nothing found, new data, insert it, or do one of these
         
-            select exists(select 1 from trueprice.{data.controlArea}_forwardcurve where curvestart='{now}'and strip='{data.strip}') -- ignore, db == file based on timestamp
+            select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart='{now}'and strip='{data.strip}') -- ignore, db == file based on timestamp
             UNION ALL
-            select exists(select 1 from trueprice.{data.controlArea}_forwardcurve where curvestart>='{sod}' and curvestart<'{now}' and strip='{data.strip}') -- update, db is older
+            select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<'{now}' and strip='{data.strip}') -- update, db is older
             UNION ALL
-            select exists(select 1 from trueprice.{data.controlArea}_forwardcurve where curvestart>'{now}' and curvestart<'{eod}' and strip='{data.strip}') -- ignore, db is newer
+            select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart>'{now}' and curvestart<'{eod}' and strip='{data.strip}') -- ignore, db is newer
         """
         r = pd.read_sql(check_query, self.engine)
         same, old_exists, new_exists = r.exists[0], r.exists[1], r.exists[2]
@@ -64,13 +71,13 @@ class Miso_ForwardCurve:
             return "Data already exists based on timestamp and strip"
         
         elif not same and not new_exists and not old_exists: # if data is new then insert it
-            r = df.to_sql(f"{data.controlArea}_forwardcurve", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
+            r = df.to_sql(f"{data.controlArea}_energy", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
             if r is None:
                 if r is None:
                     return "Failed to insert" 
                 
         elif old_exists: # if there exists old data, handle it with slowly changing dimensions
-            tmp_table_name = f"{data.controlArea}_forwardcurve_{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
+            tmp_table_name = f"{data.controlArea}_energy_{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
             r = df.to_sql(f'{tmp_table_name}', con = self.engine, if_exists = 'replace', chunksize=1000, schema="trueprice", index=False)
             if r is None:
                 return "Unable to create data"
@@ -82,33 +89,36 @@ class Miso_ForwardCurve:
                 backup_query = f'''
                     with current as (
                         -- get the current rows in the database, all of them, not just things that will change
-                        select id, strip, curvestart, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount from trueprice.{data.controlArea}_forwardcurve where curvestart>='{sod}' and curvestart<='{eod}' and strip='{data.strip}'
+                        select id, strip, curvestart, maine_amount, newhampshire_amount, vermont_amount, connecticut_amount, rhodeisland_amount, semass_amount, wcmass_amount, nemassbost_amount, nemassbost_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}' and strip='{data.strip}'
                     ),
                     backup as (
                         -- take current rows and insert into database but with a new "curveend" timestamp
-                        insert into trueprice.{data.controlArea}_forwardcurve_history (id, strip, curvestart, curveend, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount)
-                        select id, strip, curvestart, '{curveend}' as curveend, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount
+                        insert into trueprice.{data.controlArea}_energy_history (id, strip, curvestart, curveend, maine_amount, newhampshire_amount, vermont_amount, connecticut_amount, rhodeisland_amount, semass_amount, wcmass_amount, nemassbost_amount, nemassbost_amount)
+                        select id, strip, curvestart, '{curveend}' as curveend, maine_amount, newhampshire_amount, vermont_amount, connecticut_amount, rhodeisland_amount, semass_amount, wcmass_amount, nemassbost_amount, nemassbost_amount
                         from current
                     ),
                     single as (
                         select curvestart from current limit 1
                     )
                     -- update the existing "current" with the new "csv"
-                    update trueprice.{data.controlArea}_forwardcurve set
+                    update trueprice.{data.controlArea}_energy set
                     curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
-                    amilcips_amount = newdata.amilcips_amount, -- mindless update all cols, we don't know which ones updated so try them all
-                    amilcilco_amount = newdata.amilcilco_amount,
-                    amilip_amount = newdata.amilip_amount,
-                    indy_amount = newdata.indy_amount
+                    maine_amount = newdata.maine_amount, -- mindless update all cols, we don't know which ones updated so try them all
+                    newhampshire_amount = newdata.newhampshire_amount,
+                    vermont_amount = newdata.vermont_amount,
+                    connecticut_amount = newdata.connecticut_amount,
+                    rhodeisland_amount = newdata.rhodeisland_amount,
+                    semass_amount = newdata.semass_amount,
+                    wcmass_amount = newdata.wcmass_amount,
+                    nemassbost_amount = newdata.nemassbost_amount
                     from 
                         trueprice.{tmp_table_name} as newdata -- our csv data
                     where 
-                        trueprice.{data.controlArea}_forwardcurve.strip = newdata.strip 
-                        and trueprice.{data.controlArea}_forwardcurve.month = newdata.month 
-                        and trueprice.{data.controlArea}_forwardcurve.curvestart=(select curvestart from single)
-                '''    
-
-                
+                        trueprice.{data.controlArea}_energy.strip = newdata.strip 
+                        and trueprice.{data.controlArea}_energy.month = newdata.month 
+                        and trueprice.{data.controlArea}_energy.curvestart=(select curvestart from single)
+                '''
+            
                 # finally execute the query
                 r = con.execute(backup_query)            
                 con.execute(f"drop table trueprice.{tmp_table_name}")
