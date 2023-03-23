@@ -1,5 +1,5 @@
 """
-Implements the Extraction of Ancillary data details from the database
+Implements the Extraction of non energy details from the database
 """
 
 import pandas as pd
@@ -7,7 +7,7 @@ from datetime import datetime
 from .database_conection import ConnectDatabase
 
 
-class AncillaryDataDetails:
+class NonEnergy:
     """
     constructor which will makes the connection to the database
     """
@@ -33,11 +33,13 @@ class AncillaryDataDetails:
             end_date = str(datetime.strptime(end_date_stamp, "%Y%m%d").date())
             
 
-            if control_area == "isone":
+            if control_area == "isone" or  control_area == "ercot":
                 data_frame = None
-            psql_query = f"select * from trueprice.{control_area}_ancillarydatadetails where strip = '{strip}' and month::date >= '{start_date}' and month::date <= '{end_date}';"
-            data_frame = pd.read_sql_query(sql=psql_query, con=self.engine.connect())
-            return data_frame, "success"  
+                psql_query = f"select * from trueprice.{control_area}_nonenergy where strip = '{strip}' and month::date >= '{start_date}' and month::date <= '{end_date}';"
+                data_frame = pd.read_sql_query(sql=psql_query, con=self.engine.connect())
+                return data_frame, "success"  
+            else:
+                return None, "Unable to Fetch Results"
         
         except:
             return None, "Unable to Fetch Results"
