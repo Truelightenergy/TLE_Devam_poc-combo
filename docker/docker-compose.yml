@@ -401,7 +401,205 @@ services:
           IL_Wind_amount NUMERIC(12,8),
           IL_ACP_percent NUMERIC(12,8),
           IL_ACP_amount NUMERIC(12,8)
-        );        
+        );
+
+        --ercot rec
+        -- new data
+        CREATE TABLE trueprice.ercot_rec(
+          id serial PRIMARY KEY,
+          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          curveStart TIMESTAMPTZ, -- per file name (sans tz)
+          month TIMESTAMPTZ, 
+          tx_total_cost_per_mWh NUMERIC(12,8),
+          tx_compliance NUMERIC(12,8), 
+          tx_rec_price NUMERIC(12,8),
+          tx_year NUMERIC(12,8),
+          tx_total_texas_competitive_load_mWh NUMERIC(20,10),
+          tx_rps_mandate_mWh NUMERIC(20,10),
+          tx_prct NUMERIC(12,8)
+          );
+
+        --old data
+        CREATE TABLE trueprice.ercot_rec_history (
+          id serial, -- not primary, this is fk to pjm_rec
+          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          curveStart TIMESTAMPTZ, -- per file name (sans tz)
+          curveEnd TIMESTAMPTZ, -- per new file name
+          month TIMESTAMPTZ, 
+          tx_total_cost_per_mWh NUMERIC(12,8),
+          tx_compliance NUMERIC(12,8), 
+          tx_rec_price NUMERIC(12,8),
+          tx_year NUMERIC(12,8),
+          tx_total_texas_competitive_load_mWh NUMERIC(20,10),
+          tx_rps_mandate_mWh NUMERIC(20,10),
+          tx_prct NUMERIC(12,8)
+          );
+
+        --isone rec
+        --new data
+        CREATE TABLE trueprice.isone_rec(
+          id serial PRIMARY KEY,
+          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          curveStart TIMESTAMPTZ, -- per file name (sans tz)
+          month TIMESTAMPTZ, 
+          ct_total_cost_per_mwh NUMERIC(12,8),
+          ct_class_i NUMERIC(12,8), 
+          ct_class_i_price NUMERIC(12,8),
+          ct_class_ii NUMERIC(12,8),
+          ct_class_ii_price NUMERIC(12,8), 
+          ct_class_iii  NUMERIC(12,8),
+          ct_class_iii_price NUMERIC(12,8), 
+          ma_total_cost_per_mwh NUMERIC(12,8),
+          ma_rps_class_i_total NUMERIC(12,8),
+          ma_rps_class_i NUMERIC(12,8),
+          ma_class_i_price NUMERIC(12,8),
+          ma_solar_carve_out_i NUMERIC(12,8),
+          ma_srec_i_price NUMERIC(12,8),
+          ma_solar_carve_out_ii NUMERIC(12,8),
+          ma_srec_ii_price NUMERIC(12,8),
+          ma_class_ii_non_waste NUMERIC(12,8), 
+          ma_class_ii_nw_price NUMERIC(12,8),
+          ma_class_ii_waste NUMERIC(12,8),
+          ma_class_ii_waste_price NUMERIC(12,8),
+          ma_aps NUMERIC(12,8),
+          ma_aps_price NUMERIC(12,8),
+          ma_ces_obligation NUMERIC(12,8),
+          ma_ces_less_rps_i_ NUMERIC(12,8),
+          ma_ces_price NUMERIC(12,8),
+          ma_cps NUMERIC(12,8),
+          ma_cps_price NUMERIC(12,8),
+          ma_ces_e NUMERIC(12,8),
+          ma_ces_e_price NUMERIC(12,8),
+          nh_total_cost_per_mwh NUMERIC(12,8),
+          nh_class_i_total NUMERIC(12,8),
+          nh_class_i NUMERIC(12,8),
+          nh_class_i_price NUMERIC(12,8),
+          nh_class_i_thermal NUMERIC(12,8),
+          nh_class_i_thermal_price NUMERIC(12,8),
+          nh_class_ii NUMERIC(12,8),
+          nh_class_ii_price NUMERIC(12,8),
+          nh_class_iii NUMERIC(12,8),
+          nh_class_iii_price NUMERIC(12,8),
+          nh_class_iv NUMERIC(12,8),
+          nh_class_iv_price NUMERIC(12,8),
+          me_total_cost_per_mwh NUMERIC(12,8),
+          me_new_and_1a_total NUMERIC(12,8),
+          me_1a NUMERIC(12,8),
+          me_1a_acp NUMERIC(12,8),
+          me_class_1 NUMERIC(12,8),
+          me_class_1_price NUMERIC(12,8), 
+          me_thermal NUMERIC(12,8),
+          me_thermal_price NUMERIC(12,8),
+          me_class_2 NUMERIC(12,8),
+          me_class_2_price NUMERIC(12,8),
+          ri_total_cost_per_mwh NUMERIC(12,8),
+          ri_new NUMERIC(12,8),
+          ri_new_price NUMERIC(12,8),
+          ri_existing NUMERIC(12,8),
+          ri_existing_price NUMERIC(12,8)
+        );
+        
+        CREATE TABLE trueprice.isone_rec_history(
+          id serial PRIMARY KEY,
+          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          curveStart TIMESTAMPTZ, -- per file name (sans tz)
+          curveEnd TIMESTAMPTZ, -- per new file name
+          month TIMESTAMPTZ, 
+          ct_total_cost_per_mwh NUMERIC(12,8),
+          ct_class_i NUMERIC(12,8), 
+          ct_class_i_price NUMERIC(12,8),
+          ct_class_ii NUMERIC(12,8),
+          ct_class_ii_price NUMERIC(12,8), 
+          ct_class_iii  NUMERIC(12,8),
+          ct_class_iii_price NUMERIC(12,8), 
+          ma_total_cost_per_mwh NUMERIC(12,8),
+          ma_rps_class_i_total NUMERIC(12,8),
+          ma_rps_class_i NUMERIC(12,8),
+          ma_class_i_price NUMERIC(12,8),
+          ma_solar_carve_out_i NUMERIC(12,8),
+          ma_srec_i_price NUMERIC(12,8),
+          ma_solar_carve_out_ii NUMERIC(12,8),
+          ma_srec_ii_price NUMERIC(12,8),
+          ma_class_ii_non_waste NUMERIC(12,8), 
+          ma_class_ii_nw_price NUMERIC(12,8),
+          ma_class_ii_waste NUMERIC(12,8),
+          ma_class_ii_waste_price NUMERIC(12,8),
+          ma_aps NUMERIC(12,8),
+          ma_aps_price NUMERIC(12,8),
+          ma_ces_obligation NUMERIC(12,8),
+          ma_ces_less_rps_i_ NUMERIC(12,8),
+          ma_ces_price NUMERIC(12,8),
+          ma_cps NUMERIC(12,8),
+          ma_cps_price NUMERIC(12,8),
+          ma_ces_e NUMERIC(12,8),
+          ma_ces_e_price NUMERIC(12,8),
+          nh_total_cost_per_mwh NUMERIC(12,8),
+          nh_class_i_total NUMERIC(12,8),
+          nh_class_i NUMERIC(12,8),
+          nh_class_i_price NUMERIC(12,8),
+          nh_class_i_thermal NUMERIC(12,8),
+          nh_class_i_thermal_price NUMERIC(12,8),
+          nh_class_ii NUMERIC(12,8),
+          nh_class_ii_price NUMERIC(12,8),
+          nh_class_iii NUMERIC(12,8),
+          nh_class_iii_price NUMERIC(12,8),
+          nh_class_iv NUMERIC(12,8),
+          nh_class_iv_price NUMERIC(12,8),
+          me_total_cost_per_mwh NUMERIC(12,8),
+          me_new_and_1a_total NUMERIC(12,8),
+          me_1a NUMERIC(12,8),
+          me_1a_acp NUMERIC(12,8),
+          me_class_1 NUMERIC(12,8),
+          me_class_1_price NUMERIC(12,8), 
+          me_thermal NUMERIC(12,8),
+          me_thermal_price NUMERIC(12,8),
+          me_class_2 NUMERIC(12,8),
+          me_class_2_price NUMERIC(12,8),
+          ri_total_cost_per_mwh NUMERIC(12,8),
+          ri_new NUMERIC(12,8),
+          ri_new_price NUMERIC(12,8),
+          ri_existing NUMERIC(12,8),
+          ri_existing_price NUMERIC(12,8)
+        );
+
+      -- nyiso rec
+      -- new data
+      --old data
+        CREATE TABLE trueprice.nyiso_rec (
+          id serial, -- not primary, this is fk to pjm_rec
+          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          curveStart TIMESTAMPTZ, -- per file name (sans tz)
+          month TIMESTAMPTZ, 
+          ny_total_cost_per_mwh NUMERIC(12,8),
+          ny_class_i NUMERIC(12,8),
+          ny_class_i_price NUMERIC(12,8),
+          ny_class_ii NUMERIC(12,8),
+          ny_class_ii_price NUMERIC(12,8),
+          ny_total_cost_per_mwh_zec_rate NUMERIC(12,8),
+          ny_class_iii_zec NUMERIC(12,8),
+          ny_class_iii_price NUMERIC(12,8)
+
+        );
+
+      -- old data
+      CREATE TABLE trueprice.nyiso_rec_history (
+          id serial, -- not primary, this is fk to pjm_rec
+          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          curveStart TIMESTAMPTZ, -- per file name (sans tz)
+          curveEnd TIMESTAMPTZ, -- per new file name
+          month TIMESTAMPTZ,
+          ny_total_cost_per_mwh NUMERIC(12,8),
+          ny_class_i NUMERIC(12,8),
+          ny_class_i_price NUMERIC(12,8),
+          ny_class_ii NUMERIC(12,8),
+          ny_class_ii_price NUMERIC(12,8),
+          ny_total_cost_per_mwh_zec_rate NUMERIC(12,8),
+          ny_class_iii_zec NUMERIC(12,8),
+          ny_class_iii_price NUMERIC(12,8) 
+
+        );
+        
+
       EOSQL
   # adminer: # for postgres, php admin interface
   #   image: adminer
