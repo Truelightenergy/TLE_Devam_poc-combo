@@ -1,3 +1,4 @@
 **/*.pyc
 **/.DS_Store
 flask_file_upload/
+sql_class.md
