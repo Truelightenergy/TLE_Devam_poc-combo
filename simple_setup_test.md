@@ -38,3 +38,19 @@ or
 * `docker stop tleapi`
 * `docker rm tleapi`
 * `docker compose -f ./docker/docker-compose.yml down`
+
+
+--- 
+
+# local api (on mac)
+* `cd github.com/truelightenergy/poc-combo`
+* `python3 -m venv .`
+* `chmod 700 ./bin/activate`
+* `source ./bin/activate`
+* `pip3 install -r ./buildContext/src/requirements.txt`
+
+* `DATABASE=$DB_IP PGPASSWORD=docker PGUSER=docker flask --app ./buildContext/src/trueprice_api run --host=0.0.0.0 --post=5001`
+
+do things
+
+* `deactivate`
