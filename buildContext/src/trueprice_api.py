@@ -11,7 +11,7 @@ app.config['UPLOAD_FOLDER'] = api_util.UPLOAD_FOLDER
 
 
 # figure out how to get with curl as well
-@app.route('/upload', methods=['GET','POST'])
+@app.route('/upload_csv', methods=['GET','POST'])
 def upload_csv():
     """
     handles the csv file uploads
@@ -28,7 +28,7 @@ def index():
     return response
 
 
-@app.route('/zip', methods=['GET','POST'])
+@app.route('/upload_zip', methods=['GET','POST'])
 def upload_zip():
     """
     handles the zip uploads
@@ -43,6 +43,15 @@ def get_data():
     """
     args = request.args.to_dict()
     response = api_util.extract_data(args)
+    return response
+
+
+@app.route('/download_data', methods=['GET','POST'])
+def download_data():
+    """
+    handles data downloads
+    """
+    response = api_util.download_data()
     return response
 
 

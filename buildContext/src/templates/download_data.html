@@ -1,0 +1,115 @@
+<html>
+<head>
+	<title>Download</title>
+	<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+	<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+	<script src="https://malsup.github.io/jquery.form.js"></script> 
+	<link href="/static/css/notification.css" rel="stylesheet"/>
+	<script src="/static/js/notification.js"></script>
+
+
+	<link rel="stylesheet" href="/static/css/download_data.css">
+</head>
+<body>
+	<div id="toast-container"></div>
+	{% if flash_message == True %}
+
+    <script>show_toast('{{ message_toast }}', '{{ message_flag }}')</script>
+    {% endif %}
+
+	<div class="bg-image" 
+     style=" background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)),url('https://f.hubspotusercontent30.net/hubfs/456834/home%20banner.jpeg');
+            height: 100vh">
+
+		<br/>
+		<br/>
+		<div class="container">
+		<div class="row">
+
+		
+
+		<div class="download_form_cont">
+			<b><h1 style="color: white;" class="text-center">Download Data</h1></b>
+			<div class="form-group">
+				<form id="download_forms" enctype="multipart/form-data" method="post">
+						
+					<label for="iso" class="col-md-4 mt"><h4>ISO:</h4></label>
+					<div class="col-md-8">
+						<select name="iso" class="form-control mt-3 bg-dark text-white" style="font-size:18pt;height:40px;">
+							<option value="ercot">Ercot</option>
+							<option value="isone">Isone</option>
+							<option value="miso">Miso</option>
+							<option value="nyiso">Nyiso</option>
+							<option value="pjm">PJM</option>
+						</select>
+					</div>
+					
+					<label for="curve_type" class="col-md-4"><h4>Curve Type:</h4></label>
+					<div class="col-md-8">
+						<select name="curve_type" class="form-control mt-3 bg-dark text-white" style="font-size:18pt;height:40px;">
+							<option value="forwardcurve">Forward Curve</option>
+							<option value="ancillarydatadetails">Ancillary Data Details</option>
+							<option value="rec">Rec</option>
+						</select>
+					</div>
+
+					<label for="strip" class="col-md-4"><h4>Strip:</h4></label>
+					<div class="col-md-8">
+						<select name="strip" class="form-control mt-3 bg-dark text-white" style="font-size:18pt;height:40px;">
+							<option value="strip_24x7">24x7</option>
+							<option value="strip_5x16">5x16</option>
+							<option value="strip_7x8">7x8</option>
+							<option value="strip_7x24">7x24</option>
+							<option value="strip_7x25">7x25</option>
+						</select>
+					</div>
+
+					<label for="type" class="col-md-4"><h4>Data Format:</h4></label>
+					<div class="col-md-8 ">
+						<select name="type" class="form-control mt-3 bg-dark text-white " style="font-size:18pt;height:40px;">
+							<option value="csv">csv</option>
+							<option value="json">JSON</option>
+						</select>
+					</div>
+
+					<label for="start" class="col-md-4"><h4>Start Date:</h4></label>
+					<div class="col-md-8 ">
+						<input type="date" class="form-control mt-3 bg-dark text-white" required id="start" name="start" style="font-size:18pt;height:40px;">
+					</div>
+
+					<label for="end" class="col-md-4"><h4>End Date:</h4></label>
+					<div class="col-md-8 ">
+						<input type="date" class="form-control mt-3 bg-dark text-white" required id="end" name="end" style="font-size:18pt;height:40px;">
+					</div>
+					
+					<div class="col-md-6"></div>
+						<input type="submit" value="Download" id="save" class = "col-md-4 btn-info btn-lg mt-5" />
+					</div>
+		
+			
+				
+					
+				
+
+			</form>
+			</div>
+
+	
+	</div>
+</div>
+
+</div>
+</div>
+
+</body>
+
+
+</html>
+
+
+    
+    
+
+

@@ -271,6 +271,7 @@ class Pjm_Rec:
                 # finally execute the query
                 r = con.execute(backup_query)            
                 con.execute(f"drop table trueprice.{tmp_table_name}")
+            return "Data Inserted"
 
         elif new_exists:
             return "Newer data in database, abort"

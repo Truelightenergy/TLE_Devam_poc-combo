@@ -10,6 +10,7 @@ from extractors.extractor import Extractor
 import trueprice_database as tpdb
 from werkzeug.utils import secure_filename
 from flask import Flask, flash, request, redirect, url_for, flash, render_template, Response
+from flask import render_template
 
 class Util:
     """
@@ -44,13 +45,11 @@ class Util:
         """
         starts the
         """
-        return "<p>The new TRUEPrice API, see /upload or /zip or /get_data</p>"
-
+        return render_template("index.html")
     def upload_csv(self):
         """
         handles the csv upload file
         """
-
         print("/upload called", file=sys.stderr)
         if request.method == 'POST':
             print(f"POST: {request}", file=sys.stderr)
@@ -69,17 +68,16 @@ class Util:
                 filename = secure_filename(file.filename)
                 location = os.path.join(self.UPLOAD_FOLDER, filename)
                 file.save(location)
-                self.ingestor.call_ingestor(location) # deal with result
-                return redirect(url_for('upload_csv'))
-        return '''
-        <!doctype html>
-        <title>Upload new File</title>
-        <h1>Upload new File</h1>
-        <form method=post enctype=multipart/form-data>
-        <input type=file name=file>
-        <input type=submit value=Upload>
-        </form>
-        '''
+                response = self.ingestor.call_ingestor(location) # deal with result
+                if response == "Data already exists based on timestamp and strip":
+                    flag = "error"
+                else:
+                    flag = "success"
+                    response = "Data inserted successfully"
+                return render_template('upload_csv.html', flash_message=True, message_toast = response, message_flag = flag)
+                # return redirect(url_for('upload_csv')
+        
+        return render_template("upload_csv.html")
 
     def upload_zip(self):
         """
@@ -106,11 +104,37 @@ class Util:
                 # todo - ingestion
                 return redirect(url_for('upload_zip'))
         return render_template('index.html')
+    
+    def download_data(self):
+        """
+        download the data from databasse
+        """
+        if request.method == 'POST':
+            query_strings = dict()
+            query_strings['iso'] = request.form.get('iso')
+            query_strings["curve_type"] = request.form.get('curve_type')
+            query_strings["strip"] = request.form.get('strip').split("_")[-1]
+            query_strings["type"] = request.form.get('type')
+            start = str(request.form.get('start')).split("-")
+            query_strings["start"] = "".join(start)
+
+            end = str(request.form.get('end')).split("-")
+            query_strings["end"] = "".join(end)
+            
+            status = self.extract_data(query_strings)
+            if status == "Unable to Fetch Data":
+                return render_template('download_data.html',  flash_message=True, message_toast = status, message_flag = "error")
+            else:
+                return status
+            
+        return render_template('download_data.html')
+         
 
     def extract_data(self, query_strings):
         """
         extracts the dataset from the database based on the characteristics
         """
+
         data_frame, status = self.extractor.get_custom_data(query_strings)
         file_name = f'{query_strings["curve_type"]}_{query_strings["iso"]}_{query_strings["strip"]}_{query_strings["start"]}_{query_strings["end"]}'
         if status == "success":
@@ -127,4 +151,4 @@ class Util:
                     headers={'Content-Disposition':'attachment;filename='+file_name+'.json'})
             
         else:
-            return f'<h1>{status}</h1>'
+            return 'Unable to Fetch Data'

@@ -1,0 +1,17 @@
+
+.download_form_cont {
+    margin: 20px;
+    padding: 20px;
+    background: rgba(57, 91, 100, 0.5);
+  
+    color:#fff;
+    overflow:hidden;
+  }
+  #download_form {
+    float:left;
+    padding:20px;
+    width:700px;
+  }
+  #download_form > div {
+    margin-bottom:10px;
+  }

@@ -120,15 +120,11 @@ class Ingestion:
         elif re.search("rec", file, re.IGNORECASE):
             result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.rec.ingestion, "validate_api": self.validate_api})
         else:
-            print("Shouldn't be here")
-            return
+            result = "Shouldn't be here"
+        
 
-        if result is not None:
-            print(f"Ingestion Failed: {result}")
-        else:
-            print("Ingestion Succeeded")
+        return result
 
-        print("Finished Ingestion")
 
 
 class TLE_Meta:
