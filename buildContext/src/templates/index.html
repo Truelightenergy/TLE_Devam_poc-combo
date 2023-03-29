@@ -1,33 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <title>Upload Files</title>
-    <meta charset="utf-8">
+<html>
+<head>
+	<title>Upload</title>
+	<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+   <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!-- ---- Include the above in your HEAD tag --------div class="container"> -->
 
-    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js">script></script>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
 
-    <style>hr, h3 {padding-bottom: 20px;}canvas {background-color: #fffff;}</style>
-    <style>
-    </style>
-  </head>
-  <body>
+    <link rel="stylesheet" href="/static/css/index.css">
 
+
+</head>
+<body>
+   <div class="bg-image" 
+   style=" background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)),url('https://f.hubspotusercontent30.net/hubfs/456834/home%20banner.jpeg');
+          height: 100vh">
+
+    <br/>
+    <br/>
     <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+               <div class="card text-white flex-md-row mb-4 shadow-sm h-md-250">
+                  <div class="card-body d-flex flex-column align-items-start">
+                     <strong class="d-inline-block mb-2 text-white">Zip</strong>
+                     <h6 class="mb-0">
+                        <a class="text-white disabled" href="upload_zip">You can upload your zip files here.</a>
+                     </h6>
+                     <div class="mb-1 text-white">Upload Zip</div>
+                     <p class="card-text mb-auto"></p>
+                     <a class="btn btn-primary btn-lg disabled" role="button" href="upload_zip">Upload Zip</a>
+                  </div>
+                  <img class="card-img-right flex-auto d-none d-lg-block" alt="Thumbnail [200x250]" src="/static/images/zip.png" style="width: 200px; height: 250px;">
+               </div>
+            </div>
+        
+ 
+            <div class="col-md-6">
+               <div class="card text-white flex-md-row mb-4 shadow-sm h-md-250">
+                  <div class="card-body d-flex flex-column align-items-start">
+                     <strong class="d-inline-block mb-2 text-white">Csv</strong>
+                     <h6 class="mb-0">
+                        <a class="text-white" href="upload_csv">You can upload your csv files here.</a>
+                     </h6>
+                     <div class="mb-1 text-white">Upload Csv</div>
+                     <p class="card-text mb-auto"></p>
+                     <a class="btn btn-success btn-lg" role="button" href="upload_csv">Upload Csv</a>
+                  </div>
+                  <img class="card-img-right flex-auto d-none d-lg-block" alt="Thumbnail [200x250]" src="/static/images/csv.png" style="width: 200px; height: 250px;">
+               </div>
+            </div>
+         </div>
 
-      <div class="header">
-        <h3 class="text-muted">Flask upload zip file and unzip</h3>
-      </div>
-
-      <form method=post enctype=multipart/form-data>
-        <input type=file name=file>
-        <input type=submit value=Upload>
-      </form>
+         <div class="row">
+            <div class="col-md-6">
+               <div class="card text-white flex-md-row mb-4 shadow-sm h-md-250">
+                  <div class="card-body d-flex flex-column align-items-start">
+                     <strong class="d-inline-block mb-2 text-white">Data Download</strong>
+                     <h6 class="mb-0">
+                        <a class="text-white" href="download_data">You can download data in csv and json.</a>
+                     </h6>
+                     <div class="mb-1 text-white">Data Download</div>
+                     <p class="card-text mb-auto"></p>
+                     <a class="btn btn-info btn-lg" role="button" disabled href="download_data">Download</a>
+                  </div>
+                  <img class="card-img-right flex-auto d-none d-lg-block" alt="Thumbnail [200x250]" src="/static/images/download.png" style="width: 200px; height: 250px;">
+               </div>
+            </div>
+         </div>
     </div>
-
-    <script>
-    </script>
-  </body>
+</div>   
+</body>
 </html>

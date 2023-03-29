@@ -66,8 +66,7 @@ class Ercot_Energy:
         elif not same and not new_exists and not old_exists: # if data is new then insert it
             r = df.to_sql(f"{data.controlArea}_energy", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
             if r is None:
-                if r is None:
-                    return "Failed to insert" 
+                return "Failed to insert" 
                 
         elif old_exists: # if there exists old data, handle it with slowly changing dimensions
             tmp_table_name = f"{data.controlArea}_energy_{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
@@ -114,6 +113,7 @@ class Ercot_Energy:
                 # finally execute the query
                 r = con.execute(backup_query)            
                 con.execute(f"drop table trueprice.{tmp_table_name}")
+            return "Data Inserted"
 
         elif new_exists:
             return "Newer data in database, abort"
