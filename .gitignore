@@ -6,3 +6,5 @@ lib/
 bin/
 pyvenv.cfg
 curl_tests/*.txt
+include/
+lib64
