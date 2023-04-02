@@ -1,6 +1,6 @@
 
 
-function showToast(type, message) {
+function showToast(type, message, page_type) {
     var toastContainer = document.getElementById('toast-container');
     var toast = document.createElement('div');
     toast.classList.add('toast');
@@ -15,20 +15,24 @@ function showToast(type, message) {
 
     setTimeout(function() {
         toast.remove();
-        location.reload();
-    }, 5000);
+        if(page_type=="upload"){
+            location.reload();
+            // history.go(0);
+        }
+        
+    }, 2000);
 }
 
 // Show toast notifications with messages from the Python side
-function show_toast(message_toast,message_flag ) {
+function show_toast(message_toast,message_flag, page_type ) {
     var msg =  message_toast;
     var flag = message_flag;
     
     if (flag == "success") {
-        showToast('success', msg);
+        showToast('success', msg, page_type);
     }
 
     else {
-        showToast('error', msg);
+        showToast('error', msg, page_type);
     }
 }

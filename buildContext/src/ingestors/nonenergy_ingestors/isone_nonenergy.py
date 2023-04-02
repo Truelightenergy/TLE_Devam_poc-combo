@@ -64,8 +64,9 @@ class Isone_NonEnergy:
         
         elif not same and not new_exists and not old_exists:
             r = df.to_sql(f"{data.controlArea}_nonenergy", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
-            if r is None:
-                return "Failed to insert"
+            if r is not None:
+                return "Data Inserted"
+            return "Failed to insert" 
             
         elif old_exists: # if there exists old data, handle it with slowly changing dimensions
             tmp_table_name = f"{data.controlArea}_nonenergy_{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL

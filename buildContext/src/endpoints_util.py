@@ -69,12 +69,11 @@ class Util:
                 location = os.path.join(self.UPLOAD_FOLDER, filename)
                 file.save(location)
                 response = self.ingestor.call_ingestor(location) # deal with result
-                if response == "Data already exists based on timestamp and strip":
-                    flag = "error"
+                if response == "Data Inserted":
+                    flag = "success"  
                 else:
-                    flag = "success"
-                    response = "Data inserted successfully"
-                return render_template('upload_csv.html', flash_message=True, message_toast = response, message_flag = flag)
+                    flag = "error"
+                return render_template('upload_csv.html', flash_message=True, message_toast = response, message_flag = flag, page_type = "upload")
                 # return redirect(url_for('upload_csv')
         
         return render_template("upload_csv.html")
@@ -121,12 +120,12 @@ class Util:
             end = str(request.form.get('end')).split("-")
             query_strings["end"] = "".join(end)
             
-            status = self.extract_data(query_strings)
-            if status == "Unable to Fetch Data":
-                return render_template('download_data.html',  flash_message=True, message_toast = status, message_flag = "error")
-            else:
-                return status
+            response, status = self.extract_data(query_strings)
             
+            if status != "success":
+                return render_template('download_data.html',  flash_message=True, message_toast = status, message_flag = "error", page_type = "download")
+            else:
+                return response
         return render_template('download_data.html')
          
 
@@ -143,12 +142,27 @@ class Util:
                     data_frame.to_csv(index=False),
                     mimetype="text/csv",
                     headers={"Content-disposition":
-                    "attachment; filename="+file_name+".csv"})
+                    "attachment; filename="+file_name+".csv"}), status
             
             elif query_strings["type"]=="json":
                 return Response(data_frame.to_json(orient="records"), 
                     mimetype='application/json',
-                    headers={'Content-Disposition':'attachment;filename='+file_name+'.json'})
+                    headers={'Content-Disposition':'attachment;filename='+file_name+'.json'}), status
+            
             
         else:
-            return 'Unable to Fetch Data'
+            return None, 'Unable to Fetch Data'
+        
+    def custom_error_handler(self, error_message):
+        """
+        handles all types of exceptions inside the flask app
+        """
+        url = str(request.url).split("/")[-1]
+        if url == "favicon.ico":
+            return render_template("upload_csv.html", flash_message=False, message_toast = None, message_flag = "error", page_type = None)
+        elif "upload_csv" == url:
+            page_type = "upload"
+        else:
+            page_type = url
+        print(url)
+        return render_template(f"{url}.html", flash_message=True, message_toast = error_message, message_flag = "error", page_type = page_type)

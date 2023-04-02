@@ -9,14 +9,13 @@
 	<link href="/static/css/notification.css" rel="stylesheet"/>
 	<script src="/static/js/notification.js"></script>
 
-
 	<link rel="stylesheet" href="/static/css/download_data.css">
 </head>
 <body>
 	<div id="toast-container"></div>
 	{% if flash_message == True %}
 
-    <script>show_toast('{{ message_toast }}', '{{ message_flag }}')</script>
+    <script>show_toast('{{ message_toast }}', '{{ message_flag }}', '{{ page_type }}')</script>
     {% endif %}
 
 	<div class="bg-image" 

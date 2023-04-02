@@ -131,6 +131,7 @@ services:
           curveEnd TIMESTAMPTZ, -- per new file name
           month TIMESTAMPTZ,
           maine_amount NUMERIC(12,8), -- varies by iso, unclear best approach, single table or per iso table
+          newhampshire_amount NUMERIC(12,8),
           vermont_amount NUMERIC(12,8),
           connecticut_amount NUMERIC(12,8),
           rhodeisland_amount NUMERIC(12,8),
