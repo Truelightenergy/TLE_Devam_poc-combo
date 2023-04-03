@@ -26,19 +26,19 @@ class Ingestion:
         """
         validates the incoming data file name
         """
-        file_name_components_pattern = re.compile(".*/(.+?)_(.+?)_(.+?)_(.+?)_(.+)?.csv$") # len(5-6)
+        file_name_components_pattern = re.compile(".*/(.+?)_(.+?)_(.+?)_(.+)?.csv$") # len(5-6)
         
         matched = file_name_components_pattern.search(file_name)
         if matched == None:
             return ParseError(f"failed to parse {file_name} - regex")
         
         results = matched.groups()
-        if len(results) != 5: # todo - confirm works with and without "_cob" extension in name
+        if len(results) != 4: # todo - confirm works with and without "_cob" extension in name
             return ParseError(f"failed to parse {file_name} - component count")
 
         # controlArea == iso
         # issue == curveTime
-        (curveType, controlArea, strip, curveDate, issue) = results    
+        (curveType, controlArea, curveDate, issue) = results    
         curveType = os.path.basename(curveType).replace("Curve","")
 
         # todo - should error if timestamp/date is missing or invalid instead of trying to fix here, so remove this block
@@ -56,7 +56,7 @@ class Ingestion:
                 return ParseError(f"failed to parse {file_name} - time component")
 
         timestamp = datetime.datetime.strptime(curveDate+timeComponent, "%Y%m%d%H%M%S")
-        return TLE_Meta(file_name, curveType, controlArea, strip, timestamp)
+        return TLE_Meta(file_name, curveType, controlArea, timestamp)
     
 
     def process(self, files, steps):
@@ -64,7 +64,7 @@ class Ingestion:
         Performs the validation 
         """
         meta = None
-
+        result = "Unable to perform Insertion"
         # validate
         valid = []
         for f in files:
@@ -86,11 +86,10 @@ class Ingestion:
             result = steps["ingestion"](m) # insert/update db
             if result is not None:
                 return result
-            result = steps["validate_api"](m) # validate data made it to db via api
-            if result is not None:
-                return result
-
-        return None
+            # result = steps["validate_api"](m) # validate data made it to db via api
+            # if result is not None:
+            #     return result
+        return result
     
     # todo - s3
     def storage(self, file_name):
@@ -113,9 +112,9 @@ class Ingestion:
 
         files = [file]
         result = None
-        if re.search("forward", file, re.IGNORECASE):
+        if re.search("energy", file, re.IGNORECASE):
             result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.energy.ingestion, "validate_api": self.validate_api})
-        elif re.search("ancillarydatadetails", file, re.IGNORECASE):
+        elif re.search("nonenergy", file, re.IGNORECASE):
             result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.non_energy.ingestion, "validate_api": self.validate_api})
         elif re.search("rec", file, re.IGNORECASE):
             result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.rec.ingestion, "validate_api": self.validate_api})
@@ -128,11 +127,10 @@ class Ingestion:
 
 
 class TLE_Meta:
-    def __init__(self, fileName, curveType, controlArea, strip, curveTimestamp):
+    def __init__(self, fileName, curveType, controlArea, curveTimestamp):
         self.fileName = fileName
         self.curveType = curveType.lower()
         self.controlArea = controlArea.lower()
-        self.strip = strip.lower()
         self.curveStart = curveTimestamp
     
     def snake_timestamp(self):

@@ -7,6 +7,7 @@ $(document).ready(function(){
 
             $(this).ajaxSubmit({
                 target: '#process',
+                cache: false, // prevent caching
                 beforeSubmit:function(){
                     $('.progress-bar').width('50%');
                 },
@@ -25,7 +26,8 @@ $(document).ready(function(){
                 resetForm: true
                 
             });
-            // location.reload();
+            // location.reload();           
+            
         }
         return false;
     });
@@ -34,3 +36,9 @@ $(document).ready(function(){
     $('#save').attr('disabled', false);
     
 });
+
+
+
+
+
+

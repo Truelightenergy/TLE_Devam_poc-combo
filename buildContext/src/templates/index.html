@@ -1,18 +1,25 @@
 <html>
 <head>
-	<title>Upload</title>
+	<title>home</title>
 	<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <!-- ---- Include the above in your HEAD tag --------div class="container"> -->
 
-<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
 
     <link rel="stylesheet" href="/static/css/index.css">
-
+    <link href="/static/css/notification.css" rel="stylesheet"/>
+    <script src="/static/js/notification.js"></script>
 
 </head>
 <body>
+   <div id="toast-container"></div>
+	{% if flash_message == True %}
+
+    <script>show_toast('{{ message_toast }}', '{{ message_flag }}', '{{ page_type }}'); </script>
+    {% endif %}
+   
    <div class="bg-image" 
    style=" background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)),url('https://f.hubspotusercontent30.net/hubfs/456834/home%20banner.jpeg');
           height: 100vh">

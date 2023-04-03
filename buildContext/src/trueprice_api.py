@@ -1,6 +1,6 @@
 import os
 from endpoints_util import Util
-from flask import Flask, request
+from flask import Flask, request, render_template
 
 
 
@@ -53,6 +53,11 @@ def download_data():
     """
     response = api_util.download_data()
     return response
+
+@app.errorhandler(Exception)          
+def error_handler(e):
+    return api_util.custom_error_handler(e)          
+    
 
 
 
