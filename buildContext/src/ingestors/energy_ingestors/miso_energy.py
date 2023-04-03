@@ -85,12 +85,12 @@ class Miso_Energy:
                 backup_query = f'''
                     with current as (
                         -- get the current rows in the database, all of them, not just things that will change
-                        select id, strip, curvestart, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}' 
+                        select id, strip, curvestart, month, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}' 
                     ),
                     backup as (
                         -- take current rows and insert into database but with a new "curveend" timestamp
-                        insert into trueprice.{data.controlArea}_energy_history (id, strip, curvestart, curveend, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount)
-                        select id, strip, curvestart, '{curveend}' as curveend, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount
+                        insert into trueprice.{data.controlArea}_energy_history (id, strip, curvestart, curveend, month, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount)
+                        select id, strip, curvestart, '{curveend}' as curveend, month, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount
                         from current
                     ),
                     single as (
@@ -98,6 +98,7 @@ class Miso_Energy:
                     )
                     -- update the existing "current" with the new "csv"
                     update trueprice.{data.controlArea}_energy set
+                    month = newdata.month,
                     curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
                     amilcips_amount = newdata.amilcips_amount, -- mindless update all cols, we don't know which ones updated so try them all
                     amilcilco_amount = newdata.amilcilco_amount,

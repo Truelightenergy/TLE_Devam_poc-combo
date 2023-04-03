@@ -84,12 +84,12 @@ class Ercot_Energy:
                 backup_query = f'''
                     with current as (
                         -- get the current rows in the database, all of them, not just things that will change
-                        select id, strip, curvestart, north_amount, houston_amount, south_amount, west_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}'
+                        select id, strip, curvestart, month, north_amount, houston_amount, south_amount, west_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}'
                     ),
                     backup as (
                         -- take current rows and insert into database but with a new "curveend" timestamp
-                        insert into trueprice.{data.controlArea}_energy_history (id, strip, curvestart, curveend, north_amount, houston_amount, south_amount, west_amount)
-                        select id, strip, curvestart, '{curveend}' as curveend, north_amount, houston_amount, south_amount, west_amount
+                        insert into trueprice.{data.controlArea}_energy_history (id, strip, curvestart, curveend, month, north_amount, houston_amount, south_amount, west_amount)
+                        select id, strip, curvestart, '{curveend}' as curveend, month, north_amount, houston_amount, south_amount, west_amount
                         from current
                     ),
                     single as (
@@ -98,6 +98,7 @@ class Ercot_Energy:
                     -- update the existing "current" with the new "csv"
                     --north_amount, houston_amount, south_amount, west_amount
                     update trueprice.{data.controlArea}_energy set
+                    month = newdata.month,
                     curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
                     north_amount = newdata.north_amount, -- mindless update all cols, we don't know which ones updated so try them all
                     houston_amount = newdata.houston_amount,

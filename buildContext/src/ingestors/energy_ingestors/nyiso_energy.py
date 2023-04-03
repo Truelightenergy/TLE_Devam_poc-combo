@@ -93,12 +93,12 @@ class Nyiso_Energy:
                 backup_query = f'''
                     with current as (
                         -- get the current rows in the database, all of them, not just things that will change
-                        select id, strip, curvestart, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}'
+                        select id, strip, curvestart, month, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}'
                     ),
                     backup as (
                         -- take current rows and insert into database but with a new "curveend" timestamp
-                        insert into trueprice.{data.controlArea}_energy_history (id, strip, curvestart, curveend, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount)
-                        select id, strip, curvestart, '{curveend}' as curveend, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount
+                        insert into trueprice.{data.controlArea}_energy_history (id, strip, curvestart, curveend, month, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount)
+                        select id, strip, curvestart, '{curveend}' as curveend, month, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount
                         from current
                     ),
                     single as (
@@ -107,6 +107,7 @@ class Nyiso_Energy:
                     -- update the existing "current" with the new "csv"
                     update trueprice.{data.controlArea}_energy set
                     curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
+                    month = newdata.month,
                     zone_a_amount = newdata.zone_a_amount, -- mindless update all cols, we don't know which ones updated so try them all
                     zone_b_amount = newdata.zone_b_amount,
                     zone_c_amount = newdata.zone_c_amount,

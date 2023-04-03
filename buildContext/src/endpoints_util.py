@@ -151,18 +151,21 @@ class Util:
             
             
         else:
+        
             return None, 'Unable to Fetch Data'
         
     def custom_error_handler(self, error_message):
         """
         handles all types of exceptions inside the flask app
         """
-        url = str(request.url).split("/")[-1]
-        if url == "favicon.ico":
-            return render_template("upload_csv.html", flash_message=False, message_toast = None, message_flag = "error", page_type = None)
-        elif "upload_csv" == url:
-            page_type = "upload"
-        else:
-            page_type = url
-        print(url)
-        return render_template(f"{url}.html", flash_message=True, message_toast = error_message, message_flag = "error", page_type = page_type)
+        return error_message
+
+        # url = str(request.url).split("/")[-1]
+        # if url == "favicon.ico":
+        #     return render_template("upload_csv.html", flash_message=False, message_toast = None, message_flag = "error", page_type = None)
+        # elif "upload_csv" == url:
+        #     page_type = "upload"
+        # else:
+        #     page_type = url
+        # print(url)
+        # return render_template(f"{url}.html", flash_message=True, message_toast = error_message, message_flag = "error", page_type = page_type)

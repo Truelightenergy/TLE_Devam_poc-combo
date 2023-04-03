@@ -1,9 +1,9 @@
 #!/bin/bash -x
 
-export DB_IP=18.116.202.173
+export DB_IP=localhost
 export API_IP=127.0.0.1
-export DB_USER=docker
-export PGPASSWORD=docker
+export DB_USER=postgres
+export PGPASSWORD=postgres
 
 # WARNING truncates table
 truncate_energy () {
@@ -21,7 +21,7 @@ psql_check () {
 
 # $1 == "iso"
 api_check () {
-  curl -sw "%{http_code}" "http://$API_IP:5001/get_data?start=20230101&end=20291231&iso=$1&strip=5x16&curve_type=forwardcurve&type=csv" > api_results.txt
+  curl -sw "%{http_code}" "http://$API_IP:5555/get_data?start=20230301&end=20280301&iso=$1&strip=5x16&curve_type=forwardcurve&type=csv" > api_results.txt
   if [[ $(wc -l api_results.txt | awk '{print $1}') -eq "62" ]]; then
     return 0
   fi
@@ -35,7 +35,8 @@ psql_history_check () {
 }
 
 upload_check () {
-  curl -s -o /dev/null -w "%{http_code}" -H "Content-Type: multipart/form-data" -F "file=@$1" http://$API_IP:5001/upload
+  # curl -s -o /dev/null -w "%{http_code}" -H "Content-Type: multipart/form-data" -F "file=@$1" http://$API_IP:5001/upload
+  curl -v -X POST -H "Content-Type: multipart/form-data" -F "file=@$1" http://localhost:5555/upload_csv
 }
 
 # $1 == "iso"
@@ -49,7 +50,7 @@ upload_check () {
 truncate_energy "nyiso"
 
 # upload 1
-if ! upload_check "../buildContext/good_test_data/energy/ForwardCurve_NYISO_5X16_20230109_084700.csv"; then
+if ! upload_check "buildContext/good_test_data/energy/Energy_NYISO_20230330_083040.csv"; then
   printf "error upload_check"
 fi
 
@@ -63,7 +64,7 @@ if ! api_check "nyiso"; then
   printf "error api_check"
 fi
 
-if ! upload_check "../buildContext/good_test_data/energy/ForwardCurve_NYISO_5X16_20230109_084701.csv"; then
+if ! upload_check "buildContext/good_test_data/energy/Energy_NYISO_20230330_113740.csv"; then
   printf "error upload_check, intraday update"
 fi
 

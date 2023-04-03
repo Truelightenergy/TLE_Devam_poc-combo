@@ -104,12 +104,12 @@ class Pjm_Energy:
                 backup_query = f'''
                     with current as (
                         -- get the current rows in the database, all of them, not just things that will change
-                        select id, strip, curvestart, aeco_amount, aep_amount, aps_amount, atsi_amount, bge_amount, comed_amount, day_amount, deok_amount, dom_amount, dpl_amount, duq_amount, jcpl_amount, meted_amount, peco_amount, penelec_amount, pepco_amount, ppl_amount, pseg_amount, reco_amount, west_amount, ad_amount, ni_amount, east_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}' 
+                        select id, strip, curvestart, month, aeco_amount, aep_amount, aps_amount, atsi_amount, bge_amount, comed_amount, day_amount, deok_amount, dom_amount, dpl_amount, duq_amount, jcpl_amount, meted_amount, peco_amount, penelec_amount, pepco_amount, ppl_amount, pseg_amount, reco_amount, west_amount, ad_amount, ni_amount, east_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}' 
                     ),
                     backup as (
                         -- take current rows and insert into database but with a new "curveend" timestamp
-                        insert into trueprice.{data.controlArea}_energy_history (id, strip, curvestart, curveend, aeco_amount, aep_amount, aps_amount, atsi_amount, bge_amount, comed_amount, day_amount, deok_amount, dom_amount, dpl_amount, duq_amount, jcpl_amount, meted_amount, peco_amount, penelec_amount, pepco_amount, ppl_amount, pseg_amount, reco_amount, west_amount, ad_amount, ni_amount, east_amount)
-                        select id, strip, curvestart, '{curveend}' as curveend, aeco_amount, aep_amount, aps_amount, atsi_amount, bge_amount, comed_amount, day_amount, deok_amount, dom_amount, dpl_amount, duq_amount, jcpl_amount, meted_amount, peco_amount, penelec_amount, pepco_amount, ppl_amount, pseg_amount, reco_amount, west_amount, ad_amount, ni_amount, east_amount
+                        insert into trueprice.{data.controlArea}_energy_history (id, strip, curvestart, curveend, month, aeco_amount, aep_amount, aps_amount, atsi_amount, bge_amount, comed_amount, day_amount, deok_amount, dom_amount, dpl_amount, duq_amount, jcpl_amount, meted_amount, peco_amount, penelec_amount, pepco_amount, ppl_amount, pseg_amount, reco_amount, west_amount, ad_amount, ni_amount, east_amount)
+                        select id, strip, curvestart, '{curveend}' as curveend, month, aeco_amount, aep_amount, aps_amount, atsi_amount, bge_amount, comed_amount, day_amount, deok_amount, dom_amount, dpl_amount, duq_amount, jcpl_amount, meted_amount, peco_amount, penelec_amount, pepco_amount, ppl_amount, pseg_amount, reco_amount, west_amount, ad_amount, ni_amount, east_amount
                         from current
                     ),
                     single as (
@@ -117,6 +117,7 @@ class Pjm_Energy:
                     )
                     -- update the existing "current" with the new "csv"
                     update trueprice.{data.controlArea}_energy set
+                    month = newdata.month,
                     curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
                     aeco_amount = newdata.aeco_amount,
                     aep_amount = newdata.aep_amount,
