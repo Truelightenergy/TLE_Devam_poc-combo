@@ -43,7 +43,7 @@ class Pjm_Rec:
         df.fillna(fill_values, inplace=True)
 
         # removing $ and % signs
-        df[df.columns[1:]] = df[df.columns[1:]].replace('[\$,%]', '', regex=True).astype(float)
+        df[df.columns[2:]] = df[df.columns[2:]].replace('[\$,%]', '', regex=True).astype(float)
 
         # date parsing
         df['NJ_EY'] = pd.to_datetime(df['NJ_EY'])
@@ -54,8 +54,8 @@ class Pjm_Rec:
         """
         rename the columns accordingly
         """
-        print(df.columns)
         df = df.rename(columns={'NJ_EY': 'Month',
+            'NJ_Strip': 'strip',
             'NJ_Total_Cost_per_MWh':'NJ_Total_Cost_per_MWh_amount',
             'NJ_Solar':'NJ_Solar_percent',
             'NJ_Solar_Price':'NJ_Solar_amount',
@@ -107,7 +107,6 @@ class Pjm_Rec:
             'IL_ACP':'IL_ACP_amount'
             })
         df.columns = df.columns.str.lower()
-        print(df.columns)
             
         return df
     
@@ -123,7 +122,7 @@ class Pjm_Rec:
         df = self.renaming_columns(df, data.controlArea)
 
         df.insert(0, 'curvestart', data.curveStart) # date on file, not the internal zone/month column
-        df.insert(0, 'strip', data.strip) # stored as object, don't freak on dtypes
+        # df.insert(0, 'strip', data.strip) # stored as object, don't freak on dtypes
         
 
 
@@ -135,11 +134,11 @@ class Pjm_Rec:
         check_query = f"""
             -- if nothing found, new data, insert it, or do one of these
             
-            select exists(select 1 from trueprice.{data.controlArea}_rec where curvestart='{now}'and strip='{data.strip}') -- ignore, db == file based on timestamp
+            select exists(select 1 from trueprice.{data.controlArea}_rec where curvestart='{now}') -- ignore, db == file based on timestamp
             UNION ALL
-            select exists(select 1 from trueprice.{data.controlArea}_rec where curvestart>='{sod}' and curvestart<'{now}' and strip='{data.strip}') -- update, db is older
+            select exists(select 1 from trueprice.{data.controlArea}_rec where curvestart>='{sod}' and curvestart<'{now}') -- update, db is older
             UNION ALL
-            select exists(select 1 from trueprice.{data.controlArea}_rec where curvestart>'{now}' and curvestart<'{eod}' and strip='{data.strip}') -- ignore, db is newer
+            select exists(select 1 from trueprice.{data.controlArea}_rec where curvestart>'{now}' and curvestart<'{eod}') -- ignore, db is newer
         """
         query_result = pd.read_sql(check_query, self.engine)
         same, old_exists, new_exists = query_result.exists[0], query_result.exists[1], query_result.exists[2]
@@ -174,7 +173,7 @@ class Pjm_Rec:
                         DC_Tier_I_percent, DC_Tier_I_amount, DC_Tier_II_percent, DC_Tier_II_amount, DE_Total_Cost_per_MWh_amount,
                         DE_Solar_percent, DE_Solar_amount, DE_RECs_percent, DE_REC_amount, IL_Total_Cost_per_MWh_amount,
                         IL_PER_o_load_covered_by_Supplier_vs_Utility_percent, IL_Total_Standard_percent, IL_Solar_percent,
-                        IL_Solar_amount, IL_Wind_percent, IL_Wind_amount, IL_ACP_percent, IL_ACP_amount from trueprice.{data.controlArea}_rec where curvestart>='{sod}' and curvestart<='{eod}' and strip='{data.strip}'
+                        IL_Solar_amount, IL_Wind_percent, IL_Wind_amount, IL_ACP_percent, IL_ACP_amount from trueprice.{data.controlArea}_rec where curvestart>='{sod}' and curvestart<='{eod}'
                     ),
                     backup as (
                         -- take current rows and insert into database but with a new "curveend" timestamp
@@ -209,6 +208,7 @@ class Pjm_Rec:
 
                     update trueprice.{data.controlArea}_rec set
                     curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
+                    strip = newdata.strip,
                     Month = newdata.Month,
                     NJ_Total_Cost_per_MWh_amount = newdata.NJ_Total_Cost_per_MWh_amount,
                     NJ_Solar_percent = newdata.NJ_Solar_percent,

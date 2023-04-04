@@ -34,7 +34,7 @@ class Ercot_Rec:
             }
         df.fillna(fill_values, inplace=True)
 
-        df[df.columns[1:]] = df[df.columns[1:]].astype(float)
+        df[df.columns[2:]] = df[df.columns[2:]].astype(float)
         df[df.columns[4]] = df[df.columns[4]].astype(int)
         df['TX_EY'] = pd.to_datetime(df['TX_EY'])
 
@@ -46,6 +46,7 @@ class Ercot_Rec:
         """
 
         df = df.rename(columns={'TX_EY': 'month', 
+            'TX_Strip': 'strip',
             'TX_Total_Cost_per_MWh' : 'tx_total_cost_per_mWh',
             'TX_Compliance' : 'tx_compliance' ,
             'TX_REC Price' : 'tx_rec_price',
@@ -69,7 +70,7 @@ class Ercot_Rec:
         df = self.renaming_columns(df)
 
         df.insert(0, 'curvestart', data.curveStart) # date on file, not the internal zone/month column
-        df.insert(0, 'strip', data.strip) # stored as object, don't freak on dtypes
+        # df.insert(0, 'strip', data.strip) # stored as object, don't freak on dtypes
         
 
 
@@ -81,11 +82,11 @@ class Ercot_Rec:
         check_query = f"""
             -- if nothing found, new data, insert it, or do one of these
             
-            select exists(select 1 from trueprice.{data.controlArea}_rec where curvestart='{now}'and strip='{data.strip}') -- ignore, db == file based on timestamp
+            select exists(select 1 from trueprice.{data.controlArea}_rec where curvestart='{now}') -- ignore, db == file based on timestamp
             UNION ALL
-            select exists(select 1 from trueprice.{data.controlArea}_rec where curvestart>='{sod}' and curvestart<'{now}' and strip='{data.strip}') -- update, db is older
+            select exists(select 1 from trueprice.{data.controlArea}_rec where curvestart>='{sod}' and curvestart<'{now}') -- update, db is older
             UNION ALL
-            select exists(select 1 from trueprice.{data.controlArea}_rec where curvestart>'{now}' and curvestart<'{eod}' and strip='{data.strip}') -- ignore, db is newer
+            select exists(select 1 from trueprice.{data.controlArea}_rec where curvestart>'{now}' and curvestart<'{eod}') -- ignore, db is newer
         """
         query_result = pd.read_sql(check_query, self.engine)
         same, old_exists, new_exists = query_result.exists[0], query_result.exists[1], query_result.exists[2]
@@ -113,7 +114,7 @@ class Ercot_Rec:
 
                         select id, strip, curvestart, month, tx_total_cost_per_mWh, tx_compliance, tx_rec_price, tx_year, 
                         tx_total_texas_competitive_load_mWh, tx_rps_mandate_mWh, tx_prct 
-                        from trueprice.{data.controlArea}_rec where curvestart>='{sod}' and curvestart<='{eod}' and strip='{data.strip}'
+                        from trueprice.{data.controlArea}_rec where curvestart>='{sod}' and curvestart<='{eod}'
                     ),
                     backup as (
                         -- take current rows and insert into database but with a new "curveend" timestamp
@@ -132,6 +133,7 @@ class Ercot_Rec:
 
                     update trueprice.{data.controlArea}_rec set
                     curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
+                    strip = newdata.strip,
                     month = newdata.month,
                     tx_total_cost_per_mWh = newdata.tx_total_cost_per_mWh,
                     tx_compliance = newdata.tx_compliance,

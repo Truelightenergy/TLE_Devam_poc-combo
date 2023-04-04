@@ -105,6 +105,7 @@ class Isone_Energy:
                     )
                     -- update the existing "current" with the new "csv"
                     update trueprice.{data.controlArea}_energy set
+                    strip = newdata.strip,
                     month = newdata.month,
                     curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
                     maine_amount = newdata.maine_amount, -- mindless update all cols, we don't know which ones updated so try them all

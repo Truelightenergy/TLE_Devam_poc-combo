@@ -117,6 +117,7 @@ class Pjm_Energy:
                     )
                     -- update the existing "current" with the new "csv"
                     update trueprice.{data.controlArea}_energy set
+                    strip = newdata.strip,
                     month = newdata.month,
                     curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
                     aeco_amount = newdata.aeco_amount,

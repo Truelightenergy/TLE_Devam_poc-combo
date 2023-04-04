@@ -98,6 +98,7 @@ class Ercot_Energy:
                     -- update the existing "current" with the new "csv"
                     --north_amount, houston_amount, south_amount, west_amount
                     update trueprice.{data.controlArea}_energy set
+                    strip = newdata.strip,
                     month = newdata.month,
                     curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
                     north_amount = newdata.north_amount, -- mindless update all cols, we don't know which ones updated so try them all
