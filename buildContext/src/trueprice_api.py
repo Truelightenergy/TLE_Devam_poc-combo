@@ -42,7 +42,9 @@ def get_data():
     Extracts the data based on the query strings
     """
     args = request.args.to_dict()
-    response = api_util.extract_data(args)
+    response, status = api_util.extract_data(args)
+    if status != "success":
+        return status
     return response
 
 
@@ -53,10 +55,7 @@ def download_data():
     """
     response = api_util.download_data()
     return response
-
-@app.errorhandler(Exception)          
-def error_handler(e):
-    return api_util.custom_error_handler(e)          
+       
     
 
 
