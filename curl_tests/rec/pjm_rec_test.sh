@@ -50,7 +50,7 @@ upload_check () {
 truncate_rec "pjm"
 
 # upload 1
-if ! upload_check "buildContext/good_test_data/rec/REC_PJM_20230317_112900.csv"; then
+if ! upload_check "buildContext/good_test_data/rec/REC_PJM_20230405_082000.csv"; then
   printf "error upload_check"
 fi
 
@@ -64,7 +64,7 @@ if ! api_check "pjm"; then
   printf "error api_check"
 fi
 
-if ! upload_check "buildContext/good_test_data/rec/REC_PJM_20230317_112901.csv"; then
+if ! upload_check "buildContext/good_test_data/rec/REC_PJM_20230405_082001.csv"; then
   printf "error upload_check, intraday update"
 fi
 

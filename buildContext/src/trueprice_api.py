@@ -55,10 +55,7 @@ def download_data():
     """
     response = api_util.download_data()
     return response
-
-@app.errorhandler(Exception)          
-def error_handler(e):
-    return api_util.custom_error_handler(e)          
+       
     
 
 

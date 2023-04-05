@@ -1,6 +1,7 @@
 **/*.pyc
 **/.DS_Store
 flask_file_upload/
+logs/
 sql_class.md
 lib/
 bin/

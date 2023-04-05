@@ -42,4 +42,6 @@ class NonEnergy:
                 return None, "Unable to Fetch Results"
         
         except:
-            return None, "Unable to Fetch Results"
+            import traceback, sys
+            print(traceback.format_exc())
+            return None, traceback.format_exc()

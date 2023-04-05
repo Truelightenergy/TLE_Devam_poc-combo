@@ -21,7 +21,7 @@ psql_check () {
 
 # $1 == "iso"
 api_check () {
-  curl -sw "%{http_code}" "http://$API_IP:5555/get_data?start=20120101&end=20301201&iso=$1&strip=7x25&curve_type=rec&type=csv" > api_results.txt
+  curl -sw "%{http_code}" "http://$API_IP:5555/get_data?start=20120101&end=20301201&iso=$1&strip=7x24&curve_type=rec&type=csv" > api_results.txt
   if [[ $(wc -l api_results.txt | awk '{print $1}') -eq "62" ]]; then
     return 0
   fi
@@ -50,7 +50,7 @@ upload_check () {
 truncate_rec "isone"
 
 # upload 1
-if ! upload_check "buildContext/good_test_data/rec/REC_ISONE_20230317_114700.csv"; then
+if ! upload_check "buildContext/good_test_data/rec/REC_ISONE_20230405_082400.csv"; then
   printf "error upload_check"
 fi
 
@@ -64,7 +64,7 @@ if ! api_check "isone"; then
   printf "error api_check"
 fi
 
-if ! upload_check "buildContext/good_test_data/rec/REC_ISONE_20230317_114701.csv"; then
+if ! upload_check "buildContext/good_test_data/rec/REC_ISONE_20230405_082401.csv"; then
   printf "error upload_check, intraday update"
 fi
 

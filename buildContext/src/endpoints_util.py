@@ -5,6 +5,7 @@ Handles the operations of the endpoints
 import os
 import sys
 import zipfile
+from datetime import datetime
 from ingestors.ingestor import Ingestion
 from extractors.extractor import Extractor
 import trueprice_database as tpdb
@@ -22,6 +23,7 @@ class Util:
         all the intializers will be handled here
         """
         self.UPLOAD_FOLDER = './flask_file_upload'
+        self.LOG_FOLDER = './logs'
         self.ALLOWED_EXTENSIONS = set(['zip','csv'])
         self.create_storage_folder()
         self.ingestor = Ingestion()
@@ -34,12 +36,40 @@ class Util:
         if not os.path.exists(self.UPLOAD_FOLDER):
             os.makedirs(self.UPLOAD_FOLDER)
 
+        if not os.path.exists(self.LOG_FOLDER):
+            os.makedirs(self.LOG_FOLDER)
+
+    def save_logs(self, content):
+        """
+        stores the logs into log file
+        """
+        today = datetime.today()
+        timestamp = today.strftime("%d%B%Y_%H")
+        filename = f"{self.LOG_FOLDER}/logs_{timestamp}.txt"
+
+        if os.path.exists(filename):
+            append_write = 'a' # append if already exists
+        else:
+            append_write = 'w' # make a new file if not
+
+        file = open(filename, append_write)
+        file.write(f"{content}\n")
+        file.close()
+
     def allowed_file(self, filename):
         """
         allow only mentioned files format
         """
         return '.' in filename and \
             filename.rsplit('.', 1)[1].lower() in self.ALLOWED_EXTENSIONS
+    
+    def generate_timestamp(self):
+        """
+        generates the datetime
+        """
+        today = datetime.today()	
+        timestamp = today.strftime("%d-%B-%Y %H:%M:%S")
+        return timestamp
 
     def application_startup(self):
         """
@@ -50,18 +80,24 @@ class Util:
         """
         handles the csv upload file
         """
+        
+        
         print("/upload called", file=sys.stderr)
         if request.method == 'POST':
             print(f"POST: {request}", file=sys.stderr)
             # check if the post request has the file part
             if 'file' not in request.files:
                 flash('No file part')
+                current_log = f"TimStamp: {self.generate_timestamp()} | Ip: {request.environ['REMOTE_ADDR']} | Method: {request.method} | Action: Data Ingestion | Msg: No file part"
+                self.save_logs(current_log)
                 return redirect(request.url)
             file = request.files['file']
             # If the user does not select a file, the browser submits an
             # empty file without a filename.
             if file.filename == '':
                 flash('No selected file')
+                current_log = f"TimStamp: {self.generate_timestamp()} | Ip: {request.environ['REMOTE_ADDR']} | Method: {request.method}  | Action: Data Ingestion | Msg: 'No selected file'"
+                self.save_logs(current_log)
                 return redirect(request.url)
             if file and self.allowed_file(file.filename):
                 print("Uploading", file=sys.stderr)
@@ -72,7 +108,12 @@ class Util:
                 if response == "Data Inserted":
                     flag = "success"  
                 else:
+                    if len(response)>100:
+                        response = "Some Error Occurred While File Upload"
                     flag = "error"
+                
+                current_log = f"TimStamp: {self.generate_timestamp()} | Ip: {request.environ['REMOTE_ADDR']} | Method: {request.method} | File: {file.filename}  | Action: File Ingestion | Msg: {response}"
+                self.save_logs(current_log)
                 return render_template('upload_csv.html', flash_message=True, message_toast = response, message_flag = flag, page_type = "upload")
                 # return redirect(url_for('upload_csv')
         
@@ -125,6 +166,7 @@ class Util:
             if status != "success":
                 return render_template('download_data.html',  flash_message=True, message_toast = status, message_flag = "error", page_type = "download")
             else:
+                
                 return response
         return render_template('download_data.html')
          
@@ -138,25 +180,22 @@ class Util:
         file_name = f'{query_strings["curve_type"]}_{query_strings["iso"]}_{query_strings["strip"]}_{query_strings["start"]}_{query_strings["end"]}'
         if status == "success":
             if query_strings["type"]=="csv":
-                return Response(
+                resp = Response(
                     data_frame.to_csv(index=False),
                     mimetype="text/csv",
                     headers={"Content-disposition":
                     "attachment; filename="+file_name+".csv"}), status
             
             elif query_strings["type"]=="json":
-                return Response(data_frame.to_json(orient="records"), 
+                resp = Response(data_frame.to_json(orient="records"), 
                     mimetype='application/json',
                     headers={'Content-Disposition':'attachment;filename='+file_name+'.json'}), status
             
             
         else:
         
-            return None, 'Unable to Fetch Data'
-        
-    def custom_error_handler(self, error_message):
-        """
-        handles all types of exceptions inside the flask app
-        """
-        print(error_message)
-        return error_message
+            resp = None, 'Unable to Fetch Data'
+        print("ali")
+        current_log = f"TimStamp: {self.generate_timestamp()} | Ip: {request.environ['REMOTE_ADDR']} | Method: {request.method} | File: {file_name} | Action: Data Extraction | Msg: {resp[1]}"
+        self.save_logs(current_log)
+        return resp

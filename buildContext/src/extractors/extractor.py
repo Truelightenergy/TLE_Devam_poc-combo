@@ -30,9 +30,9 @@ class Extractor:
         """
         dataframe = None
         status = "Unable to Fetch Data"
-        if query_strings["curve_type"] == "ancillarydatadetails":
+        if query_strings["curve_type"] == "nonenergy":
             dataframe, status = self.non_energy.extraction(query_strings)
-        elif query_strings["curve_type"] == "forwardcurve":
+        elif query_strings["curve_type"] == "energy":
             dataframe, status = self.energy.extraction(query_strings)
         elif query_strings["curve_type"] == "rec":
             dataframe, status = self.rec.extraction(query_strings)

@@ -21,7 +21,7 @@ psql_check () {
 
 # $1 == "iso"
 api_check () {
-  curl -sw "%{http_code}" "http://$API_IP:5555/get_data?start=20230301&end=20280301&iso=$1&strip=7x8&curve_type=forwardcurve&type=csv" > api_results.txt
+  curl -sw "%{http_code}" "http://$API_IP:5555/get_data?start=20230301&end=20280301&iso=$1&strip=7x8&curve_type=energy&type=csv" > api_results.txt
   if [[ $(wc -l api_results.txt | awk '{print $1}') -eq "62" ]]; then
     return 0
   fi
