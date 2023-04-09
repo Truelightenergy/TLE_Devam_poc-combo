@@ -112,10 +112,10 @@ class Ingestion:
 
         files = [file]
         result = None
-        if re.search("energy", file, re.IGNORECASE):
-            result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.energy.ingestion, "validate_api": self.validate_api})
-        elif re.search("nonenergy", file, re.IGNORECASE):
+        if re.search("nonenergy", file, re.IGNORECASE):
             result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.non_energy.ingestion, "validate_api": self.validate_api})
+        elif re.search("energy", file, re.IGNORECASE):
+            result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.energy.ingestion, "validate_api": self.validate_api})
         elif re.search("rec", file, re.IGNORECASE):
             result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.rec.ingestion, "validate_api": self.validate_api})
         else:
