@@ -35,7 +35,7 @@ class Rec:
 
             if control_area == "pjm" or control_area == "isone" or control_area == "nyiso" or control_area == "ercot":
                 data_frame = None
-                psql_query = f"select * from trueprice.{control_area}_rec where strip = '{strip}' and month::date >= '{start_date}' and month::date <= '{end_date}';"
+                psql_query = f"select * from trueprice.{control_area}_rec where LOWER(strip) = '{strip.lower()}' and month::date >= '{start_date}' and month::date <= '{end_date}';"
                 data_frame = pd.read_sql_query(sql=psql_query, con=self.engine.connect())
                 return data_frame, "success"  
             else:
