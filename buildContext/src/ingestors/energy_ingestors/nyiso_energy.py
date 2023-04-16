@@ -3,7 +3,7 @@ Implements the Slowly Changed Dimensions to insert the data into database
 """
 import datetime
 import pandas as pd
-from ..database_conection import ConnectDatabase
+from database_conection import ConnectDatabase
 
 class Nyiso_Energy:
     """
@@ -47,7 +47,13 @@ class Nyiso_Energy:
                 'ZONE J': 'zone_j_amount',
                 'ZONE K': 'zone_k_amount'
                 })
-        
+            
+            if "_cob" in data.fileName:
+                df.insert(0, 'cob', 1)
+            else:
+                df.insert(0, 'cob', 0)
+
+            df["cob"] = df["cob"].astype(bool)
             # df.insert(0, 'strip', data.strip) # stored as object, don't freak on dtypes
             df.insert(0, 'curvestart', data.curveStart) # date on file, not the internal zone/month column
 
@@ -93,12 +99,12 @@ class Nyiso_Energy:
                     backup_query = f'''
                         with current as (
                             -- get the current rows in the database, all of them, not just things that will change
-                            select id, strip, curvestart, month, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}'
+                            select id, strip, cob, curvestart, month, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}'
                         ),
                         backup as (
                             -- take current rows and insert into database but with a new "curveend" timestamp
-                            insert into trueprice.{data.controlArea}_energy_history (id, strip, curvestart, curveend, month, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount)
-                            select id, strip, curvestart, '{curveend}' as curveend, month, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount
+                            insert into trueprice.{data.controlArea}_energy_history (id, strip, cob, curvestart, curveend, month, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount)
+                            select id, strip, cob, curvestart, '{curveend}' as curveend, month, zone_a_amount, zone_b_amount, zone_c_amount, zone_d_amount, zone_e_amount, zone_f_amount, zone_g_amount, zone_h_amount, zone_i_amount, zone_j_amount, zone_k_amount
                             from current
                         ),
                         single as (
@@ -109,6 +115,7 @@ class Nyiso_Energy:
                         curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
                         strip = newdata.strip,
                         month = newdata.month,
+                        cob = newdata.cob,
                         zone_a_amount = newdata.zone_a_amount, -- mindless update all cols, we don't know which ones updated so try them all
                         zone_b_amount = newdata.zone_b_amount,
                         zone_c_amount = newdata.zone_c_amount,

@@ -12,6 +12,26 @@ import trueprice_database as tpdb
 from werkzeug.utils import secure_filename
 from flask import Flask, flash, request, redirect, url_for, flash, render_template, Response
 from flask import render_template
+from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
+import logging
+
+# logs saving
+logger = logging.getLogger()
+# fileHandler = RotatingFileHandler("logs.log", maxBytes=1)
+# logger.addHandler(fileHandler)
+
+# logs console
+consoleHandler = logging.StreamHandler()
+logger.addHandler(consoleHandler)
+
+LOG_FOLDER = './logs'
+if not os.path.exists(LOG_FOLDER):
+            os.makedirs(LOG_FOLDER)
+
+logHandler = TimedRotatingFileHandler(f'{LOG_FOLDER}/logs.log', when='H', interval=1)
+logger.addHandler(logHandler)
+
+
 
 class Util:
     """
@@ -23,7 +43,6 @@ class Util:
         all the intializers will be handled here
         """
         self.UPLOAD_FOLDER = './flask_file_upload'
-        self.LOG_FOLDER = './logs'
         self.ALLOWED_EXTENSIONS = set(['zip','csv'])
         self.create_storage_folder()
         self.ingestor = Ingestion()
@@ -35,26 +54,6 @@ class Util:
         """
         if not os.path.exists(self.UPLOAD_FOLDER):
             os.makedirs(self.UPLOAD_FOLDER)
-
-        if not os.path.exists(self.LOG_FOLDER):
-            os.makedirs(self.LOG_FOLDER)
-
-    def save_logs(self, content):
-        """
-        stores the logs into log file
-        """
-        today = datetime.today()
-        timestamp = today.strftime("%d%B%Y_%H")
-        filename = f"{self.LOG_FOLDER}/logs_{timestamp}.txt"
-
-        if os.path.exists(filename):
-            append_write = 'a' # append if already exists
-        else:
-            append_write = 'w' # make a new file if not
-
-        file = open(filename, append_write)
-        file.write(f"{content}\n")
-        file.close()
 
     def allowed_file(self, filename):
         """
@@ -69,6 +68,7 @@ class Util:
         """
         today = datetime.today()	
         timestamp = today.strftime("%d-%B-%Y %H:%M:%S")
+        
         return timestamp
 
     def application_startup(self):
@@ -76,11 +76,32 @@ class Util:
         starts the
         """
         return render_template("index.html")
+    
+    def save_logs(self, timestamp =None, ip = None, req_method = None, action = None, msg=None):
+        """
+        save the logs hourly based on the file
+        """
+
+        current_log = ""
+        if timestamp:
+            current_log = f"TimStamp: {self.generate_timestamp()}"
+        if ip:    
+            current_log = f"{current_log} | Ip: {ip}" 
+        if req_method:
+             current_log = f"{current_log} | Method: {req_method}" 
+        if action:
+            current_log = f"{current_log} | Action: {action}"
+        if msg:
+            current_log = f"{current_log} | Action: {action} | Msg: {msg}"
+
+        logger.error(f"\n{current_log}\n")
+
+
+
     def upload_csv(self):
         """
         handles the csv upload file
         """
-        
         
         print("/upload called", file=sys.stderr)
         if request.method == 'POST':
@@ -88,16 +109,14 @@ class Util:
             # check if the post request has the file part
             if 'file' not in request.files:
                 flash('No file part')
-                current_log = f"TimStamp: {self.generate_timestamp()} | Ip: {request.environ['REMOTE_ADDR']} | Method: {request.method} | Action: Data Ingestion | Msg: No file part"
-                self.save_logs(current_log)
+                self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "Data Ingestion", msg = "No file part")
                 return redirect(request.url)
             file = request.files['file']
             # If the user does not select a file, the browser submits an
             # empty file without a filename.
             if file.filename == '':
                 flash('No selected file')
-                current_log = f"TimStamp: {self.generate_timestamp()} | Ip: {request.environ['REMOTE_ADDR']} | Method: {request.method}  | Action: Data Ingestion | Msg: 'No selected file'"
-                self.save_logs(current_log)
+                self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "Data Ingestion", msg = "No selected file")
                 return redirect(request.url)
             if file and self.allowed_file(file.filename):
                 print("Uploading", file=sys.stderr)
@@ -111,9 +130,8 @@ class Util:
                     if len(response)>100:
                         response = "Some Error Occurred While File Upload"
                     flag = "error"
+                self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "File Ingestion", msg = response)
                 
-                current_log = f"TimStamp: {self.generate_timestamp()} | Ip: {request.environ['REMOTE_ADDR']} | Method: {request.method} | File: {file.filename}  | Action: File Ingestion | Msg: {response}"
-                self.save_logs(current_log)
                 return render_template('upload_csv.html', flash_message=True, message_toast = response, message_flag = flag, page_type = "upload")
                 # return redirect(url_for('upload_csv')
         
@@ -195,7 +213,6 @@ class Util:
         else:
         
             resp = None, 'Unable to Fetch Data'
-        print("ali")
-        current_log = f"TimStamp: {self.generate_timestamp()} | Ip: {request.environ['REMOTE_ADDR']} | Method: {request.method} | File: {file_name} | Action: Data Extraction | Msg: {resp[1]}"
-        self.save_logs(current_log)
+        self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "Data Extraction", msg = resp[1])
+                
         return resp

@@ -4,7 +4,7 @@ Implements the Slowly Changed Dimensions to insert the data into database
 
 import pandas as pd
 import datetime
-from ..database_conection import ConnectDatabase
+from database_conection import ConnectDatabase
 
 class Ercot_Rec:
     """

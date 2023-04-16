@@ -3,7 +3,7 @@ makes query to the database and returns to the database
 """
 
 import pandas as pd
-from .database_conection import ConnectDatabase
+from database_conection import ConnectDatabase
 from .nonenergy import NonEnergy
 from .energy import Energy
 from .rec import Rec

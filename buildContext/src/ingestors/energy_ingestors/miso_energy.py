@@ -3,7 +3,7 @@ Implements the Slowly Changed Dimensions to insert the data into database
 """
 import datetime
 import pandas as pd
-from ..database_conection import ConnectDatabase
+from database_conection import ConnectDatabase
 
 class Miso_Energy:
     """
@@ -40,6 +40,13 @@ class Miso_Energy:
                 'AMILIP': 'amilip_amount',
                 'INDY HUB': 'indy_amount'
             })
+
+            if "_cob" in data.fileName:
+                df.insert(0, 'cob', 1)
+            else:
+                df.insert(0, 'cob', 0)
+
+            df["cob"] = df["cob"].astype(bool)
         
             # df.insert(0, 'strip', data.strip) # stored as object, don't freak on dtypes
             df.insert(0, 'curvestart', data.curveStart) # date on file, not the internal zone/month column
@@ -85,12 +92,12 @@ class Miso_Energy:
                     backup_query = f'''
                         with current as (
                             -- get the current rows in the database, all of them, not just things that will change
-                            select id, strip, curvestart, month, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}' 
+                            select id, strip, cob,  curvestart, month, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}' 
                         ),
                         backup as (
                             -- take current rows and insert into database but with a new "curveend" timestamp
-                            insert into trueprice.{data.controlArea}_energy_history (id, strip, curvestart, curveend, month, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount)
-                            select id, strip, curvestart, '{curveend}' as curveend, month, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount
+                            insert into trueprice.{data.controlArea}_energy_history (id, strip, cob, curvestart, curveend, month, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount)
+                            select id, strip, cob, curvestart, '{curveend}' as curveend, month, amilcips_amount, amilcilco_amount, amilip_amount, indy_amount
                             from current
                         ),
                         single as (
@@ -100,6 +107,7 @@ class Miso_Energy:
                         update trueprice.{data.controlArea}_energy set
                         month = newdata.month,
                         strip = newdata.strip,
+                        cob = newdata.cob,
                         curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
                         amilcips_amount = newdata.amilcips_amount, -- mindless update all cols, we don't know which ones updated so try them all
                         amilcilco_amount = newdata.amilcilco_amount,
