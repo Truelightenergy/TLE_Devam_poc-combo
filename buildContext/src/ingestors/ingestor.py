@@ -26,6 +26,7 @@ class Ingestion:
         """
         validates the incoming data file name
         """
+
         file_name_components_pattern = re.compile(".*/(.+?)_(.+?)_(.+?)_(.+)?.csv$") # len(5-6)
         
         matched = file_name_components_pattern.search(file_name)
@@ -44,18 +45,21 @@ class Ingestion:
         # todo - should error if timestamp/date is missing or invalid instead of trying to fix here, so remove this block
         # add default value here for time, maybe not worth it, need to see how it flows
         timeComponent = None
+        cob = None
         if issue is None:    
             timeComponent = "000000"
         else:
-            timeStamp = issue[1:] # drop leading underscore; else fix regex above
-            if timeStamp == "cob":
+            timeStamp_cob = issue.split("_")
+            if len(timeStamp_cob)==2:
+                timeStamp, cob = timeStamp_cob # drop leading underscore; else fix regex above
                 timeComponent = "235959" # 24h clock, convert to last possible second so we can sort properly
-            elif int(timeStamp):
-                timeComponent = timeStamp
+            elif int(timeStamp_cob[0]):
+                timeComponent = timeStamp_cob[0]
             else:
                 return ParseError(f"failed to parse {file_name} - time component")
 
         timestamp = datetime.datetime.strptime(curveDate+timeComponent, "%Y%m%d%H%M%S")
+        
         return TLE_Meta(file_name, curveType, controlArea, timestamp)
     
 

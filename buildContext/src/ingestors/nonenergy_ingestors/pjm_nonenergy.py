@@ -7,13 +7,12 @@
 Implements the Slowly Changed Dimensions to insert the data into database
 """
 
-
 import pandas as pd
 import datetime
-from  database_conection import ConnectDatabase
-from .helpers.isone_nonergy_helper import IsoneNonEnergyHelper
+from database_conection import ConnectDatabase
+from .helpers.pjm_nonenergy_helpler import PjmNonEnergyHelper
 
-class Isone_NonEnergy:
+class Pjm_NonEnergy:
     """
     constructor which will makes the connection to the database
     """
@@ -24,7 +23,7 @@ class Isone_NonEnergy:
         """
         data_base = ConnectDatabase()
         self.engine = data_base.get_engine()
-        self.herlper = IsoneNonEnergyHelper()
+        self.herlper = PjmNonEnergyHelper()
 
     #Zone ID,Ancillary,Load Zone,Month,Price,Billing Determinant,,,,
 

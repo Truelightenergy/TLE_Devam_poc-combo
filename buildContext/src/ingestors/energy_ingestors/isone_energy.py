@@ -3,7 +3,7 @@ Implements the Slowly Changed Dimensions to insert the data into database
 """
 import datetime
 import pandas as pd
-from ..database_conection import ConnectDatabase
+from database_conection import ConnectDatabase
 
 class Isone_Energy:
     """
@@ -48,6 +48,13 @@ class Isone_Energy:
                 'MASS HUB':'mass_amount'
             })
         
+            if "_cob" in data.fileName:
+                df.insert(0, 'cob', 1)
+            else:
+                df.insert(0, 'cob', 0)
+
+            df["cob"] = df["cob"].astype(bool)
+
             # df.insert(0, 'strip', data.strip) # stored as object, don't freak on dtypes
             df.insert(0, 'curvestart', data.curveStart) # date on file, not the internal zone/month column
 
@@ -92,12 +99,12 @@ class Isone_Energy:
                     backup_query = f'''
                         with current as (
                             -- get the current rows in the database, all of them, not just things that will change
-                            select id, strip, curvestart, month, maine_amount, newhampshire_amount, vermont_amount, connecticut_amount, rhodeisland_amount, semass_amount, wcmass_amount, nemassbost_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}' 
+                            select id, strip, cob, curvestart, month, maine_amount, newhampshire_amount, vermont_amount, connecticut_amount, rhodeisland_amount, semass_amount, wcmass_amount, nemassbost_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}' 
                         ),
                         backup as (
                             -- take current rows and insert into database but with a new "curveend" timestamp
-                            insert into trueprice.{data.controlArea}_energy_history (id, strip, curvestart, curveend, month, maine_amount, newhampshire_amount, vermont_amount, connecticut_amount, rhodeisland_amount, semass_amount, wcmass_amount, nemassbost_amount)
-                            select id, strip, curvestart, '{curveend}' as curveend, month, maine_amount, newhampshire_amount, vermont_amount, connecticut_amount, rhodeisland_amount, semass_amount, wcmass_amount, nemassbost_amount
+                            insert into trueprice.{data.controlArea}_energy_history (id, strip, cob, curvestart, curveend, month, maine_amount, newhampshire_amount, vermont_amount, connecticut_amount, rhodeisland_amount, semass_amount, wcmass_amount, nemassbost_amount)
+                            select id, strip, cob, curvestart, '{curveend}' as curveend, month, maine_amount, newhampshire_amount, vermont_amount, connecticut_amount, rhodeisland_amount, semass_amount, wcmass_amount, nemassbost_amount
                             from current
                         ),
                         single as (
@@ -106,6 +113,7 @@ class Isone_Energy:
                         -- update the existing "current" with the new "csv"
                         update trueprice.{data.controlArea}_energy set
                         strip = newdata.strip,
+                        cob = newdata.cob,
                         month = newdata.month,
                         curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
                         maine_amount = newdata.maine_amount, -- mindless update all cols, we don't know which ones updated so try them all

@@ -48,6 +48,7 @@ services:
         CREATE TABLE trueprice.nyiso_energy ( -- history table differs
           id serial PRIMARY KEY,
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          cob BOOLEAN,
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
           month TIMESTAMPTZ,
           zone_a_amount NUMERIC(12,8), -- varies by iso, unclear best approach, single table or per iso table
@@ -67,6 +68,7 @@ services:
         CREATE TABLE trueprice.nyiso_energy_history ( -- current table differs
           id serial, -- not primary, this is fk to nyiso_energy
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          cob BOOLEAN,
           curveStart TIMESTAMPTZ, -- per original file name
           curveEnd TIMESTAMPTZ, -- per new file name
           month TIMESTAMPTZ,
@@ -86,6 +88,7 @@ services:
         CREATE TABLE trueprice.ercot_energy ( -- history table differs
           id serial PRIMARY KEY,
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          cob BOOLEAN,
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
           month TIMESTAMPTZ,
           north_amount NUMERIC(12,8), -- varies by iso, unclear best approach, single table or per iso table
@@ -98,6 +101,7 @@ services:
         CREATE TABLE trueprice.ercot_energy_history ( -- current table differs
           id serial, -- not primary, this is fk to nyiso_energy
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          cob BOOLEAN,
           curveStart TIMESTAMPTZ, -- per original file name
           curveEnd TIMESTAMPTZ, -- per new file name
           month TIMESTAMPTZ,
@@ -110,6 +114,7 @@ services:
         CREATE TABLE trueprice.isone_energy ( -- history table differs
           id serial PRIMARY KEY,
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          cob BOOLEAN,
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
           month TIMESTAMPTZ,
           maine_amount NUMERIC(12,8), -- varies by iso, unclear best approach, single table or per iso table
@@ -127,6 +132,7 @@ services:
         CREATE TABLE trueprice.isone_energy_history ( -- current table differs
           id serial, -- not primary, this is fk to nyiso_energy
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          cob BOOLEAN,
           curveStart TIMESTAMPTZ, -- per original file name
           curveEnd TIMESTAMPTZ, -- per new file name
           month TIMESTAMPTZ,
@@ -144,6 +150,7 @@ services:
         CREATE TABLE trueprice.miso_energy ( -- history table differs
           id serial PRIMARY KEY,
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          cob BOOLEAN,
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
           month TIMESTAMPTZ,
           amilcips_amount NUMERIC(12,8), -- varies by iso, unclear best approach, single table or per iso table
@@ -156,6 +163,7 @@ services:
         CREATE TABLE trueprice.miso_energy_history ( -- current table differs
           id serial, -- not primary, this is fk to nyiso_energy
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          cob BOOLEAN,
           curveStart TIMESTAMPTZ, -- per original file name
           curveEnd TIMESTAMPTZ, -- per new file name
           month TIMESTAMPTZ,
@@ -168,6 +176,7 @@ services:
         CREATE TABLE trueprice.pjm_energy ( -- history table differs
           id serial PRIMARY KEY,
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          cob BOOLEAN,
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
           month TIMESTAMPTZ,
           aeco_amount NUMERIC(12,8), -- varies by iso, unclear best approach, single table or per iso table
@@ -199,6 +208,7 @@ services:
         CREATE TABLE trueprice.pjm_energy_history ( -- current table differs
           id serial, -- not primary, this is fk to nyiso_energy
           strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          cob BOOLEAN,
           curveStart TIMESTAMPTZ, -- per original file name
           curveEnd TIMESTAMPTZ, -- per new file name
           month TIMESTAMPTZ,
@@ -287,6 +297,41 @@ services:
           curveEnd TIMESTAMPTZ, -- per file name (sans tz)
           month TIMESTAMPTZ,
           data NUMERIC(12,8), 
+          control_area varchar(50),
+          state varchar(50),
+          load_zone varchar(50),
+          capacity_zone varchar(50),
+          utility varchar(50),
+          strip varchar(4),
+          cost_group varchar(50),
+          cost_component varchar(50),
+          sub_cost_component varchar(50)
+        );
+
+        -- pjm nonenergy
+        CREATE TABLE trueprice.pjm_nonenergy (
+          id serial PRIMARY KEY,
+          curveStart TIMESTAMPTZ, -- per file name (sans tz)
+          month TIMESTAMPTZ,
+          data NUMERIC(20,10), 
+          control_area varchar(50),
+          state varchar(50),
+          load_zone varchar(50),
+          capacity_zone varchar(50),
+          utility varchar(50),
+          strip varchar(4),
+          cost_group varchar(50),
+          cost_component varchar(50),
+          sub_cost_component varchar(50)
+        );
+        -- old data
+        -- union old and new data for all data (versus is_current column)
+        CREATE TABLE trueprice.pjm_nonenergy_history (
+          id serial PRIMARY KEY,
+          curveStart TIMESTAMPTZ, -- per file name (sans tz)
+          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+          month TIMESTAMPTZ,
+          data NUMERIC(20,10),
           control_area varchar(50),
           state varchar(50),
           load_zone varchar(50),
@@ -610,6 +655,15 @@ services:
 
         );
         
+
+      --Authentication table
+        CREATE TABLE users (
+          id SERIAL PRIMARY KEY,
+          email VARCHAR(255) UNIQUE NOT NULL,
+          password VARCHAR(255) NOT NULL,
+          isAdmin BOOLEAN NOT NULL
+        );
+
 
       EOSQL
   # adminer: # for postgres, php admin interface

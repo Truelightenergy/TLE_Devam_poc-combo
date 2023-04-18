@@ -3,7 +3,7 @@ Implements the Slowly Changed Dimensions to insert the data into database
 """
 import datetime
 import pandas as pd
-from ..database_conection import ConnectDatabase
+from database_conection import ConnectDatabase
 
 class Ercot_Energy:
     """
@@ -41,22 +41,25 @@ class Ercot_Energy:
                 'WEST ZONE':'west_amount'
             })
         
-            # df.insert(0, 'strip', data.strip) # stored as object, don't freak on dtypes
-            df.insert(0, 'curvestart', data.curveStart) # date on file, not the internal zone/month column
+            if "_cob" in data.fileName:
+                df.insert(0, 'cob', 1)
+            else:
+                df.insert(0, 'cob', 0)
 
+            df["cob"] = df["cob"].astype(bool)
+            df.insert(0, 'curvestart', data.curveStart) # date on file, not the internal zone/month column
 
             # using exists always return true or false versus empty/None
             sod = data.curveStart.strftime('%Y-%m-%d') # drop time, since any update should be new
             now = data.curveStart
             eod = (data.curveStart + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
-            
 
             check_query = f"""
                 -- if nothing found, new data, insert it, or do one of these
             
                 select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart='{now}') -- ignore, db == file based on timestamp
                 UNION ALL
-                select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<'{now}' -- update, db is older
+                select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<'{now}') -- update, db is older
                 UNION ALL
                 select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart>'{now}' and curvestart<'{eod}' ) -- ignore, db is newer
             """
@@ -84,12 +87,12 @@ class Ercot_Energy:
                     backup_query = f'''
                         with current as (
                             -- get the current rows in the database, all of them, not just things that will change
-                            select id, strip, curvestart, month, north_amount, houston_amount, south_amount, west_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}'
+                            select id, strip, cob, curvestart, month, north_amount, houston_amount, south_amount, west_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}'
                         ),
                         backup as (
                             -- take current rows and insert into database but with a new "curveend" timestamp
-                            insert into trueprice.{data.controlArea}_energy_history (id, strip, curvestart, curveend, month, north_amount, houston_amount, south_amount, west_amount)
-                            select id, strip, curvestart, '{curveend}' as curveend, month, north_amount, houston_amount, south_amount, west_amount
+                            insert into trueprice.{data.controlArea}_energy_history (id, strip, cob, curvestart, curveend, month, north_amount, houston_amount, south_amount, west_amount)
+                            select id, strip, cob, curvestart, '{curveend}' as curveend, month, north_amount, houston_amount, south_amount, west_amount
                             from current
                         ),
                         single as (
@@ -99,6 +102,7 @@ class Ercot_Energy:
                         --north_amount, houston_amount, south_amount, west_amount
                         update trueprice.{data.controlArea}_energy set
                         strip = newdata.strip,
+                        cob = newdata.cob,
                         month = newdata.month,
                         curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
                         north_amount = newdata.north_amount, -- mindless update all cols, we don't know which ones updated so try them all
