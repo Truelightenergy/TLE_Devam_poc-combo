@@ -1,10 +1,13 @@
 from endpoints_util import Util
-from flask import Flask, request, session, jsonify
+from flask import Flask, request, session, jsonify, redirect, url_for, render_template
 from functools import wraps
 from auths import Auths
 
-api_util = Util()
-auth_obj = Auths("super-scret-key")
+
+secret_key = "super-scret-key"
+secret_salt = "secret-salt"
+api_util = Util(secret_key, secret_salt)
+auth_obj = Auths(secret_key, secret_salt)
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = api_util.UPLOAD_FOLDER
 
@@ -16,11 +19,11 @@ def login_required(f):
             try:
                 flag = auth_obj.decode_auth_token(session["jwt_token"])
                 if not flag:
-                    return jsonify({'message':'Authentication is needed'}) 
+                    return redirect(url_for("login"))
             except:
-                return jsonify({'message':'Authentication is needed'})        
+                return redirect(url_for("login"))      
         else:
-            return jsonify({'message':'Authentication is needed'})
+            return redirect(url_for("login"))
 
         return f(*args, **kwargs)
 
@@ -31,18 +34,10 @@ def login():
     """
     login to the applications
     """
+    
+    response = api_util.login()
+    return response   
 
-    # email, pswd = "ali.haider@techliance.com", "admin"
-    email, pswd = "ali.haider@gmail.com", "notadmin"
-    auth_flag, admin_flag = auth_obj.authenticate_user(email, pswd)
-    if auth_flag:
-        _, jwt_token = auth_obj.encode_auth_token(email, pswd)
-        session["jwt_token"] = jwt_token
-        session["user"] = email
-        session["isadmin"] = admin_flag
-        return jsonify({"message": "user logged in"})
-    else:
-        return jsonify({'message':'User does not exists'})
     
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -50,11 +45,19 @@ def logout():
     logout to the applications
     """
     
-    session["jwt_token"] = None
-    session["user"] = None
-    session["isadmin"] = None
-    session.clear()
-    return jsonify({"message": "user logged out"})
+    response = api_util.logout()
+    return response
+
+@app.route('/create_user', methods=['GET', 'POST'])
+def create_user():
+    """
+    logout to the applications
+    """
+    if session["level"]=="admin" or session["level"]=="read_write_user":
+        response = api_util.create_user()
+        return response
+    else:
+        return redirect(url_for("login"))
 
 
 @app.route('/', methods=['GET'])
@@ -69,15 +72,16 @@ def index():
 
 # figure out how to get with curl as well
 @app.route('/upload_csv', methods=['GET','POST'])
+@login_required
 def upload_csv():
     """
     handles the csv file uploads
     """
-    if session["isadmin"]:
+    if session["level"]=="admin" or session["level"]=="read_write_user":
         response = api_util.upload_csv()
         return response
     else:
-        return jsonify({"message": "you have no access to this endpoint"})
+        return redirect(url_for("login"))
 
 
 
@@ -87,13 +91,15 @@ def upload_zip():
     """
     handles the zip uploads
     """
-    if session["isadmin"]:
+    if session["level"]=="admin" or session["level"]=="read_write_user":
         response = api_util.upload_zip()
         return response
     else:
-        return jsonify({"message": "you have no access to this endpoint"})
+        return redirect(url_for("login"))
+
 
 @app.route('/get_data', methods=['GET','POST'])
+@login_required
 def get_data():
     """
     Extracts the data based on the query strings
@@ -113,6 +119,18 @@ def download_data():
     """
     response = api_util.download_data()
     return response
+
+@app.route("/log_stream", methods=['GET','POST'])
+def log_stream():
+    """returns logging information"""
+    return api_util.stream_logger()
+
+@app.route("/get_logs", methods=['GET','POST'])
+def get_logs():
+    """returns logging information"""
+    return render_template("log_streaming.html")
+    
+
        
 
 if __name__ == "__main__":

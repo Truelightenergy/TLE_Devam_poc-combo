@@ -1,0 +1,167 @@
+<html>
+<head>
+	<title>create user</title>
+	<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+	<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+
+	<script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.3/umd/popper.min.js"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+ 
+	
+	<script src="https://malsup.github.io/jquery.form.js"></script> 
+	<link href="/static/css/notification.css" rel="stylesheet"/>
+	<script src="/static/js/notification.js"></script>
+
+	<link rel="stylesheet" href="/static/css/download_data.css">
+
+	<script>  
+		function confirm_password(){
+
+			var password = document.getElementById("password");
+			confirm_password = document.getElementById("confirm");
+
+			function validatePassword(){
+			if(password.value != confirm_password.value) {
+				confirm_password.setCustomValidity("Passwords Don't Match");
+			} else {
+				confirm_password.setCustomValidity('');
+			}
+			}
+
+			password.onchange = validatePassword;
+			confirm_password.onkeyup = validatePassword; 
+		}
+		</script>
+</head>
+<body>
+
+	
+
+	<div id="toast-container"></div>
+	{% if flash_message == True %}
+
+    <script>show_toast('{{ message_toast }}', '{{ message_flag }}', '{{ page_type }}')</script>
+    {% endif %}
+
+	<div class="bg-image">
+
+<div>
+
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+	   <a class="navbar-brand" href="{{ url_for('index') }}">True Light Energies</a>
+	   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+		 <span class="navbar-toggler-icon"></span>
+	   </button>
+	   <div class="collapse navbar-collapse" id="navbarNav">
+		 <ul class="navbar-nav ml-auto">
+
+		<li class="nav-item">
+			<a class="nav-link" href="{{ url_for('index') }}">Home </span></a>	
+		</li>
+
+		{%if session["level"]=="admin"%} 
+			  <li class="nav-item">
+			<a class="nav-link" href="{{ url_for('create_user') }}">Create User </span></a>	
+			</li> 
+		{%endif%}
+		{%if session["level"]=="admin" or session["level"]=="read_write_user"%} 
+		   <li class="nav-item">
+			 <a class="nav-link" href="{{ url_for('upload_csv') }}">Upload Csv </span></a>
+		  
+		  </li>
+		   <li class="nav-item">
+			 <a class="nav-link" class="disabled" href="#">Upload Zip</a>
+		   </li>
+		   {%endif%}
+		   <li class="nav-item">
+			 <a class="nav-link" href="{{ url_for('download_data')}}">Download Data</a>
+		   </li>
+		   <li class="nav-item">
+			<a class="nav-link" href="{{ url_for('get_logs')}}">View Logs</a>
+			</li>
+		   <li class="nav-item">
+			 <a class="nav-link" href="{{ url_for('logout')}}">logout</a>
+		   </li>
+		 </ul>
+	   </div>
+	 </nav>
+ 
+ </div>
+
+
+		<br/>
+		<br/>
+		<div class="container">
+		<div class="row">
+		<div class="col-md-3"></div>
+		<div class="login_form_cont">
+			<b><h1 style="color: white;" class="text-center">Create User</h1></b>
+			<div class="form-group">
+				<form id="login_forms" enctype="multipart/form-data" method="post">
+						
+					
+					<div class="row">
+					<label for="email" class="col-md-12"><h4>Email:</h4></label>
+					<div class="col-md-12">
+						<input type="input" placeholder="Enter your Email"  class="form-control mt-3 bg-dark text-white" required id="email" name="email" style="font-size:18pt;height:40px;">
+					</div>
+					</div>
+
+					<div class="row">
+					<label for="end" class="col-md-12"><h4>Password:</h4></label>
+					<div class="col-md-12">
+						<input type="password" placeholder="Enter your Password" class="form-control mt-3 bg-dark text-white" required id="password" name="password" style="font-size:18pt;height:40px;">
+					</div>
+					</div>
+
+					<div class="row">
+						<label for="end" class="col-md-12"><h4>Confirm Password:</h4></label>
+						<div class="col-md-12">
+							<input type="password" placeholder="Enter your Password" class="form-control mt-3 bg-dark text-white" required id="confirm" name="confirm" style="font-size:18pt;height:40px;">
+						</div>
+					</div>
+
+					<div class="row">
+						<label for="end" class="col-md-12"><h4>Privileged Level</h4></label>
+						<div class="col-md-12">
+							<select name="prv_level" class="form-control mt-2 bg-dark text-white" style="font-size:18pt;height:40px;">
+								<option value="admin">Admin</option>
+								<option value="read_write_user">Read & Write User</option>
+								<option value="read_only_user">Read Only User</option>
+								
+							</select>
+						</div>
+					</div>
+
+
+					
+					<div class="col-md-12">
+						<input type="submit" onclick="confirm_password()" value="Create User" id="save" class = "col-md-12 btn-info btn-lg mt-5" />
+					</div>
+		
+			
+				
+					
+				
+
+			</form>
+			</div>
+
+	
+	</div>
+</div>
+
+</div>
+</div>
+
+</body>
+
+
+</html>
+
+
+    
+    
+
+
