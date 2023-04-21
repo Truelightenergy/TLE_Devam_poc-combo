@@ -12,23 +12,74 @@
     <link href="/static/css/notification.css" rel="stylesheet"/>
     <script src="/static/js/notification.js"></script>
 
+
+   <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.3/umd/popper.min.js"></script>
+   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+
 </head>
 <body>
+
+
+
+
    <div id="toast-container"></div>
 	{% if flash_message == True %}
 
     <script>show_toast('{{ message_toast }}', '{{ message_flag }}', '{{ page_type }}'); </script>
     {% endif %}
    
-   <div class="bg-image" 
-   style=" background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)),url('https://f.hubspotusercontent30.net/hubfs/456834/home%20banner.jpeg');
-          height: 100vh">
+   <div class="bg-image">
 
+<div>
+
+   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="{{ url_for('index') }}">True Light Energies</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+         <li class="nav-item">
+				<a class="nav-link" href="{{ url_for('index') }}">Home </span></a>	
+			</li>
+         {%if session["level"]=="admin"%} 
+			  	<li class="nav-item">
+				<a class="nav-link" href="{{ url_for('create_user') }}">Create User </span></a>	
+				</li> 
+			{%endif%}
+			{%if session["level"]=="admin" or session["level"]=="read_write_user"%} 
+			   <li class="nav-item">
+				 <a class="nav-link" href="{{ url_for('upload_csv') }}">Upload Csv </span></a>
+			  
+			  </li>
+			   <li class="nav-item">
+				 <a class="nav-link" class="disabled" href="#">Upload Zip</a>
+			   </li>
+			   {%endif%}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('download_data')}}">Download Data</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('get_logs')}}">View Logs</a>
+            </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('logout')}}">logout</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+</div>
     <br/>
     <br/>
+    
     <div class="container">
-        <div class="row">
-            <div class="col-md-6">
+   {%if session["level"]=="admin" or session["level"]=="read_write_user"%}
+      <div class="row">
+         <div class="col-md-1"></div>
+            <div class="col-md-10">
                <div class="card text-white flex-md-row mb-4 shadow-sm h-md-250">
                   <div class="card-body d-flex flex-column align-items-start">
                      <strong class="d-inline-block mb-2 text-white">Zip</strong>
@@ -42,9 +93,14 @@
                   <img class="card-img-right flex-auto d-none d-lg-block" alt="Thumbnail [200x250]" src="/static/images/zip.png" style="width: 200px; height: 250px;">
                </div>
             </div>
+         <div class="col-md-1"></div>
+        </div>
         
- 
-            <div class="col-md-6">
+      <div class="row">
+               <div class="col-md-1"></div>
+
+           
+            <div class="col-md-10">
                <div class="card text-white flex-md-row mb-4 shadow-sm h-md-250">
                   <div class="card-body d-flex flex-column align-items-start">
                      <strong class="d-inline-block mb-2 text-white">Csv</strong>
@@ -58,10 +114,14 @@
                   <img class="card-img-right flex-auto d-none d-lg-block" alt="Thumbnail [200x250]" src="/static/images/csv.png" style="width: 200px; height: 250px;">
                </div>
             </div>
-         </div>
+         <div class="col-md-1"></div>
+      </div>
+         {%endif%}
 
          <div class="row">
-            <div class="col-md-6">
+            
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
                <div class="card text-white flex-md-row mb-4 shadow-sm h-md-250">
                   <div class="card-body d-flex flex-column align-items-start">
                      <strong class="d-inline-block mb-2 text-white">Data Download</strong>
@@ -75,6 +135,7 @@
                   <img class="card-img-right flex-auto d-none d-lg-block" alt="Thumbnail [200x250]" src="/static/images/download.png" style="width: 200px; height: 250px;">
                </div>
             </div>
+            <div class="col-md-1"></div>
          </div>
     </div>
 </div>   

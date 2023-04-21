@@ -1,0 +1,39 @@
+body {
+    background: url('https://f.hubspotusercontent30.net/hubfs/456834/home%20banner.jpeg') no-repeat center center fixed;
+    background-size: cover;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+/* Box styles */
+.myBox {
+    background-color: black;
+    border: none;
+    margin: 0 auto;
+    padding: 10px;
+    font: 18px/22px sans-serif;
+    width: 100%;
+    height: 700px;
+    overflow: scroll;
+    }
+
+    /* Scrollbar styles */
+    .myBox::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+    }
+    
+    .myBox::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 10px olivedrab;
+    border-radius: 10px;
+    }
+    
+    .myBox::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: yellowgreen; 
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+    }
+    
+    .myBox::-webkit-scrollbar-thumb:hover {
+    background: #7bac10;
+    }

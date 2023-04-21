@@ -11,22 +11,25 @@ class Auths:
     Managing Authentications and Autherizations
     """
 
-    def __init__(self, secret_key):
+    def __init__(self, secret_key, secret_salt):
         """
         connection database here 
         """
 
-        self.secret_key =secret_key
+        self.secret_key = secret_key
+        self.secret_salt = secret_salt
         data_base = ConnectDatabase()
         self.engine = data_base.get_engine()
 
-    def create_user(self, client_email, client_password, isAdmin):
+    def create_user(self, client_email, client_password, level):
         """
         creating a new user for now
         """
 
-        client_password = hashlib.sha256(client_password.encode()).digest().hex()
-        query = f"INSERT INTO trueprice.users(email, password, isadmin)VALUES ('{client_email}', '{client_password}', {isAdmin});"
+        salted_password = self.secret_salt + client_password 
+        hashed_salted_password = hashlib.sha512(salted_password.encode()).hexdigest()
+        query = f"INSERT INTO trueprice.users(email, password, privileged_level)VALUES ('{client_email}', '{hashed_salted_password}', '{level}');"
+        
         try:
             self.engine.execute(query)
             return True
@@ -37,8 +40,9 @@ class Auths:
         """
         authenticate user based on given cradentials
         """
-        client_password = hashlib.sha256(client_password.encode()).digest().hex()
-        query = f"SELECT * FROM trueprice.users WHERE email = '{client_email}' AND password = '{client_password}';"
+        salted_password = self.secret_salt + client_password 
+        hashed_salted_password = hashlib.sha512(salted_password.encode()).hexdigest()
+        query = f"SELECT * FROM trueprice.users WHERE email = '{client_email}' AND password = '{hashed_salted_password}';"
 
         try:
             results = self.engine.execute(query).fetchall()
@@ -46,7 +50,7 @@ class Auths:
             admin_check = False
             for row in results:
                 flag = True
-                admin_check = row['isadmin']
+                admin_check = row['privileged_level']
             return flag, admin_check
         except:
             return False, False
@@ -68,10 +72,11 @@ class Auths:
         Generates the Auth Token
         
         """
-        client_password = hashlib.sha256(client_password.encode()).digest().hex()
+        salted_password = self.secret_salt + client_password 
+        hashed_salted_password = hashlib.sha512(salted_password.encode()).hexdigest()
         try:
             token = jwt.encode({'client_email' : client_email, 
-                                'client_password' : client_password,
+                                'client_password' : hashed_salted_password,
                         'exp' : datetime.datetime.utcnow() + datetime.timedelta(days=1)},
                         self.secret_key, "HS256")
             return True, token

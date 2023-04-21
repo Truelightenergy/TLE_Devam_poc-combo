@@ -1,10 +1,17 @@
 
+body {
+  background: url('https://f.hubspotusercontent30.net/hubfs/456834/home%20banner.jpeg') no-repeat center center fixed;
+  background-size: cover;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
 .upload_form_cont {
   margin: 20px;
   padding: 20px;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#f2f2f2');
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#f2f2f2')";
-  background: rgba(57, 91, 100, 0.5);
+  background: rgba(57, 91, 100, 0.7);
 
   color:#fff;
   overflow:hidden;
