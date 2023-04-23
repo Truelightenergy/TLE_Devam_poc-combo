@@ -663,9 +663,7 @@ services:
           password VARCHAR(255) NOT NULL,
           privileged_level VARCHAR(255) NOT NULL
         );
-
-
-      EOSQL
+EOSQL
   # adminer: # for postgres, php admin interface
   #   image: adminer
   #   restart: always
