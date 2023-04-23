@@ -8,7 +8,7 @@ from database_conection import ConnectDatabase
 
 class Auths:
     """
-    Managing Authentications and Autherizations
+    Managing Authentications and Authorizations
     """
 
     def __init__(self, secret_key, secret_salt):

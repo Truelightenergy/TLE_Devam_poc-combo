@@ -1,47 +1,17 @@
-services:
-  postgres:
-    environment:
-      - PGUSER=postgres
-      - POSTGRES_PASSWORD=postgres
-    image: "postgres:15"
-    ports:
-      - "0.0.0.0:5432:5432"
-  postgres-setup-1:
-    depends_on:
-      - postgres
-    environment:
-      - PGUSER=postgres
-      - PGPASSWORD=postgres
-      - DATABASE=postgres
-    image: "postgres:15"
-    entrypoint:
-      - /bin/bash
-      - -c 
-      - | 
-        set -e
-        sleep 10 # wait for postgres to be ready
-        psql -v ON_ERROR_STOP=1 --username $${PGUSER} --dbname postgres --host $${DATABASE} --port 5432 <<-EOSQL
-            CREATE USER docker;
-            CREATE DATABASE trueprice;
-            GRANT ALL PRIVILEGES ON DATABASE trueprice TO docker;
-            -- GRANT ALL ON SCHEMA public TO demo;
-            ALTER USER docker WITH encrypted password 'docker';
-        EOSQL
-  postgres-setup-2:
-    depends_on:
-      - postgres-setup-1
-    environment:
-      - PGUSER=docker
-      - PGPASSWORD=docker
-      - DATABASE=postgres
-    image: "postgres:15"
-    entrypoint:
-    - bin/bash
-    - -c
-    - |
-      set -e
-      sleep 10
-      psql -v ON_ERROR_STOP=1 --username $${PGUSER} --dbname trueprice --host $${DATABASE} --port 5432 <<-EOSQL
+-- postgres user
+-- postgres database
+psql -v ON_ERROR_STOP=0 --username postgres --dbname postgres --host poc-combo.cdcasjjgwquj.us-east-2.rds.amazonaws.com --port 5432 <<-EOSQL
+    CREATE USER docker;
+    CREATE DATABASE trueprice; -- done per AWS Console
+    GRANT ALL PRIVILEGES ON DATABASE trueprice TO docker;
+    ALTER USER docker WITH encrypted password 'docker';
+EOSQL
+
+-- docker user
+-- trueprice database
+
+-- copy/paste didn't work (unclear why -- put in file and remove \c truprice (seems unnecessary) and it worked)
+psql -v ON_ERROR_STOP=1 --username docker --dbname trueprice --host poc-combo.cdcasjjgwquj.us-east-2.rds.amazonaws.com --port 5432 <<-EOSQL
         CREATE SCHEMA trueprice;
         -- NYISO
         CREATE TABLE trueprice.nyiso_energy ( -- history table differs
@@ -654,7 +624,6 @@ services:
 
         );
         
-
       --Authentication table
         CREATE TABLE trueprice.users (
           id SERIAL PRIMARY KEY,
@@ -663,46 +632,3 @@ services:
           privileged_level VARCHAR(255) NOT NULL
         );
 EOSQL
-  # adminer: # for postgres, php admin interface
-  #   image: adminer
-  #   restart: always
-  #   ports:
-  #     - "0.0.0.0:8080:8080"
-  # grafana:
-  #   image: "grafana/grafana-oss"
-  #   ports:
-  #     - "0.0.0.0:3000:3000"
-  # ingestor:
-  #   environment:
-  #     - PGUSER=docker
-  #     - PGPASSWORD=docker
-  #     - DATABASE=$${DATABASE}
-  #   depends_on:
-  #     - postgres-setup-2
-  #   build:
-  #     context: ../buildContext # relative to vscode project
-  #     dockerfile: ./src/Dockerfile-ingestor # relative to context directory
-  # trueprice-api:
-  #   environment:
-  #     - PGUSER=docker
-  #     - PGPASSWORD=docker
-  #     - DATABASE=$${DATABASE}
-  #   depends_on:
-  #     - postgres-setup-2
-  #   build:
-  #     context: ../buildContext
-  #     dockerfile: ./src/Dockerfile-trueprice-api
-  #   ports:
-  #     - "0.0.0.0:5050:5000"
-
-
-# --- postgres
-# docker container run --name some-postgres -e POSTGRES_PASSWORD=postgres -p 0.0.0.0:5432:5432 -d postgres
-# create database trueprice;
-# \c trueprice;
-# create table data (id serial PRIMARY KEY, amount NUMERIC(12,8), hour TIMESTAMP);
-# insert into data (amount, hour) values (1.0, TO_TIMESTAMP('6/1/2022', 'MM/DD/YYYY'));
-# select * from data;
-# --- grafana
-# for grafana, use $${DATABASE}:5432
-# docker container run -p 3000:3000 grafana/grafana-oss     
