@@ -3,7 +3,7 @@ import os
 import logging
 import boto3
 import datetime
-from ingestors.nonenrgy import NonEnergy
+from ingestors.nonenergy import NonEnergy
 from ingestors.energy import Energy
 from ingestors.rec import Rec
 from botocore.exceptions import ClientError
