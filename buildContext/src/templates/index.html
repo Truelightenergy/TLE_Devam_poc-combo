@@ -1,143 +1,91 @@
+<!DOCTYPE html>
 <html>
 <head>
 	<title>home</title>
 	<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<!-- ---- Include the above in your HEAD tag --------div class="container"> -->
 
-   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
-
-    <link rel="stylesheet" href="/static/css/index.css">
-    <link href="/static/css/notification.css" rel="stylesheet"/>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/static/css/style.css">
+	<link href="/static/css/notification.css" rel="stylesheet"/>
     <script src="/static/js/notification.js"></script>
 
-
-   <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.3/umd/popper.min.js"></script>
-   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
 
 </head>
 <body>
-
-
-
-
-   <div id="toast-container"></div>
+	<div id="toast-container"></div>
 	{% if flash_message == True %}
 
     <script>show_toast('{{ message_toast }}', '{{ message_flag }}', '{{ page_type }}'); </script>
     {% endif %}
-   
-   <div class="bg-image">
 
-<div>
-
-   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <a class="navbar-brand" href="{{ url_for('index') }}">True Light Energies</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ml-auto">
-         <li class="nav-item">
-				<a class="nav-link" href="{{ url_for('index') }}">Home </span></a>	
-			</li>
-         {%if session["level"]=="admin"%} 
-			  	<li class="nav-item">
-				<a class="nav-link" href="{{ url_for('create_user') }}">Create User </span></a>	
-				</li> 
-			{%endif%}
-			{%if session["level"]=="admin" or session["level"]=="read_write_user"%} 
-			   <li class="nav-item">
-				 <a class="nav-link" href="{{ url_for('upload_csv') }}">Upload Csv </span></a>
-			  
-			  </li>
-			   <li class="nav-item">
-				 <a class="nav-link" class="disabled" href="#">Upload Zip</a>
-			   </li>
-			   {%endif%}
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('download_data')}}">Download Data</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('get_logs')}}">View Logs</a>
-            </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('logout')}}">logout</a>
-          </li>
-        </ul>
-      </div>
-    </nav>
-
+	<input type="checkbox" id="checkbox">
+	
+	<div class="body">
+		{% include 'navbar.html'%}
+		
+		<div class="section">
+		<div class="container">
+			{%if session["level"]=="admin" or session["level"]=="read_write_user"%}
+			   <div class="row mt-5">
+				  <div class="col-md-6">
+					
+						<div class="card text-white flex-md-row mb-4 shadow-sm h-md-250">
+						   <div class="card-body d-flex flex-column align-items-start">
+							  <strong class="d-inline-block mb-2 text-white">Zip</strong>
+							  <h6 class="mb-0">
+								 <a class="text-white disabled" href="upload_zip">You can upload your zip files here.</a>
+							  </h6>
+							 
+							  <p class="card-text mb-auto"></p>
+							  <a class="btn btn-primary btn-lg disabled" role="button" href="upload_zip">Upload Zip</a>
+						   </div>
+						   <img class="card-img-right flex-auto d-none d-lg-block" alt="Thumbnail [200x250]" src="/static/images/zip.png" style="width: 200px; height: 250px;">
+						</div>
+					</div>
+				 
+				 
+					<div class="col-md-6">					
+						<div class="card text-white flex-md-row mb-4 shadow-sm h-md-250">
+						   <div class="card-body d-flex flex-column align-items-start">
+							  <strong class="d-inline-block mb-2 text-white">Csv</strong>
+							  <h6 class="mb-0">
+								 <a class="text-white" href="upload_csv">You can upload your csv files here.</a>
+							  </h6>
+							  
+							  <p class="card-text mb-auto"></p>
+							  <a class="btn btn-success btn-lg" role="button" href="upload_csv">Upload Csv</a>
+						   </div>
+						   <img class="card-img-right flex-auto d-none d-lg-block" alt="Thumbnail [200x250]" src="/static/images/csv.png" style="width: 200px; height: 250px;">
+						</div>
+					</div>
+					
+				  
+			   
+				  {%endif%}
+		 
+				  
+					 
+					 <div class="col-md-6">
+						<div class="card text-white flex-md-row mb-4 shadow-sm h-md-250">
+						   <div class="card-body d-flex flex-column align-items-start">
+							  <strong class="d-inline-block mb-2 text-white">Data Download</strong>
+							  <h6 class="mb-0">
+								 <a class="text-white" href="download_data">You can download data in csv and json.</a>
+							  </h6>
+							  <p class="card-text mb-auto"></p>
+							  <a class="btn btn-info btn-lg" role="button" href="download_data">Download</a>
+						   </div>
+						   <img class="card-img-right flex-auto d-none d-lg-block" alt="Thumbnail [200x250]" src="/static/images/download.png" style="width: 200px; height: 250px;">
+						</div>
+					 </div>
+					 
+				  </div>
+			 </div>
+		 </div>   
+	</div>
 </div>
-    <br/>
-    <br/>
-    
-    <div class="container">
-   {%if session["level"]=="admin" or session["level"]=="read_write_user"%}
-      <div class="row">
-         <div class="col-md-1"></div>
-            <div class="col-md-10">
-               <div class="card text-white flex-md-row mb-4 shadow-sm h-md-250">
-                  <div class="card-body d-flex flex-column align-items-start">
-                     <strong class="d-inline-block mb-2 text-white">Zip</strong>
-                     <h6 class="mb-0">
-                        <a class="text-white disabled" href="upload_zip">You can upload your zip files here.</a>
-                     </h6>
-                     <div class="mb-1 text-white">Upload Zip</div>
-                     <p class="card-text mb-auto"></p>
-                     <a class="btn btn-primary btn-lg disabled" role="button" href="upload_zip">Upload Zip</a>
-                  </div>
-                  <img class="card-img-right flex-auto d-none d-lg-block" alt="Thumbnail [200x250]" src="/static/images/zip.png" style="width: 200px; height: 250px;">
-               </div>
-            </div>
-         <div class="col-md-1"></div>
-        </div>
-        
-      <div class="row">
-               <div class="col-md-1"></div>
-
-           
-            <div class="col-md-10">
-               <div class="card text-white flex-md-row mb-4 shadow-sm h-md-250">
-                  <div class="card-body d-flex flex-column align-items-start">
-                     <strong class="d-inline-block mb-2 text-white">Csv</strong>
-                     <h6 class="mb-0">
-                        <a class="text-white" href="upload_csv">You can upload your csv files here.</a>
-                     </h6>
-                     <div class="mb-1 text-white">Upload Csv</div>
-                     <p class="card-text mb-auto"></p>
-                     <a class="btn btn-success btn-lg" role="button" href="upload_csv">Upload Csv</a>
-                  </div>
-                  <img class="card-img-right flex-auto d-none d-lg-block" alt="Thumbnail [200x250]" src="/static/images/csv.png" style="width: 200px; height: 250px;">
-               </div>
-            </div>
-         <div class="col-md-1"></div>
-      </div>
-         {%endif%}
-
-         <div class="row">
-            
-            <div class="col-md-1"></div>
-            <div class="col-md-10">
-               <div class="card text-white flex-md-row mb-4 shadow-sm h-md-250">
-                  <div class="card-body d-flex flex-column align-items-start">
-                     <strong class="d-inline-block mb-2 text-white">Data Download</strong>
-                     <h6 class="mb-0">
-                        <a class="text-white" href="download_data">You can download data in csv and json.</a>
-                     </h6>
-                     <div class="mb-1 text-white">Data Download</div>
-                     <p class="card-text mb-auto"></p>
-                     <a class="btn btn-info btn-lg" role="button" disabled href="download_data">Download</a>
-                  </div>
-                  <img class="card-img-right flex-auto d-none d-lg-block" alt="Thumbnail [200x250]" src="/static/images/download.png" style="width: 200px; height: 250px;">
-               </div>
-            </div>
-            <div class="col-md-1"></div>
-         </div>
-    </div>
-</div>   
 </body>
 </html>

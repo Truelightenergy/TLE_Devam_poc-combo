@@ -1,0 +1,93 @@
+<nav class="side-bar">
+    <div style = "margin-bottom: 20px;"></div>
+
+    <a class = "u-name-larger" href="{{ url_for('index') }}">
+        <b>TrueLightsEnergies</b>
+    </a>
+    
+    <a class = "u-name" href="{{ url_for('index') }}">
+        <b>TLE</b>
+    </a>
+    
+    <ul>
+        <li>
+            <a href="{{ url_for('index') }}">
+                <i class="fa fa-home" aria-hidden="true"></i>
+                <span>Home</span>
+            </a>
+        </li>
+   <!-- -------- -->
+    {%if session["level"]=="admin" or session["level"]=="read_write_user"%} 
+        <li>
+            <a href="{{ url_for('upload_csv')}}">
+                <i class="fa fa-file-text-o" aria-hidden="true"></i>
+                <span>CSV</span>
+            </a>
+        </li>
+        <li>
+            <a href="#">
+                <i class="fa fa-file-archive-o" aria-hidden="true"></i>
+                <span>Zip</span>
+            </a>
+        </li>
+    {%endif%}	
+        <li>
+            <a href="{{ url_for('download_data')}}">
+                <i class="fa fa-download" aria-hidden="true"></i>
+                <span>Downloads</span>
+            </a>
+        </li>
+        <li>
+            <a href="{{ url_for('get_logs')}}">
+                <i class="fa fa-clock-o" aria-hidden="true"></i>
+                <span>Logs</span>
+            </a>
+        </li>
+        {%if session["level"]=="admin"%} 
+
+        
+        <li data-toggle="collapse" data-target="#users" class=" nav-item collapsed active">
+            <input type="checkbox" id="users-toggle" class="nav-toggle">
+            
+            <label for="users-toggle" class="nav-label"><i class="fa fa-user"></i> Users <span class="arrow"></span>
+            </label>
+           
+            <!-- <a href="#" ><i class="fa fa-user"></i"> Users <span class="arrow"></span></a> -->
+        </li>
+            <ul class="nav-submenu sub-menu collapse custom-margins" id="users">
+              <li>
+                <a href="{{ url_for('create_user')}}"> 
+                  <i class="fa fa-plus" aria-hidden="true"></i>
+                  <span>Create User</span>
+                </a>
+              </li>
+              <li>
+                <a href="#">
+                  <i class="fa fa-eye" aria-hidden="true"></i>
+                  <span>View User</span>    
+                </a>
+              </li>
+            </ul>
+
+        {%endif%}
+
+        <li>
+            <a href="{{ url_for('logout')}}">
+                <i class="fa fa-power-off" aria-hidden="true"></i>
+                <span>Logout</span>
+            </a>
+        </li>
+                
+          
+    </ul>
+</nav>
+
+
+<link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+
+
+
+
+

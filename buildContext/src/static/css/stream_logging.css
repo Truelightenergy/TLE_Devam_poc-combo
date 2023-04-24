@@ -24,16 +24,16 @@ body {
     }
     
     .myBox::-webkit-scrollbar-track {
-    box-shadow: inset 0 0 10px olivedrab;
+    box-shadow: inset 0 0 10px #fff;
     border-radius: 10px;
     }
     
     .myBox::-webkit-scrollbar-thumb {
     border-radius: 10px;
-    background: yellowgreen; 
+    background: #fff; 
     box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
     }
     
     .myBox::-webkit-scrollbar-thumb:hover {
-    background: #7bac10;
+    background: #fff;
     }
