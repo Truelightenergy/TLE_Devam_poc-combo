@@ -654,7 +654,6 @@ services:
 
         );
         
-
       --Authentication table
         CREATE TABLE trueprice.users (
           id SERIAL PRIMARY KEY,

@@ -4,7 +4,7 @@ Managing Authentications and Autherizations
 import jwt
 import datetime
 import hashlib
-from database_conection import ConnectDatabase
+from database_connection import ConnectDatabase
 
 class Auths:
     """

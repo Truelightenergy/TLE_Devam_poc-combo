@@ -4,7 +4,7 @@ Implements the Extraction of Rec data details from the database
 
 import pandas as pd
 from datetime import datetime
-from database_conection import ConnectDatabase
+from database_connection import ConnectDatabase
 
 
 class Rec:
