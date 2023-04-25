@@ -94,3 +94,78 @@ class Auths:
             return True, response
         except:
             return False, None
+        
+    def get_all_users(self):
+        """
+        extracts all the users from the database
+        """
+        query = f"SELECT * FROM trueprice.users;"
+
+        try:
+            results = self.engine.execute(query).fetchall()
+            return results
+        except:
+            return None
+        
+        
+    def get_user(self, user_id):
+        """
+        extracts all the users from the database
+        """
+        query = f"SELECT * FROM trueprice.users where id = {user_id};"
+
+        try:
+            results = self.engine.execute(query).fetchall()
+            return results
+        except:
+            return None
+        
+        
+    
+    def delete_user(self, user_id):
+        """
+        delete the users from the database
+        """
+        query = f"DELETE FROM trueprice.users WHERE id={user_id};"
+
+        try:
+            self.engine.execute(query)
+            return True
+        except:
+            return False
+        
+    def update_user(self, user_id, prv_level):
+        """
+        update user inside the application
+        """
+        query = f"UPDATE trueprice.users SET privileged_level = '{prv_level}' WHERE id={user_id};"
+
+        try:
+            self.engine.execute(query)
+            return True
+        except:
+            return False
+        
+    def update_password(self, old_pswd, new_pswd, email):
+        """
+        update the password
+        """
+        old_salted_password = self.secret_salt + old_pswd 
+        hashed_old_salted_password = hashlib.sha512(old_salted_password.encode()).hexdigest()
+
+        new_salted_password = self.secret_salt + new_pswd 
+        hashed_new_salted_password = hashlib.sha512(new_salted_password.encode()).hexdigest()
+        
+
+        query = f"UPDATE trueprice.users SET password = '{hashed_new_salted_password}' WHERE email='{email}' and password ='{hashed_old_salted_password}';"
+
+        try:
+            self.engine.execute(query)
+            return True
+        except:
+            return False
+
+
+
+
+

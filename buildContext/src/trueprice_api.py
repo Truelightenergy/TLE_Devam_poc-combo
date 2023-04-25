@@ -51,13 +51,59 @@ def logout():
 @app.route('/create_user', methods=['GET', 'POST'])
 def create_user():
     """
-    logout to the applications
+    create users for the applications
     """
-    if session["level"]=="admin" or session["level"]=="read_write_user":
+    if session["level"]=="admin" :
         response = api_util.create_user()
         return response
     else:
         return redirect(url_for("login"))
+    
+@app.route('/view_user', methods=['GET', 'POST'])
+def view_user():
+    """
+    view all user of applications
+    """
+    if session["level"]=="admin":
+        response = api_util.view_user()
+        return response
+    else:
+        return redirect(url_for("login"))
+
+@app.route('/delete_user/<user_id>', methods=['GET', 'POST'])
+def delete_user(user_id):
+    """
+    delete particular user
+    """
+
+    if session["level"]=="admin":
+        response = api_util.delete_user(user_id)
+        return response
+    else:
+        return redirect(url_for("login"))
+    
+@app.route('/update_user/<user_id>', methods=['GET', 'POST'])
+def update_user(user_id):
+    """
+    delete particular user
+    """
+
+    if session["level"]=="admin":
+        response = api_util.update_user(user_id)
+        return response
+    else:
+        return redirect(url_for("login"))
+    
+
+@app.route('/update_password', methods=['GET', 'POST'])
+@login_required
+def update_password():
+    """
+    update your password
+    """
+    response = api_util.update_password()
+    return response
+
 
 
 @app.route('/', methods=['GET'])

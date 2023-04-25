@@ -33,7 +33,7 @@ LOG_FOLDER = './logs'
 if not os.path.exists(LOG_FOLDER):
     os.makedirs(LOG_FOLDER)
 
-logHandler = TimedRotatingFileHandler(f"{LOG_FOLDER}/time_log.log", when='H', interval=1)
+logHandler = TimedRotatingFileHandler(f"{LOG_FOLDER}/time_log.log", when='H', interval=8)
 logger.addHandler(logHandler)
 
 
@@ -167,7 +167,70 @@ class Util:
 
 
         return render_template("create_user.html")
+    
 
+    def view_user(self):
+        """
+        view user of applications
+        """
+        records = self.auth_obj.get_all_users()
+        return render_template("view_user.html", data = records)
+    
+    def delete_user(self, user_id):
+        """
+        delete user of applications
+        """
+        flag = self.auth_obj.delete_user(user_id)
+        records = self.auth_obj.get_all_users()
+        if flag:
+            self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "User Deletion", msg = f"user with id {user_id} deleted", committer = session["user"])
+            return render_template("view_user.html",  flash_message=True, message_toast = "user deleted", message_flag = "success", page_type = "download", data = records)
+        else:
+            self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "User Deletion", msg = f"unable to delete user with id {user_id}", committer = session["user"])
+            return render_template("view_user.html",  flash_message=True, message_toast = "unable to delete user", message_flag = "error", page_type = "download", data = records)
+
+    def update_user(self, user_id):
+        """
+        update user of applications
+        """
+        if request.method == 'POST':
+
+            prv_level= request.form.get('prv_level')            
+            flag = self.auth_obj.update_user(user_id, prv_level)
+            records = self.auth_obj.get_all_users()
+
+            if flag:
+                self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "User Updation", msg = f"user with id {user_id} updated", committer = session["user"])
+                return render_template("view_user.html",  flash_message=True, message_toast = "user updated", message_flag = "success", page_type = "download", data = records)
+            else:
+                self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "User Deletion", msg = f"unable to update user with id {user_id} ", committer = session["user"])
+                return render_template("view_user.html",  flash_message=True, message_toast = "unable to update user", message_flag = "error", page_type = "download", data = records)
+
+        record = self.auth_obj.get_user(user_id)
+        return render_template("update_user.html", data = record)
+    
+
+    def update_password(self):
+        """
+        update your password
+        """
+        if request.method == 'POST':
+            old_pswd = request.form.get("old_password")
+            new_pswd = request.form.get("password")
+            flag = self.auth_obj.update_password(old_pswd, new_pswd, session['user'])
+
+
+            if flag:
+                self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "Password Updation", msg = f"password updated", committer = session["user"])
+                return render_template("update_password.html",  flash_message=True, message_toast = "password updated", message_flag = "success", page_type = "download")
+            else:
+                self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "Password Updation", msg = f"unable to update the password", committer = session["user"])
+                return render_template("update_password.html",  flash_message=True, message_toast = "unable to update password", message_flag = "error", page_type = "download")
+        
+        return render_template("update_password.html")
+
+
+        
 
     def upload_csv(self):
         """
@@ -291,9 +354,11 @@ class Util:
     def app_logging(self):
         """creates logging information"""
         with open(f"{LOG_FOLDER}/time_log.log") as file:
+            file = list(file)
+            file = file[::-1]
             for line in file:
                 line = line.replace("", "")
-                logs = line + "\n"
+                logs = line
                 yield logs.encode()
                 time.sleep(0.3)
 
