@@ -64,7 +64,6 @@ class Ingestion:
         timestamp = datetime.datetime.strptime(curveDate+timeComponent, "%Y%m%d%H%M%S")
         
         return TLE_Meta(file_name, curveType, controlArea, timestamp)
-    
 
     def process(self, files, steps):
         """
@@ -97,7 +96,6 @@ class Ingestion:
             # if result is not None:
             #     return result
         return result
-
     
     # todo - s3
     def storage(self, data):
@@ -106,8 +104,7 @@ class Ingestion:
         """
         return self.upload_file(data.fileName)
 
-
-    def upload_file(self, file_name, bucket='s3', object_name=None):
+    def upload_file(self, file_name, bucket='tle-trueprice-api-source-data', object_name=None):
 
         """
         Upload a file to an S3 bucket
@@ -118,31 +115,24 @@ class Ingestion:
         """
 
         # If S3 object_name was not specified, use file_name
-
         if object_name is None:
             object_name = os.path.basename(file_name)
 
-        # uploadin file to s3
-        
-        # # Upload the file
-        # s3_client = boto3.client('s3')
-        # try:
-        #     response = s3_client.upload_file(file_name, bucket, object_name)
-        # except ClientError as e:
-        #     logging.error(e)
-        #     return False
-        # return True
-
-
-
-    
+        # upload file to s3        
+        s3_client = boto3.client('s3')
+        try:
+            response = s3_client.upload_file(file_name, bucket, object_name)
+        except ClientError as e:
+            logging.error(e)
+            return False
+        logging.info(f"{file_name} uploaded to s3")
+        return True
 
     def validate_api(self, file_name):
         """
         validate api request
         """
         pass
-
 
     def call_ingestor(self,file):
         """
@@ -160,10 +150,7 @@ class Ingestion:
         else:
             result = "Shouldn't be here"
         
-
         return result
-
-
 
 class TLE_Meta:
     def __init__(self, fileName, curveType, controlArea, curveTimestamp):
