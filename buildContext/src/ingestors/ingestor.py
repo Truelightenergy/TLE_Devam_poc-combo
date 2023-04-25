@@ -84,8 +84,11 @@ class Ingestion:
         # add sha later
         for m in valid:
             result = steps["storage"](m) # store before we place in db
-            if result is not None :
-                return result
+            if result is not None:
+                if result == "Data Inserted":
+                    continue
+                else:
+                    return result
 
         # insert db / api check each as we go (need to find way to redo/short-circuit/single file, etc.)
         for m in valid:
@@ -118,10 +121,23 @@ class Ingestion:
         if object_name is None:
             object_name = os.path.basename(file_name)
 
-        # upload file to s3        
-        s3_client = boto3.client('s3')
+        # upload file to s3
+        s3_client = None
+        if not os.environ["LOCALDEV"]:
+            s3_client = boto3.client('s3') # REAL
+        else:
+            # local minio -- http://127.0.0.1:9090/access-keys/new-account
+            clientArgs = {
+                'aws_access_key_id': 'wKUo3HxCSkAUaRnA',
+                'aws_secret_access_key': 'nC9WCPSSII98LatZFpprpDBdyih4zStc',
+                'endpoint_url': 'http://localhost:9000',
+                'verify': False
+            }
+            s3_client = boto3.resource("s3", **clientArgs)
+
         try:
-            response = s3_client.upload_file(file_name, bucket, object_name)
+            response = s3_client.Bucket(bucket).upload_file(file_name, object_name)
+            #response = s3_client.upload_file(file_name, bucket, object_name)
         except ClientError as e:
             logging.error(e)
             return "failed to upload to s3"
