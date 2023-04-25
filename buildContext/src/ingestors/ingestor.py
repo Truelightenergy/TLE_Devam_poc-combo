@@ -124,9 +124,9 @@ class Ingestion:
             response = s3_client.upload_file(file_name, bucket, object_name)
         except ClientError as e:
             logging.error(e)
-            return False
+            return "failed to upload to s3"
         logging.info(f"{file_name} uploaded to s3")
-        return True
+        return "Data Inserted"
 
     def validate_api(self, file_name):
         """
