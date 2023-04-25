@@ -4,7 +4,7 @@ Managing Authentications and Autherizations
 import jwt
 import datetime
 import hashlib
-from database_conection import ConnectDatabase
+from database_connection import ConnectDatabase
 
 class Auths:
     """
@@ -28,7 +28,7 @@ class Auths:
 
         salted_password = self.secret_salt + client_password 
         hashed_salted_password = hashlib.sha512(salted_password.encode()).hexdigest()
-        query = f"INSERT INTO trueprice.users(email, password, privileged_level)VALUES ('{client_email}', '{hashed_salted_password}', '{level}');"
+        query = f"INSERT INTO trueprice.users(email, password, privileged_level) VALUES ('{client_email}', '{hashed_salted_password}', '{level}');"
         
         try:
             self.engine.execute(query)
@@ -38,7 +38,7 @@ class Auths:
             
     def authenticate_user(self, client_email, client_password):
         """
-        authenticate user based on given cradentials
+        authenticate user based on given credentials
         """
         salted_password = self.secret_salt + client_password 
         hashed_salted_password = hashlib.sha512(salted_password.encode()).hexdigest()

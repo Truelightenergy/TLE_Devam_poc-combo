@@ -8,9 +8,11 @@ secret_key = "super-scret-key"
 secret_salt = "secret-salt"
 api_util = Util(secret_key, secret_salt)
 auth_obj = Auths(secret_key, secret_salt)
+
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = api_util.UPLOAD_FOLDER
-
+app.config['SESSION_TYPE'] = 'filesystem'
+app.secret_key = 'super secret key'
 
 def login_required(f):
     @wraps(f)
@@ -174,13 +176,8 @@ def log_stream():
 @app.route("/get_logs", methods=['GET','POST'])
 def get_logs():
     """returns logging information"""
-    return render_template("log_streaming.html")
-    
-
-       
+    return render_template("log_streaming.html")       
 
 if __name__ == "__main__":
     print("Starting")
-    app.secret_key = 'super secret key'
-    app.config['SESSION_TYPE'] = 'filesystem'
     app.run(port=5555)

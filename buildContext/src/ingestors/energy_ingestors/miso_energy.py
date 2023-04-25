@@ -3,7 +3,7 @@ Implements the Slowly Changed Dimensions to insert the data into database
 """
 import datetime
 import pandas as pd
-from database_conection import ConnectDatabase
+from database_connection import ConnectDatabase
 
 class Miso_Energy:
     """

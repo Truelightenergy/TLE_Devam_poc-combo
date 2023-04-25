@@ -75,7 +75,8 @@ class Util:
                 self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "User Logged In", msg = "Success", committer = session["user"])
                 return self.application_startup()
             else:
-                return render_template('login.html',  flash_message=True, message_toast = "Login Failed", message_flag = "error", page_type = "download")
+                 self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "User Logged In", msg = "Failure", committer = email)
+                 return render_template('login.html',  flash_message=True, message_toast = "Login Failed", message_flag = "error", page_type = "download"), 403
 
         return render_template('login.html')
     

@@ -3,7 +3,7 @@ import os
 import logging
 import boto3
 import datetime
-from ingestors.nonenrgy import NonEnergy
+from ingestors.nonenergy import NonEnergy
 from ingestors.energy import Energy
 from ingestors.rec import Rec
 from botocore.exceptions import ClientError
@@ -64,7 +64,6 @@ class Ingestion:
         timestamp = datetime.datetime.strptime(curveDate+timeComponent, "%Y%m%d%H%M%S")
         
         return TLE_Meta(file_name, curveType, controlArea, timestamp)
-    
 
     def process(self, files, steps):
         """
@@ -85,8 +84,11 @@ class Ingestion:
         # add sha later
         for m in valid:
             result = steps["storage"](m) # store before we place in db
-            if result is not None :
-                return result
+            if result is not None:
+                if result == "Data Inserted":
+                    continue
+                else:
+                    return result
 
         # insert db / api check each as we go (need to find way to redo/short-circuit/single file, etc.)
         for m in valid:
@@ -97,7 +99,6 @@ class Ingestion:
             # if result is not None:
             #     return result
         return result
-
     
     # todo - s3
     def storage(self, data):
@@ -106,8 +107,7 @@ class Ingestion:
         """
         return self.upload_file(data.fileName)
 
-
-    def upload_file(self, file_name, bucket='s3', object_name=None):
+    def upload_file(self, file_name, bucket='tle-trueprice-api-source-data', object_name=None):
 
         """
         Upload a file to an S3 bucket
@@ -118,31 +118,40 @@ class Ingestion:
         """
 
         # If S3 object_name was not specified, use file_name
-
         if object_name is None:
             object_name = os.path.basename(file_name)
 
-        # uploadin file to s3
-        
-        # # Upload the file
-        # s3_client = boto3.client('s3')
-        # try:
-        #     response = s3_client.upload_file(file_name, bucket, object_name)
-        # except ClientError as e:
-        #     logging.error(e)
-        #     return False
-        # return True
+        # upload file to s3
+        s3_client = None
+        if not "LOCALDEV" in os.environ:
+            s3_client = boto3.client('s3') # REAL
+        else:
+            # local minio -- http://127.0.0.1:9090/access-keys/new-account
+            clientArgs = {
+                'aws_access_key_id': 'wKUo3HxCSkAUaRnA',
+                'aws_secret_access_key': 'nC9WCPSSII98LatZFpprpDBdyih4zStc',
+                'endpoint_url': 'http://localhost:9000',
+                'verify': False
+            }
+            s3_client = boto3.resource("s3", **clientArgs)
 
-
-
-    
+        try:        
+            if not "LOCALDEV" in os.environ: # prod
+                response = s3_client.upload_file(file_name, bucket, object_name)
+            else: # local dev, not sure why minio doesn't have upload_file and prod doesn't have Bucket
+                response = s3_client.Bucket(bucket).upload_file(file_name, object_name)
+                
+        except ClientError as e:
+            logging.error(e)
+            return "failed to upload to s3"
+        logging.info(f"{file_name} uploaded to s3")
+        return "Data Inserted"
 
     def validate_api(self, file_name):
         """
         validate api request
         """
         pass
-
 
     def call_ingestor(self,file):
         """
@@ -160,10 +169,7 @@ class Ingestion:
         else:
             result = "Shouldn't be here"
         
-
         return result
-
-
 
 class TLE_Meta:
     def __init__(self, fileName, curveType, controlArea, curveTimestamp):
