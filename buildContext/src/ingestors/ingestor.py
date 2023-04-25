@@ -135,9 +135,12 @@ class Ingestion:
             }
             s3_client = boto3.resource("s3", **clientArgs)
 
-        try:
-            response = s3_client.Bucket(bucket).upload_file(file_name, object_name)
-            #response = s3_client.upload_file(file_name, bucket, object_name)
+        try:        
+            if not "LOCALDEV" in os.environ: # prod
+                response = s3_client.upload_file(file_name, bucket, object_name)
+            else: # local dev, not sure why minio doesn't have upload_file and prod doesn't have Bucket
+                response = s3_client.Bucket(bucket).upload_file(file_name, object_name)
+                
         except ClientError as e:
             logging.error(e)
             return "failed to upload to s3"
