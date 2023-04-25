@@ -123,7 +123,7 @@ class Ingestion:
 
         # upload file to s3
         s3_client = None
-        if not os.environ["LOCALDEV"]:
+        if not "LOCALDEV" in os.environ:
             s3_client = boto3.client('s3') # REAL
         else:
             # local minio -- http://127.0.0.1:9090/access-keys/new-account
