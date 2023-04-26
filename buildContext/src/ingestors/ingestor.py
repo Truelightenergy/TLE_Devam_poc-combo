@@ -8,6 +8,8 @@ from ingestors.energy import Energy
 from ingestors.rec import Rec
 from botocore.exceptions import ClientError
 
+logging.basicConfig(level=logging.INFO)
+
 class ParseError(Exception):
     pass
 
@@ -116,30 +118,31 @@ class Ingestion:
         :param object_name: S3 object name. If not specified then file_name is used
         :return: True if file was uploaded, else False
         """
-        # return 
 
         # If S3 object_name was not specified, use file_name
         if object_name is None:
             object_name = os.path.basename(file_name)
 
+        condition = (not "LOCALDEV" in os.environ)
         # upload file to s3
         s3_client = None
-        if not "LOCALDEV" in os.environ:
+        if condition:
             s3_client = boto3.client('s3') # REAL
         else:
             # local minio -- http://127.0.0.1:9090/access-keys/new-account
             clientArgs = {
-                'aws_access_key_id': 'wKUo3HxCSkAUaRnA',
-                'aws_secret_access_key': 'nC9WCPSSII98LatZFpprpDBdyih4zStc',
+                'aws_access_key_id': '6OuRsbLfuuMDUh4a',
+                'aws_secret_access_key': 'UfYz0jSi3pZFsiHk4wNkeeemBnFFn7z4',
                 'endpoint_url': 'http://localhost:9000',
                 'verify': False
             }
             s3_client = boto3.resource("s3", **clientArgs)
 
         try:        
-            if not "LOCALDEV" in os.environ: # prod
+            if condition: # prod
                 response = s3_client.upload_file(file_name, bucket, object_name)
             else: # local dev, not sure why minio doesn't have upload_file and prod doesn't have Bucket
+                
                 response = s3_client.Bucket(bucket).upload_file(file_name, object_name)
                 
         except ClientError as e:

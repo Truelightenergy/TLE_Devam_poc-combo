@@ -207,39 +207,41 @@ psql -v ON_ERROR_STOP=1 --username docker --dbname trueprice --host poc-combo.cd
         ); 
         
 
+        
         -- ercot nonenergy
-        -- new data
         CREATE TABLE trueprice.ercot_nonenergy (
-          id serial, -- not primary, this is fk to nyiso_energy
-          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
-          curveStart TIMESTAMPTZ, -- per original file name
+          id serial PRIMARY KEY,
+          curveStart TIMESTAMPTZ, -- per file name (sans tz)
           month TIMESTAMPTZ,
-          rrs_future NUMERIC(12,8),
-          ns_future NUMERIC(12,8),
-          ru_future NUMERIC(12,8),
-          rd_future NUMERIC(12,8),
-          rd_phys NUMERIC(12,8),
-          ns_phys NUMERIC(12,8),
-          ru_phys NUMERIC(12,8),
-          rrs_phys NUMERIC(12,8)
+          data NUMERIC(20,10), 
+          control_area varchar(50),
+          state varchar(50),
+          load_zone varchar(50),
+          capacity_zone varchar(50),
+          utility varchar(50),
+          strip varchar(4),
+          cost_group varchar(50),
+          cost_component varchar(50),
+          sub_cost_component varchar(50)
         );
-
-
-        --old data
-          CREATE TABLE trueprice.ercot_nonenergy_history (
-            id serial, -- not primary, this is fk to nyiso_energy
-            strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
-            curveStart TIMESTAMPTZ, -- per original file name
-            curveEnd TIMESTAMPTZ, -- per new file name
-            month TIMESTAMPTZ,
-            rrs_future NUMERIC(12,8),
-            ns_future NUMERIC(12,8),
-            ru_future NUMERIC(12,8),
-            rd_future NUMERIC(12,8),
-            rd_phys NUMERIC(12,8),
-            ns_phys NUMERIC(12,8),
-            ru_phys NUMERIC(12,8),
-            rrs_phys NUMERIC(12,8)
+        
+        -- old data
+        -- union old and new data for all data (versus is_current column)
+        CREATE TABLE trueprice.ercot_nonenergy_history (
+          id serial PRIMARY KEY,
+          curveStart TIMESTAMPTZ, -- per file name (sans tz)
+          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+          month TIMESTAMPTZ,
+          data NUMERIC(20,10),
+          control_area varchar(50),
+          state varchar(50),
+          load_zone varchar(50),
+          capacity_zone varchar(50),
+          utility varchar(50),
+          strip varchar(4),
+          cost_group varchar(50),
+          cost_component varchar(50),
+          sub_cost_component varchar(50)
         );
 
         -- isone nonenergy

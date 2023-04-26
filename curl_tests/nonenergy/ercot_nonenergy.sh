@@ -1,23 +1,19 @@
 #!/bin/bash -x
 
-
 export DB_IP=localhost
 export API_IP=127.0.0.1
 export DB_USER=postgres
 export PGPASSWORD=postgres
 
-# curl -d "email=ali.haider@techliance.com&password=admin&submit=Login" --dump-header headers http://$API_IP:5555/login
-# curl -L -b headers http://$API_IP:5555/logout
-
 # WARNING truncates table
-truncate_energy () {
-  psql -h $DB_IP -U $DB_USER -c "truncate trueprice.$1_energy;" trueprice
-  psql -h $DB_IP -U $DB_USER -c "truncate trueprice.$1_energy_history;" trueprice
+truncate_nonenergy () {
+  psql -h $DB_IP -U $DB_USER -c "truncate trueprice.$1_nonenergy;" trueprice
+  psql -h $DB_IP -U $DB_USER -c "truncate trueprice.$1_nonenergy_history;" trueprice
 }
 
 # $1 == "iso"
 psql_check () {
-  psql -h $DB_IP -U $DB_USER -c "select * from trueprice.$1_energy;" trueprice > psql_results.txt
+  psql -h $DB_IP -U $DB_USER -c "select * from trueprice.$1_nonenergy;" trueprice > psql_results.txt
   if [[ $(wc -l psql_results.txt | awk '{print $1}') -eq "65" ]]; then
     return 0
   fi
@@ -25,14 +21,14 @@ psql_check () {
 
 # $1 == "iso"
 api_check () {
-  curl -sw "%{http_code}" "http://$API_IP:5555/get_data?start=20230301&end=20280301&iso=$1&strip=7x8&curve_type=energy&type=csv" > api_results.txt
+  curl -sw "%{http_code}" "http://$API_IP:5555/get_data?start=20100101&end=20301201&iso=$1&strip=7x24&curve_type=nonenergy&type=csv" > api_results.txt
   if [[ $(wc -l api_results.txt | awk '{print $1}') -eq "62" ]]; then
     return 0
   fi
 }
 
 psql_history_check () {
-  psql -h $DB_IP -U $DB_USER -c "select * from trueprice.$1_energy_history;" trueprice > psql_results.txt
+  psql -h $DB_IP -U $DB_USER -c "select * from trueprice.$1_nonenergy_history;" trueprice > psql_results.txt
   if [[ $(wc -l psql_results.txt | awk '{print $1}') -eq "65" ]]; then
     return 0
   fi
@@ -51,10 +47,10 @@ upload_check () {
 #   fi
 # }
 
-truncate_energy "ercot"
+truncate_nonenergy "eroct"
 
 # upload 1
-if ! upload_check "buildContext/good_test_data/energy/Energy_ERCOT_20230330_083040.csv"; then
+if ! upload_check "buildContext/good_test_data/nonenergy/NonEnergy_ERCOT_20230419_101010.csv"; then
   printf "error upload_check"
 fi
 
@@ -68,7 +64,7 @@ if ! api_check "ercot"; then
   printf "error api_check"
 fi
 
-if ! upload_check "buildContext/good_test_data/energy/Energy_ERCOT_20230330_113740.csv"; then
+if ! upload_check "buildContext/good_test_data/nonenergy/NonEnergy_ERCOT_20230419_101011.csv"; then
   printf "error upload_check, intraday update"
 fi
 

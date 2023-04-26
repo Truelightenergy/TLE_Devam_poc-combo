@@ -4,6 +4,7 @@ Implements the Slowly Changed Dimensions to insert the data into database
 
 from .nonenergy_ingestors.isone_nonenergy import Isone_NonEnergy
 from .nonenergy_ingestors.pjm_nonenergy import Pjm_NonEnergy
+from .nonenergy_ingestors.ercot_nonenergy import Ercot_NonEnergy
 
 
 class NonEnergy:
@@ -17,6 +18,7 @@ class NonEnergy:
         """
         self.isone_ingestor = Isone_NonEnergy()
         self.pjm_ingestor = Pjm_NonEnergy()
+        self.ercot_ingestor = Ercot_NonEnergy()
         
     def ingestion(self, data):
         """
@@ -27,3 +29,5 @@ class NonEnergy:
             return self.isone_ingestor.ingestion(data)
         elif data.controlArea == "pjm":
             return self.pjm_ingestor.ingestion(data)
+        elif data.controlArea == "ercot":
+            return self.ercot_ingestor.ingestion(data)
