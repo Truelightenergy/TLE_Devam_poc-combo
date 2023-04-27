@@ -1,0 +1,4 @@
+ id | strip | cob | curvestart | curveend | month | north_amount | houston_amount | south_amount | west_amount 
+----+-------+-----+------------+----------+-------+--------------+----------------+--------------+-------------
+(0 rows)
+

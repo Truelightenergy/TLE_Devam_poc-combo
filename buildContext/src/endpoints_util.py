@@ -17,6 +17,7 @@ from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 import logging
 from auths import Auths
 
+logging.basicConfig(level=logging.INFO)
 
 
 
@@ -33,7 +34,7 @@ LOG_FOLDER = './logs'
 if not os.path.exists(LOG_FOLDER):
     os.makedirs(LOG_FOLDER)
 
-logHandler = TimedRotatingFileHandler(f"{LOG_FOLDER}/time_log.log", when='H', interval=8)
+logHandler = TimedRotatingFileHandler(f"{LOG_FOLDER}/time_log.log", when='D', interval=7)
 logger.addHandler(logHandler)
 
 
@@ -59,9 +60,6 @@ class Util:
         login to the application
         """
 
-        # email, pswd = "ali.haider@techliance.com", "admin"
-        # email, pswd = "ali.haider@gmail.com", "notadmin"
-
         if request.method == 'POST':
             email = request.form.get('email')
             pswd = request.form.get('password')
@@ -72,11 +70,11 @@ class Util:
                 session["jwt_token"] = jwt_token
                 session["user"] = email
                 session["level"] = prv_level
-                self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "User Logged In", msg = "Success", committer = session["user"])
+                logging.info(f"{session['user']}: User Logged In SUCCESSFULLY")
                 return self.application_startup()
             else:
-                 self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "User Logged In", msg = "Failure", committer = email)
-                 return render_template('login.html',  flash_message=True, message_toast = "Login Failed", message_flag = "error", page_type = "download"), 403
+                logging.error(f"{email}: User Logged In FAILED")
+                return render_template('login.html',  flash_message=True, message_toast = "Login Failed", message_flag = "error", page_type = "download"), 403
 
         return render_template('login.html')
     
@@ -84,7 +82,7 @@ class Util:
         """
         logout the application
         """
-        self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "User Logged Out", msg = "Success", committer = session["user"])
+        logging.info(f"{session['user']}: User Logged Out")
         session["jwt_token"] = None
         session["user"] = None
         session["level"] = None
@@ -121,35 +119,12 @@ class Util:
         """
         return render_template("index.html")
     
-    def save_logs(self, timestamp =None, ip = None, req_method = None, action = None, msg=None, committer=None):
-        """
-        save the logs hourly based on the file
-        """
-
-        current_log = ""
-        if timestamp:
-            current_log = f"TimStamp: {self.generate_timestamp()}"
-        if ip:    
-            current_log = f"{current_log} | Ip: {ip}" 
-        if req_method:
-             current_log = f"{current_log} | Method: {req_method}" 
-        if action:
-            current_log = f"{current_log} | Action: {action}"
-        if msg:
-            current_log = f"{current_log} | Action: {action} | Msg: {msg}"
-        if committer:
-            current_log = f"{current_log} | Action: {action} | Committed by: {committer}"
-
-        logger.error(f"\n{current_log}\n")
 
 
     def create_user(self):
         """
         create user
         """
-        # email, pswd, prv_level ="ali.haider@techliance.com", "admin", "admin"
-        # response = self.auth_obj.create_user(email, pswd, prv_level)
-        # print(response)
 
 
         if request.method=="POST":
@@ -159,11 +134,12 @@ class Util:
 
             response = self.auth_obj.create_user(email, pswd, prv_level)
             if response:
-                self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "User Creation", msg = "User Created", committer = session["user"])
+                logging.info(f"{session['user']}: User Created with email {email}")
+               
                 return render_template('create_user.html', flash_message=True, message_toast = "User Created", message_flag = "success", page_type = "download")
             
             else:
-                self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "User Creation", msg = "Unable to Create user", committer = session["user"])
+                logging.error(f"{session['user']}: Unable to Creat User with email {email}")
                 return render_template('create_user.html', flash_message=True, message_toast = "Unable to create user", message_flag = "error", page_type = "download")
 
 
@@ -184,10 +160,10 @@ class Util:
         flag = self.auth_obj.delete_user(user_id)
         records = self.auth_obj.get_all_users()
         if flag:
-            self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "User Deletion", msg = f"user with id {user_id} deleted", committer = session["user"])
+            logging.info(f"{session['user']}: User Deleted Successfully with User id {user_id}")
             return render_template("view_user.html",  flash_message=True, message_toast = "user deleted", message_flag = "success", page_type = "download", data = records)
         else:
-            self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "User Deletion", msg = f"unable to delete user with id {user_id}", committer = session["user"])
+            logging.error(f"{session['user']}: Unable to Delete User with User id {user_id}")
             return render_template("view_user.html",  flash_message=True, message_toast = "unable to delete user", message_flag = "error", page_type = "download", data = records)
 
     def update_user(self, user_id):
@@ -201,10 +177,10 @@ class Util:
             records = self.auth_obj.get_all_users()
 
             if flag:
-                self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "User Updation", msg = f"user with id {user_id} updated", committer = session["user"])
+                logging.info(f"{session['user']}: User's privileged level updated successfully with user id {user_id}")
                 return render_template("view_user.html",  flash_message=True, message_toast = "user updated", message_flag = "success", page_type = "download", data = records)
             else:
-                self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "User Deletion", msg = f"unable to update user with id {user_id} ", committer = session["user"])
+                logging.error(f"{session['user']}: Unable to Update User's privileged level with user id {user_id}")
                 return render_template("view_user.html",  flash_message=True, message_toast = "unable to update user", message_flag = "error", page_type = "download", data = records)
 
         record = self.auth_obj.get_user(user_id)
@@ -222,10 +198,10 @@ class Util:
 
 
             if flag:
-                self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "Password Updation", msg = f"password updated", committer = session["user"])
+                logging.info(f"{session['user']}: User Updated his password successfully")
                 return render_template("update_password.html",  flash_message=True, message_toast = "password updated", message_flag = "success", page_type = "download")
             else:
-                self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "Password Updation", msg = f"unable to update the password", committer = session["user"])
+                logging.error(f"{session['user']}: User Unable Updated his password")
                 return render_template("update_password.html",  flash_message=True, message_toast = "unable to update password", message_flag = "error", page_type = "download")
         
         return render_template("update_password.html")
@@ -244,14 +220,14 @@ class Util:
             # check if the post request has the file part
             if 'file' not in request.files:
                 flash('No file part')
-                self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "Data Ingestion", msg = "No file part", committer = session["user"])
+                logging.error(f"{session['user']}: Unable to Upload file because of 'No file part'")
                 return redirect(request.url)
             file = request.files['file']
             # If the user does not select a file, the browser submits an
             # empty file without a filename.
             if file.filename == '':
                 flash('No selected file')
-                self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "Data Ingestion", msg = "No selected file", committer = session["user"])
+                logging.error(f"{session['user']}: Unable to Upload file because of 'No selected file'")
                 return redirect(request.url)
             if file and self.allowed_file(file.filename):
                 print("Uploading", file=sys.stderr)
@@ -261,11 +237,14 @@ class Util:
                 response = self.ingestor.call_ingestor(location) # deal with result
                 if response == "Data Inserted":
                     flag = "success"  
+                    logging.info(f"{session['user']}: File {file.filename} ingested successfully")
                 else:
                     if len(response)>100:
                         response = "Some Error Occurred While File Upload"
+                        logging.error(f"{session['user']}: File {file.filename} ingestion Failed")
                     flag = "error"
-                self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "File Ingestion", msg = response, committer = session["user"])
+
+                logging.info(f"{session['user']}: Unable to Upload file because of 'No selected file'")
                 
                 return render_template('upload_csv.html', flash_message=True, message_toast = response, message_flag = flag, page_type = "upload")
                 # return redirect(url_for('upload_csv')
@@ -317,6 +296,7 @@ class Util:
             response, status = self.extract_data(query_strings)
             
             if status != "success":
+                logging.error(f"{session['user']}: Unable to download the data")
                 return render_template('download_data.html',  flash_message=True, message_toast = status, message_flag = "error", page_type = "download")
             else:
                 
@@ -344,11 +324,11 @@ class Util:
                     mimetype='application/json',
                     headers={'Content-Disposition':'attachment;filename='+file_name+'.json'}), status
             
-            
+            logging.info(f"{session['user']}: Data Extracted Successfully")
         else:
         
             resp = None, 'Unable to Fetch Data'
-        self.save_logs(timestamp= self.generate_timestamp(), ip= request.environ['REMOTE_ADDR'], req_method = request.method, action = "Data Extraction", msg = resp[1], committer = session["user"])
+            logging.error(f"{session['user']}: Data Extraction Failed")
                 
         return resp
     
