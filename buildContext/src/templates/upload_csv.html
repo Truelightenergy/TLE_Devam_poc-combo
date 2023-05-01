@@ -20,14 +20,16 @@
 
 
 
+	
+
+
 </head>
 <body>
 	<div id="toast-container"></div>
 	{% if flash_message == True %}
-
+	
     <script>show_toast('{{ message_toast }}', '{{ message_flag }}', '{{ page_type }}'); </script>
     {% endif %}
-
 	<input type="checkbox" id="checkbox">
 	
 	<div class="body">
@@ -42,7 +44,7 @@
 		<div class="upload_form_cont">
 			<b><h1 style="color: white;">You can select the csv file and click Upload button</h1></b>
 			<br/>
-			<form id="upload_form" enctype="multipart/form-data" method="post">
+			<form id="upload_form"  enctype="multipart/form-data" method="post">
 				<div class="info">
 					<div><label for="file">Please select csv file</label></div>
 				
@@ -53,15 +55,24 @@
 					</div>
 					<div class="col-md-8"></div>
 				</div>
+
+				<div class="form-group" id="process" style="display: none;">
+					<div class="progress">
+						<div id="progressBar" class="progress-bar progress-bar-striped active bg-success" role="progressbar" aria-valuemin="0" aria-valuemax="100" >
+					</div>
+				</div>
+				</div>
 				<div>
 					<input type="submit" value="Upload Csv" id="save" class = "btn-success btn-lg" />
 				</div>
-				<div class="form-group" id="process" >
-				<div class="progress">
-				   <div class="progress-bar progress-bar-striped active bg-success" id="myprogressbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" ></div>
-				</div>
-				</div>
+			
+				
+
+				
 			</form>
+
+
+			
 
 			<img id="preview" />
 		</div>

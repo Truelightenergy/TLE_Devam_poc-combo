@@ -1,2 +1,0 @@
-id,strip,cob,curvestart,month,north_amount,houston_amount,south_amount,west_amount
-200

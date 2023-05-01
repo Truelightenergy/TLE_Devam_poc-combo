@@ -1,14 +1,17 @@
 
 body {
-  background: url('https://f.hubspotusercontent30.net/hubfs/456834/home%20banner.jpeg') no-repeat center center fixed;
+  /* background: url('https://f.hubspotusercontent30.net/hubfs/456834/home%20banner.jpeg') no-repeat center center fixed; */
+  background: linear-gradient( rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2) ), url('/static/images/bg.jpg');
   background-size: cover;
   overflow-x: hidden;
   overflow-y: auto;
+
+  
 }
 .download_form_cont {
     margin: 20px;
     padding: 20px;
-    background: rgba(57, 91, 100, 0.7);
+    background: rgba(32, 62, 74, 1);
   
     color:#fff;
     overflow:hidden;
@@ -27,8 +30,8 @@ body {
     margin: 20px;
     margin-top: 170;
     padding: 20px;
-    background: rgba(57, 91, 100, 0.7);
-    background: rgba(57, 91, 100, 0.7);
+    background: rgba(32, 62, 74, 1);
+    background: rgba(32, 62, 74, 1);
   
     color:#fff;
     overflow:hidden;

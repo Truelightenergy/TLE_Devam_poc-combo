@@ -12,12 +12,10 @@ function showToast(type, message, page_type) {
     closeButton.addEventListener('click', function() {
         toast.remove();
     });
-
     setTimeout(function() {
         toast.remove();
         if(page_type=="upload"){
-            location.reload();
-            // history.go(0);
+            // location.reload();
         }
         
     }, 2000);

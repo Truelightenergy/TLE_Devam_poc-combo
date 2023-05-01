@@ -14,7 +14,7 @@
 }
 .side-bar {
 	width: 250px;
-	background: #262931;
+	background: rgba(32, 62, 74, 1);;
 	min-height: 100vh;
 	transition: 500ms width;
 }
@@ -179,7 +179,7 @@
 
 
 .card{
-    background: rgba(57, 91, 100, 0.7);
+    background: rgba(32, 62, 74, 1);
 }
 .social-card-header{
     position: relative;
@@ -194,7 +194,7 @@
 
 .section{
 	width: 100%;
-	background: url('/static/images/bg.jpg') no-repeat center center fixed;
+	background: linear-gradient( rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2) ), url('/static/images/bg.jpg');
     background-size: cover;
     overflow-x: hidden;
     overflow-y: auto;
@@ -249,4 +249,3 @@
 	display: block;
   }
 
-  
