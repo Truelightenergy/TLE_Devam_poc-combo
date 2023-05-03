@@ -57,29 +57,37 @@ class Ercot_Energy:
             check_query = f"""
                 -- if nothing found, new data, insert it, or do one of these
             
-                select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart='{now}') -- ignore, db == file based on timestamp
+                select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart='{now}') -- ignore, "db == file" based on timestamp
                 UNION ALL
-                select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<'{now}') -- update, db is older
+                select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{now}') -- update, db already exists
                 UNION ALL
-                select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart>'{now}' and curvestart<'{eod}' ) -- ignore, db is newer
+                select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart>='{now}' and curvestart<'{eod}' ) -- ignore, db is equal or newer
+                UNION ALL
+                select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<'{eod}' and cob ) -- ignore, db has cob already
             """
             r = pd.read_sql(check_query, self.engine)
-            same, old_exists, new_exists = r.exists[0], r.exists[1], r.exists[2]
+            same, old_exists, new_exists, cob_exists = r.exists[0], r.exists[1], r.exists[2], r.exists[3]
 
             if same: # if data already exists neglect it
-                return "Data already exists based on timestamp and strip"
+                return "Insert aborted, data already exists based on timestamp and strip"
             
-            elif not same and not new_exists and not old_exists: # if data is new then insert it
+            elif cob_exists:
+                return "Insert aborted, existing data marked with cob"
+            
+            elif new_exists:
+                return "Insert aborted, newer data in database"
+
+            elif not same and not new_exists and not old_exists and not cob_exists: # upsert new data
                 r = df.to_sql(f"{data.controlArea}_energy", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
                 if r is not None:
-                    return "Data Inserted"
-                return "Failed to insert" 
+                    return "Insert succeeded, new data inserted"
+                return "Insert aborted, failed to insert new data"
                     
-            elif old_exists: # if there exists old data, handle it with slowly changing dimensions
+            elif old_exists: # perform scd-2
                 tmp_table_name = f"{data.controlArea}_energy_{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
                 r = df.to_sql(f'{tmp_table_name}', con = self.engine, if_exists = 'replace', chunksize=1000, schema="trueprice", index=False)
                 if r is None:
-                    return "Unable to create data"
+                    return "Unable to create temp data table for update"
 
                 # history/update
                 with self.engine.connect() as con:
@@ -96,7 +104,7 @@ class Ercot_Energy:
                             from current
                         ),
                         single as (
-                            select curvestart from current limit 1
+                            select curvestart from current limit 1 -- small temp table to get this data further down
                         )
                         -- update the existing "current" with the new "csv"
                         --north_amount, houston_amount, south_amount, west_amount
@@ -104,7 +112,7 @@ class Ercot_Energy:
                         strip = newdata.strip,
                         cob = newdata.cob,
                         month = newdata.month,
-                        curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
+                        curvestart = newdata.curveStart, -- this reflects the intra update
                         north_amount = newdata.north_amount, -- mindless update all cols, we don't know which ones updated so try them all
                         houston_amount = newdata.houston_amount,
                         south_amount = newdata.south_amount,
@@ -116,19 +124,13 @@ class Ercot_Energy:
                             and trueprice.{data.controlArea}_energy.month = newdata.month 
                             and trueprice.{data.controlArea}_energy.curvestart=(select curvestart from single)
                     '''                
-                
-                    
-                    
-                    
+
                     # finally execute the query
                     r = con.execute(backup_query)            
                     con.execute(f"drop table trueprice.{tmp_table_name}")
-                return "Data Inserted"
-
-            elif new_exists:
-                return "Newer data in database, abort"
+                return "Data updated"
             else:
-                return "Ingestion logic error, we should not be here"
+                return "Unknown insert/update error"
         except:
             import traceback, sys
             print(traceback.format_exc())
