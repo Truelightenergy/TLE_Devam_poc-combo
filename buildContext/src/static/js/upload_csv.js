@@ -30,6 +30,8 @@ $(document).ready(function() {
 				return xhr;
 			},
 			type : 'POST',
+			cache: false,
+			recreateForm: true,
 			url : '/upload_csv',
 			data : formData,
 			processData : false,
@@ -52,6 +54,8 @@ $(document).ready(function() {
 				$('#process').css('display', 'none');
                 $('.progress-bar').css('width', '0%');
                 $('#save').attr('disabled', false);
+				$('#upload_form')[0].reset();
+				$('body').html(response);
 			}
 		});
 		

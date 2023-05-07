@@ -337,7 +337,7 @@ class Util:
             location = os.path.join(self.UPLOAD_FOLDER, filename)
             file.save(location)
             response = self.ingestor.call_ingestor(location) # deal with result
-            if response == "Data Inserted":
+            if response in ["Data Inserted", "Data updated"]:
                 self.make_file_log(file.filename)
                 self.remove_local_files(file.filename)
                 logging.info(f"{session['user']}: File {file.filename} ingested successfully")

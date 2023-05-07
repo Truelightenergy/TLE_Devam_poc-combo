@@ -18,7 +18,7 @@ function showToast(type, message, page_type) {
             // location.reload();
         }
         
-    }, 2000);
+    }, 5000);
 }
 
 // Show toast notifications with messages from the Python side
