@@ -57,13 +57,15 @@ class Ingestion:
             timeStamp_cob = issue.split("_")
             if len(timeStamp_cob)==2:
                 timeStamp, cob = timeStamp_cob # drop leading underscore; else fix regex above
-                timeComponent = "235959" # 24h clock, convert to last possible second so we can sort properly
+                timeComponent = timeStamp
             elif int(timeStamp_cob[0]):
                 timeComponent = timeStamp_cob[0]
             else:
                 return ParseError(f"failed to parse {file_name} - time component")
 
         timestamp = datetime.datetime.strptime(curveDate+timeComponent, "%Y%m%d%H%M%S")
+
+        logging.info(f"parsed file meta data: {file_name}, {curveType}, {controlArea}, {timestamp}")
         
         return TLE_Meta(file_name, curveType, controlArea, timestamp)
 
@@ -131,8 +133,8 @@ class Ingestion:
         else:
             # local minio -- http://127.0.0.1:9090/access-keys/new-account
             clientArgs = {
-                'aws_access_key_id': '6OuRsbLfuuMDUh4a',
-                'aws_secret_access_key': 'UfYz0jSi3pZFsiHk4wNkeeemBnFFn7z4',
+                'aws_access_key_id': '79ojwH4ClMDtwoT6',
+                'aws_secret_access_key': 'dtgAbKEhaV2vgm02QH387C97hOPwCoo2',
                 'endpoint_url': 'http://localhost:9000',
                 'verify': False
             }

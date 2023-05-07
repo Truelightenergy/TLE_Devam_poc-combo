@@ -10,3 +10,5 @@ pyvenv.cfg
 curl_tests/*.txt
 include/
 lib64
+app_env/
+**/flask.log

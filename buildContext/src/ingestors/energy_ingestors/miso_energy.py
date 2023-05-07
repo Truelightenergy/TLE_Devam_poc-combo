@@ -66,20 +66,28 @@ class Miso_Energy:
                 select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<'{now}' ) -- update, db is older
                 UNION ALL
                 select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart>'{now}' and curvestart<'{eod}' ) -- ignore, db is newer
+                UNION ALL
+                select exists(select 1 from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<'{eod}' and cob ) -- ignore, db has cob already
             """
             r = pd.read_sql(check_query, self.engine)
-            same, old_exists, new_exists = r.exists[0], r.exists[1], r.exists[2]
+            same, old_exists, new_exists, cob_exists = r.exists[0], r.exists[1], r.exists[2], r.exists[3]
 
             if same: # if data already exists neglect it
-                return "Data already exists based on timestamp and strip"
+                return "Insert aborted, data already exists based on timestamp and strip"
             
-            elif not same and not new_exists and not old_exists: # if data is new then insert it
+            elif cob_exists:
+                return "Insert aborted, existing data marked with cob"
+            
+            elif new_exists:
+                return "Insert aborted, newer data in database"            
+            
+            elif not same and not new_exists and not old_exists and not cob_exists: # upsert new data
                 r = df.to_sql(f"{data.controlArea}_energy", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
                 if r is not None:
                     return "Data Inserted"
                 return "Failed to insert" 
                     
-            elif old_exists: # if there exists old data, handle it with slowly changing dimensions
+            elif old_exists: # perform scd-2
                 tmp_table_name = f"{data.controlArea}_energy_{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
                 r = df.to_sql(f'{tmp_table_name}', con = self.engine, if_exists = 'replace', chunksize=1000, schema="trueprice", index=False)
                 if r is None:
@@ -125,12 +133,10 @@ class Miso_Energy:
                     # finally execute the query
                     r = con.execute(backup_query)            
                     con.execute(f"drop table trueprice.{tmp_table_name}")
-                return "Data Inserted"
+                return "Data updated"
 
-            elif new_exists:
-                return "Newer data in database, abort"
             else:
-                return "Ingestion logic error, we should not be here"
+                return "Unknown insert/update error"
         except:
             import traceback, sys
             print(traceback.format_exc())

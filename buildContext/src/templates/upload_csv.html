@@ -42,7 +42,7 @@
 				
 		
 		<div class="upload_form_cont">
-			<b><h1 style="color: white;">You can select the csv file and click Upload button</h1></b>
+			<b><h1 style="color: white;">Data Uploader</h1></b>
 			<br/>
 			<form id="upload_form"  enctype="multipart/form-data" method="post">
 				<div class="info">
@@ -63,8 +63,19 @@
 				</div>
 				</div>
 				<div>
-					<input type="submit" value="Upload Csv" id="save" class = "btn-success btn-lg" />
+					<input type="submit" value="Upload CSV" id="save" class = "btn-success btn-lg" />
 				</div>
+				<div>
+					Rules:</br>
+					Based on timestamp in the file name, the following rules apply:</br>
+					* if no data exists, data is inserted</br>
+					* if data exists, newer data is inserted</br>
+					* if data exists, same timestamp will archive existing data then update it</br>
+					* if energy file has "_cob" marker in filename, same time rules apply</br>
+					* if database has cob marked data for timestamp, any same/newer same data is ignored</br>
+
+
+				<div>	
 			
 				
 

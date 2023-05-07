@@ -344,8 +344,8 @@ class Util:
                 return {"flash_message" : True, "message_toast" : "Data Inserted", "message_flag":"success"},200
             else:
                 self.moving_defaulted_files(file.filename)
-                logging.error(f"{session['user']}: File {file.filename} ingestion Failed")
-                return {"flash_message" : True, "message_toast" : "Ingestioin Failed", "message_flag":"error"},400
+                logging.error(f"User: {session['user']}, File: {file.filename}, Response: {response}")
+                return {"flash_message" : True, "message_toast" : response, "message_flag":"error"},400
             
         logging.info(f"{session['user']}: Unable to Upload file because of 'No selected file'")
         return {"flash_message" : True, "message_toast" : "Unable to Upload file because of 'No selected file'", "message_flag":"error"},400
