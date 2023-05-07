@@ -59,6 +59,24 @@ class Util:
         self.extractor = Extractor()
         self.auth_obj = Auths(secret_key, secret_salt)
 
+    def signup(self, email, pswd, prv_level="read_only_user"):
+        """
+        create user
+        """           
+        
+        if self.validate_input(email, pswd, prv_level):
+            response = self.auth_obj.create_user(email, pswd, prv_level)
+            if response:
+                logging.info(f"User Created with email {email}")
+                return {"flash_message": True, "message_toast":"User Created", "message_flag":"error"},200
+            
+            else:
+                logging.error(f"Unable to Creat User with email {email}")
+                return {"flash_message": True, "message_toast":"Unable to create user", "message_flag":"error"},400
+        else:
+            logging.error(f"Unable to Creat User with email {email}")
+            return {"flash_message": True, "message_toast":"Unable to create user", "message_flag":"error"},400
+
     def login(self):
         """
         login to the application
@@ -171,43 +189,44 @@ class Util:
             return {"flash_message": True, "message_toast":"Unable to create user", "message_flag":"error"},400
         
 
-
-        
-    
-
     def view_user(self):
         """
         view user of applications
         """
         records = self.auth_obj.get_all_users()
         return {"data":records},200
-
-        
     
-    def delete_user(self, user_id):
+    def view_uploads(self):
+        """
+        get all the records for all file uploads
+        """
+        records = self.auth_obj.get_all_uploads()
+        return {"data":records},200
+    
+    def enable_disable_user(self, user_id, status):
         """
         delete user of applications
         """
-        flag = self.auth_obj.delete_user(user_id)
+        flag = self.auth_obj.enable_disable_user(user_id, status)
         if flag:
-            logging.info(f"{session['user']}: User Deleted Successfully with User id {user_id}")
-            return {"flash_message": True, "message_toast":"User deleted", "message_flag":"error"},200
+            logging.info(f"{session['user']}: user {status} with User id {user_id}")
+            return {"flash_message": True, "message_toast":f"User {status}", "message_flag":"error"},200
         else:
-            logging.error(f"{session['user']}: Unable to Delete User with User id {user_id}")
-            return {"flash_message": True, "message_toast":"Unable to delete user", "message_flag":"error"},400
+            logging.error(f"{session['user']}: user not {status} with User id {user_id}")
+            return {"flash_message": True, "message_toast": f"user not {status}", "message_flag":"error"},400
         
-    def delete_user_from_api(self, user_email):
+    def enable_disable_user_from_api(self, user_email, status):
         """
         update the user privileged level 
         """
 
-        flag = self.auth_obj.delete_user_using_email(user_email)
+        flag = self.auth_obj.enable_disable_user_using_email(user_email, status)
         if flag:
-            logging.info(f"{session['user']}: User Deleted Successfully with User email {user_email}")
-            return {"flash_message": True, "message_toast":"User deleted", "message_flag":"error"},200
+            logging.info(f"{session['user']}: user {status} with User email {user_email}")
+            return {"flash_message": True, "message_toast": f"user {status}", "message_flag":"error"},200
         else:
-            logging.error(f"{session['user']}: Unable to Delete User with User email {user_email}")
-            return {"flash_message": True, "message_toast":"Unable to delete user", "message_flag":"error"},400
+            logging.error(f"{session['user']}: user not {status} with User id {user_email}")
+            return {"flash_message": True, "message_toast": f"user not {status}", "message_flag":"error"},400
         
 
 
@@ -280,6 +299,15 @@ class Util:
         self.remove_local_files(filename)
 
         
+    def make_file_log(self,filename):
+        """
+        makes the file log for record
+        """
+
+        now = datetime.now() 
+        time_stamp = now.strftime("%m/%d/%Y %H:%M:%S")
+
+        self.auth_obj.save_log(time_stamp, session["user"], filename)
 
     def upload_csv(self):
         """
@@ -310,6 +338,7 @@ class Util:
             file.save(location)
             response = self.ingestor.call_ingestor(location) # deal with result
             if response == "Data Inserted":
+                self.make_file_log(file.filename)
                 self.remove_local_files(file.filename)
                 logging.info(f"{session['user']}: File {file.filename} ingested successfully")
                 return {"flash_message" : True, "message_toast" : "Data Inserted", "message_flag":"success"},200

@@ -123,7 +123,7 @@ class Ingestion:
         if object_name is None:
             object_name = os.path.basename(file_name)
 
-        condition = (not "LOCALDEV" in os.environ)
+        condition = False and (not "LOCALDEV" in os.environ)
         # upload file to s3
         s3_client = None
         if condition:
@@ -145,7 +145,7 @@ class Ingestion:
                 
                 response = s3_client.Bucket(bucket).upload_file(file_name, object_name)
                 
-        except ClientError as e:
+        except Exception as e:
             logging.error(e)
             return "failed to upload to s3"
         logging.info(f"{file_name} uploaded to s3")

@@ -43,7 +43,7 @@ class Auths:
         try:
             salted_password = self.secret_salt + client_password 
             hashed_salted_password = hashlib.sha512(salted_password.encode()).hexdigest()
-            query = f"SELECT * FROM trueprice.users WHERE email = '{client_email}' AND password = '{hashed_salted_password}';"
+            query = f"SELECT * FROM trueprice.users WHERE email = '{client_email}' AND password = '{hashed_salted_password}' AND status = 'enabled';"
 
             results = self.engine.execute(query).fetchall()
             flag = False
@@ -110,6 +110,7 @@ class Auths:
         except:
             return None
         
+        
     def get_all_users_data(self):
         """
         extracts all the users from the database
@@ -133,6 +134,57 @@ class Auths:
             return results
         except:
             return None
+    def get_all_uploads(self):
+        """
+        extracts all the uploads from the database
+        """
+        query = f"""
+            WITH t AS (
+                SELECT * FROM trueprice.uploads ORDER BY timestamp DESC LIMIT 10
+            )
+            SELECT * FROM t ORDER BY timestamp ASC;
+        """
+
+        try:
+            results = self.engine.execute(query).fetchall()
+            return results
+        except:
+            return None
+        
+    def get_all_uploads_data(self):
+        """
+        extracts all the uploads from the database
+        """
+        try:
+            query = f"""
+                WITH t AS (
+                    SELECT * FROM trueprice.uploads ORDER BY timestamp DESC LIMIT 10
+                )
+                SELECT * FROM t ORDER BY timestamp ASC;
+            """
+            emails = []
+            filenames = []
+            timestamps =[]
+        
+            response = self.engine.execute(query).fetchall()
+            for row in response:
+                emails.append(row["email"])
+                filenames.append(row["filename"])
+                timestamps.append(row["timestamp"])
+
+            results = {
+                "email": emails,
+                "files": filenames,
+                "timestamps": timestamps
+            }
+
+
+                
+            return results
+        except:
+            return None
+        
+    
         
         
         
@@ -149,24 +201,24 @@ class Auths:
         
         
     
-    def delete_user(self, user_id):
+    def enable_disable_user(self, user_id, status):
         """
-        delete the users from the database
+        disables or enables user based on thier id
         """
         try:
-            query = f"DELETE FROM trueprice.users WHERE id={user_id};"
+            query = f"UPDATE trueprice.users SET status = '{status}' WHERE id={user_id};"
             self.engine.execute(query)
             return True
         except:
             return False
         
-    def delete_user_using_email(self, user_email):
+    def enable_disable_user_using_email(self, user_email, status):
         """
-        delete the users from the database
+        disables or enables user based on their emails
         """
 
         try:
-            query = f"DELETE FROM trueprice.users WHERE email='{user_email}';"
+            query = f"UPDATE trueprice.users SET status = '{status}'  WHERE email='{user_email}';"
             self.engine.execute(query)
             return True
         except:
@@ -217,6 +269,32 @@ class Auths:
             return False
 
 
+    def verify_user_status(self, client_email):
+        """
+        authenticate user before request
+        """
+        try:
+            
+            query = f"SELECT * FROM trueprice.users WHERE email = '{client_email}' AND status = 'enabled';"
 
+            results = self.engine.execute(query).fetchall()
+            flag = False
+            for row in results:
+                flag = True
+                break
+            return flag
+        except:
+            return False
+        
+    def save_log(self,time_stamp, email, filename):
+        """
+        make a log for uploaded file
+        """
+        try:
+            query = f"INSERT INTO trueprice.uploads(timestamp, email, filename) VALUES ('{time_stamp}', '{email}', '{filename}');"
+            self.engine.execute(query)
+            return True
+        except:
+            return False
 
 

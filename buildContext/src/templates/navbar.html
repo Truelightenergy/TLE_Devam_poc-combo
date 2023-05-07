@@ -38,6 +38,14 @@
             </a>
         </li>
     {%endif%}	
+
+        <li>
+            <a href="{{ url_for('upload_status')}}">
+                <i class="fa fa-refresh" aria-hidden="true"></i>
+                <span>Recent Uploads</span>
+            </a>
+        </li>
+
         <li>
             <a href="{{ url_for('download_data')}}">
                 <i class="fa fa-download" aria-hidden="true"></i>

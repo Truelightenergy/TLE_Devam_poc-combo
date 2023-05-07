@@ -660,9 +660,21 @@ services:
         id SERIAL PRIMARY KEY,
         email VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
-        privileged_level VARCHAR(255) NOT NULL
+        privileged_level VARCHAR(255) NOT NULL,
+        status text default 'enabled'
       );
       
+      -- add new column to user table
+      -- Alter table trueprice.users ADD COLUMN status text default 'enabled' ;
+
+      -- status table for uploads
+      CREATE TABLE trueprice.uploads(
+        id serial PRIMARY KEY,
+        timestamp TIMESTAMPTZ,
+        email varchar(255),
+        filename varchar(255)
+      );
+
       EOSQL
   # adminer: # for postgres, php admin interface
   #   image: adminer

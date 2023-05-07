@@ -1,6 +1,6 @@
 <html>
 <head>
-	<title>login</title>
+	<title>signup</title>
 	<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
 	<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -10,6 +10,30 @@
 	<script src="/static/js/notification.js"></script>
 
 	<link rel="stylesheet" href="/static/css/download_data.css">
+    <script>  
+        function confirm_password(){
+    
+            var password = document.getElementById("password")
+            , confirm_password = document.getElementById("confirm");
+    
+            function validatePassword(){
+            if(password.value != confirm_password.value) {
+                confirm_password.setCustomValidity("password does not match");
+                
+            } else {
+                confirm_password.setCustomValidity('');
+                
+            }
+            }
+            
+    
+            password.onchange = validatePassword();
+            confirm_password.onkeyup = validatePassword();
+            
+        }
+    
+    
+    </script>
 </head>
 <body>
 	
@@ -27,7 +51,7 @@
 		<div class="row">
 		<div class="col-md-3"></div>
 		<div class="login_form_cont">
-			<b><h1 style="color: white;" class="text-center">User login</h1></b>
+			<b><h1 style="color: white;" class="text-center">User Sign Up</h1></b>
 			<div style="margin-top: 50px;"></div>
 			<div class="form-group">
 				<form id="login_forms" enctype="multipart/form-data" method="post">
@@ -46,16 +70,25 @@
 						<input type="password" placeholder="Enter your Password" class="form-control mt-3 bg-dark text-white" required id="password" name="password" style="font-size:18pt;height:40px;">
 					</div>
 					</div>
-					<div class="row">
+
+                    <div class="row">
+                        <label for="end" class="col-md-12"><h4>Confirm Password:</h4></label>
+                        <div class="col-md-12">
+                            <input type="password" placeholder="Enter your Password again" class="form-control mt-3 bg-dark text-white" required id="confirm" name="confirm" style="font-size:18pt;height:40px;">
+                        </div>
+                    </div>
+					
+                    <div class="row">
 					<div class="col-md-12">
-						<input type="submit" value="Log In" id="save" class = "col-md-12 btn-info btn-lg mt-5" />
+						<input type="submit" onclick="confirm_password()" value="Sign Up" id="save" class = "col-md-12 btn-success btn-lg mt-5" />
 					</div>
-					</div>
-					<div class="row">
+                    </div>
+                    <div class="row">
 					<div class="col-md-12">
-						<a href="{{ url_for('signup')}}"><p style="text-decoration: none;" class = "text-center col-md-12 btn-success btn-lg mt-5"> Register Now</p></a>
+						<a href="{{ url_for('login')}}"><p style="text-decoration: none;" class = "text-center col-md-12 btn-info btn-lg mt-5"> Log In</p></a>
 					</div>
-					</div>
+                    </div>
+		
 			
 				
 					

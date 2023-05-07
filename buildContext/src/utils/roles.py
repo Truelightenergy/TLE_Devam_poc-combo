@@ -27,11 +27,14 @@ class RolesDecorator:
             try:
                 data = self.auth_obj.decode_auth_token(token)[1]
                 user_role = data['role']
+                email = data["client_email"]
             except:
                 return jsonify({'message': 'Token is Invalid'}) if 'Authorization' in request.headers else self.login()
 
             if user_role not in ('read_only_user', 'admin', 'read_write_user'):
                 return jsonify({'message': 'Unauthorized access'}) if 'Authorization' in request.headers else self.login()
+            if not self.auth_obj.verify_user_status(email):
+                return jsonify({'message': 'User Disabled'}) if 'Authorization' in request.headers else self.login()
 
             return f(*args, **kwargs)
         return decorated_function
@@ -48,11 +51,15 @@ class RolesDecorator:
             try:
                 data = self.auth_obj.decode_auth_token(token)[1]
                 user_role = data['role']
+                email = data["client_email"]
             except:
                 return jsonify({'message': 'Token is Invalid'}) if 'Authorization' in request.headers else self.login()
 
             if user_role not in ('admin', 'read_write_user'):
                 return jsonify({'message': 'Unauthorized access'}) if 'Authorization' in request.headers else self.login()
+            
+            if not self.auth_obj.verify_user_status(email):
+                return jsonify({'message': 'User Disabled'}) if 'Authorization' in request.headers else self.login()
 
             return f(*args, **kwargs)
         return decorated_function
@@ -69,11 +76,15 @@ class RolesDecorator:
             try:
                 data = self.auth_obj.decode_auth_token(token)[1]
                 user_role = data['role']
+                email = data["client_email"]
             except:
                 return jsonify({'message': 'Token is Invalid'}) if 'Authorization' in request.headers else self.login()
 
             if user_role not in ('admin'):
                 return jsonify({'message': 'Unauthorized access'}) if 'Authorization' in request.headers else self.login()
+            
+            if not self.auth_obj.verify_user_status(email):
+                return jsonify({'message': 'User Disabled'}) if 'Authorization' in request.headers else self.login()
 
             return f(*args, **kwargs)
         return decorated_function
