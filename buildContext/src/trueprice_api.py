@@ -51,7 +51,7 @@ def signup():
             password = request.form.get("password")
             json_obj, status_code = api_util.signup(email, password)
             if status_code==200:
-                return render_template('login.html',  flash_message=True, message_toast = "Signup Successfully", message_flag = "success", page_type = "download"), 200
+                return render_template('signup.html',  flash_message=True, message_toast = "Signup Successfully", message_flag = "success", page_type = "download"), 200
             else:
                 return render_template('signup.html',  flash_message=True, message_toast = "Login Failed", message_flag = "error", page_type = "download"), 403
         else:
@@ -82,7 +82,7 @@ def login():
 
     
 @app.route('/logout', methods=['GET', 'POST'])
-@roles.readonly_token_required
+
 def logout():
     """
     logout to the applications
@@ -293,7 +293,13 @@ def index():
         response = api_util.application_startup()
         return response
     
-
+@app.route('/home', methods=['GET', 'POST'])
+@roles.readonly_token_required
+def home():
+    """
+    start up aplications
+    """
+    return render_template("index.html")
 
 # figure out how to get with curl as well
 @app.route('/upload_csv', methods=['GET','POST'])
@@ -399,6 +405,124 @@ def upload_status():
     else:
         json_obj, status_code  = api_util.view_uploads()
         return render_template("upload_status.html", data = json_obj["data"])   
+    
+
+@app.route('/maintainance', methods=['GET', 'POST'])
+def maintainance():
+    """
+    view all uploads of applications 
+    """
+    return render_template("maintainance.html")
+
+
+# application endpoint
+@app.route('/enable_ui', methods=['GET', 'POST'])
+@roles.admin_token_required
+def enable_ui():
+    """
+    disable particular user ADIMN
+    """
+
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    
+    if rest_api_condition:
+        setup_session(request.headers['Authorization'].split()[1])
+        json_obj, status_code = api_util.switch_ui("enabled")
+        return jsonify(json_obj), status_code
+    else:
+        
+        json_obj, status_code = api_util.switch_ui("enabled")
+        record = auth_obj.get_site_controls()
+        if status_code==200:
+            return render_template('site_control.html', flash_message=True, message_toast = "UI enabled", message_flag = "success", page_type = "download", data=record)
+        else:
+            return render_template('site_control.html', flash_message=True, message_toast = "Unable to enable UI", message_flag = "error", page_type = "download", data=record)
+
+
+@app.route('/disable_ui', methods=['GET', 'POST'])
+@roles.admin_token_required
+def disable_ui():
+    """
+    disable particular user ADIMN
+    """
+
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    
+    if rest_api_condition:
+        setup_session(request.headers['Authorization'].split()[1])
+        json_obj, status_code = api_util.switch_ui("disabled")
+        return jsonify(json_obj), status_code
+    else:
+        
+        json_obj, status_code = api_util.switch_ui("disabled")
+        record = auth_obj.get_site_controls()
+        if status_code==200:
+            return render_template('site_control.html', flash_message=True, message_toast = "UI disabled", message_flag = "success", page_type = "download", data=record)
+        else:
+            return render_template('site_control.html', flash_message=True, message_toast = "Unable to disable UI", message_flag = "error", page_type = "download", data=record)
+
+# application endpoint
+@app.route('/enable_api', methods=['GET', 'POST'])
+@roles.admin_token_required
+def enable_api():
+    """
+    disable particular user ADIMN
+    """
+
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    
+    if rest_api_condition:
+        setup_session(request.headers['Authorization'].split()[1])
+        json_obj, status_code = api_util.switch_api("enabled")
+        return jsonify(json_obj), status_code
+    else:
+        
+        json_obj, status_code = api_util.switch_api("enabled")
+        record = auth_obj.get_site_controls()
+        if status_code==200:
+            return render_template('site_control.html', flash_message=True, message_toast = "API Enabled", message_flag = "success", page_type = "download", data=record)
+        else:
+            return render_template('site_control.html', flash_message=True, message_toast = "Unable to enable API", message_flag = "error", page_type = "download", data=record)
+
+
+@app.route('/disable_api', methods=['GET', 'POST'])
+@roles.admin_token_required
+def disable_api():
+    """
+    disable particular user ADIMN
+    """
+
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    
+    if rest_api_condition:
+        setup_session(request.headers['Authorization'].split()[1])
+        json_obj, status_code = api_util.switch_api("disabled")
+        return jsonify(json_obj), status_code
+    else:
+        
+        json_obj, status_code = api_util.switch_api("disabled")
+        record = auth_obj.get_site_controls()
+        if status_code==200:
+            return render_template('site_control.html', flash_message=True, message_toast = "API disable", message_flag = "success", page_type = "download", data=record)
+        else:
+            return render_template('site_control.html', flash_message=True, message_toast = "Unable to disable API", message_flag = "error", page_type = "download", data=record)
+
+
+@app.route('/site_control', methods=['GET', 'POST'])
+@roles.admin_token_required
+def site_control():
+    """
+    view all status of applications
+    """
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    
+    if rest_api_condition:
+        setup_session(request.headers['Authorization'].split()[1])
+        return jsonify(auth_obj.get_site_controls_data()),200
+        
+    else:
+        record = auth_obj.get_site_controls()
+        return render_template("site_control.html", data = record)
     
     
 

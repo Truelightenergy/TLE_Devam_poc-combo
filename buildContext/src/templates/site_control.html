@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>site</title>
+	<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+   <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+   
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/static/css/style.css">
+	<link href="/static/css/notification.css" rel="stylesheet"/>
+  <link href="/static/css/scroll_bar.css" rel="stylesheet"/>
+    <script src="/static/js/notification.js"></script>
+
+
+
+</head>
+<body>
+	<div id="toast-container"></div>
+	{% if flash_message == True %}
+
+    <script>show_toast('{{ message_toast }}', '{{ message_flag }}', '{{ page_type }}'); </script>
+    {% endif %}
+
+	<input type="checkbox" id="checkbox">
+	
+	<div class="body">
+		{% include 'navbar.html'%}
+		
+		<div class="section">
+        
+            
+			
+            <div class="container-fluid">
+              <div class="col-md-11">
+                <table class="table  table-dark myBox">
+                  <tbody>
+                    <tr>
+                      <th><strong>UI</strong></th>
+                      <th><strong>API</strong></th>
+
+                    </tr>
+                    {% if data%}
+                    {% for row in data %}
+                        <tr>
+                        
+                        
+                          {%if row["ui_status"]=="enabled"%}
+                          <td><a href = "{{ url_for('disable_ui')}}" onclick="location.reload();" class="btn btn-warning">Disable</a></td>
+                          {%else%}
+                          <td><a href = "{{ url_for('enable_ui')}}" onclick="location.reload();" class="btn btn-success">Enable</a></td>
+                          {%endif%}
+
+                          {%if row["api_status"]=="enabled"%}
+                          <td><a href = "{{ url_for('disable_api')}}" onclick="location.reload();" class="btn btn-warning">Disable</a></td>
+                          {%else%}
+                          <td><a href = "{{ url_for('enable_api')}}" onclick="location.reload();" class="btn btn-success">Enable</a></td>
+                          {%endif%}
+
+                          </tr>
+                    {% endfor %}
+                    {%endif%}
+                    
+                  </tbody>
+                </table>
+            </div>
+              </div>
+		</div>
+		</div>   
+	
+</div>
+</body>
+{% include 'footer.html'%}
+</html>

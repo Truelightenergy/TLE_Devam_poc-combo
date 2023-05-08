@@ -130,7 +130,6 @@ class Auths:
             }
 
 
-                
             return results
         except:
             return None
@@ -294,6 +293,100 @@ class Auths:
             query = f"INSERT INTO trueprice.uploads(timestamp, email, filename) VALUES ('{time_stamp}', '{email}', '{filename}');"
             self.engine.execute(query)
             return True
+        except:
+            return False
+
+    def get_site_controls(self):
+        """
+        authenticate user before request
+        """
+        
+        query = f"SELECT * FROM trueprice.site;"
+        try:
+            results = self.engine.execute(query).fetchall()
+            return results
+        except:
+            return None
+        
+
+    def get_site_controls_data(self):
+        """
+        extracts all the site from the database
+        """
+        try:
+            query = f"SELECT * FROM trueprice.site;"
+            ui = []
+            api = []
+        
+            response = self.engine.execute(query).fetchall()
+            for row in response:
+                ui.append(row["ui_status"])
+                api.append(row["api_status"])
+            results = {
+                "UI_status": ui,
+                "API_status": api
+            }
+
+
+            return results
+        except:
+            return None
+
+        
+        
+    def switch_api(self, status):
+        """
+        switch enable or disable
+        """
+        if status not in ["enabled", "disabled"]:
+            status = "enabled"
+
+        try:
+            query = f"UPDATE trueprice.site SET api_status = '{status}'  WHERE admin='tle_admin';"
+            self.engine.execute(query)
+            return True
+        except:
+            return False
+        
+    def switch_ui(self, status):
+        """
+        switch enable or disable
+        """
+        if status not in ["enabled", "disabled"]:
+            status = "enabled"
+
+        try:
+            query = f"UPDATE trueprice.site SET ui_status = '{status}'  WHERE admin='tle_admin';"
+            self.engine.execute(query)
+            return True
+        except:
+            return False
+        
+    def verify_api(self):
+        """
+        verify api is enabled
+        """
+        try:
+            query = f" SELECT * from trueprice.site  WHERE admin='tle_admin' AND api_status ='enabled';"
+            results = self.engine.execute(query).fetchall()
+            flag = False
+            for row in results:
+                flag = True
+            return flag
+        except:
+            return False
+        
+    def verify_ui(self):
+        """
+        verify ui is enabled
+        """
+        try:
+            query = f" SELECT * from trueprice.site  WHERE admin='tle_admin' AND ui_status ='enabled';"
+            results = self.engine.execute(query).fetchall()
+            flag = False
+            for row in results:
+                flag = True
+            return flag
         except:
             return False
 

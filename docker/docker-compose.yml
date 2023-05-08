@@ -675,6 +675,17 @@ services:
         filename varchar(255)
       );
 
+      -- site control
+      CREATE TABLE trueprice.site(
+        id serial PRIMARY KEY,
+        admin varchar(100),
+        ui_status varchar(100),
+        api_status varchar(100)
+      );
+      
+      -- insert to the sit table
+      Insert into trueprice.site(admin, ui_status, api_status) VALUES ('tle_admin', 'enabled', 'enabled');
+
       EOSQL
   # adminer: # for postgres, php admin interface
   #   image: adminer

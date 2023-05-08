@@ -13,7 +13,7 @@ from ingestors.ingestor import Ingestion
 from extractors.extractor import Extractor
 import trueprice_database as tpdb
 from werkzeug.utils import secure_filename
-from flask import Flask, flash, request, redirect, url_for, flash, render_template, Response, session, jsonify
+from flask import Flask, flash, request, redirect, url_for, flash, render_template, Response, session, jsonify, make_response
 from flask import render_template
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 import logging
@@ -144,7 +144,7 @@ class Util:
         """
         starts the application
         """
-        return render_template("index.html")
+        return redirect(url_for('home'))
     
     def is_valid_email(self, email):
         """
@@ -456,6 +456,30 @@ class Util:
     def stream_logger(self):
 
         return Response(self.app_logging(), mimetype="text/plain", content_type="text/event-stream")
+    
+    def switch_api(self, status):
+        """
+        enable and disable the api side
+        """
+        flag = self.auth_obj.switch_api(status)
+        if flag:
+            logging.info(f"{session['user']}: api is {status}")
+            return {"flash_message": True, "message_toast":f"api is {status}", "message_flag":"error"},200
+        else:
+            logging.error(f"{session['user']}: api is not{status}")
+            return {"flash_message": True, "message_toast": f"api is not{status}", "message_flag":"error"},400
+
+    def switch_ui(self, status):
+        """
+        enable and disable the api side
+        """
+        flag = self.auth_obj.switch_ui(status)
+        if flag:
+            logging.info(f"{session['user']}: ui is {status}")
+            return {"flash_message": True, "message_toast":f"ui is {status}", "message_flag":"error"},200
+        else:
+            logging.error(f"{session['user']}: ui is not{status}")
+            return {"flash_message": True, "message_toast": f"ui is not{status}", "message_flag":"error"},400
 
 
     

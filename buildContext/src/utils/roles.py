@@ -11,8 +11,18 @@ class RolesDecorator:
     def login(self):
     
         # Redirect to the new URL
+        
         response = make_response('')
-        response.headers['Location'] = '/login'
+        response.headers['Location'] = '/home'
+        response.status_code = 302
+        return response
+    
+    
+    def maintainance(self):
+    
+        # Redirect to the new URL
+        response = make_response('')
+        response.headers['Location'] = '/maintainance'
         response.status_code = 302
         return response
 
@@ -35,6 +45,16 @@ class RolesDecorator:
                 return jsonify({'message': 'Unauthorized access'}) if 'Authorization' in request.headers else self.login()
             if not self.auth_obj.verify_user_status(email):
                 return jsonify({'message': 'User Disabled'}) if 'Authorization' in request.headers else self.login()
+
+            if user_role !="admin":
+                if 'Authorization' in request.headers:
+                    if not self.auth_obj.verify_api():
+                        return jsonify({'message': 'API Disabled'})
+                else:
+                    if not self.auth_obj.verify_ui():
+                        return self.maintainance()
+
+
 
             return f(*args, **kwargs)
         return decorated_function
@@ -60,6 +80,14 @@ class RolesDecorator:
             
             if not self.auth_obj.verify_user_status(email):
                 return jsonify({'message': 'User Disabled'}) if 'Authorization' in request.headers else self.login()
+            
+            if user_role !="admin":
+                if 'Authorization' in request.headers:
+                    if not self.auth_obj.verify_api():
+                        return jsonify({'message': 'API Disabled'})
+                else:
+                    if not self.auth_obj.verify_ui():
+                        return self.maintainance()
 
             return f(*args, **kwargs)
         return decorated_function
