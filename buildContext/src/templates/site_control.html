@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>users</title>
+	<title>site</title>
 	<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -37,31 +37,28 @@
                 <table class="table  table-dark myBox">
                   <tbody>
                     <tr>
-                      <th><strong>Email</strong></th>
-                      <th><strong>Level</strong></th>
-                      <th><strong>Delete</strong></th>
-                      <th><strong>Update</strong></th>
+                      <th><strong>UI</strong></th>
+                      <th><strong>API</strong></th>
+
                     </tr>
                     {% if data%}
                     {% for row in data %}
                         <tr>
-                        <td>{{row["email"]}}</td>
-                        <td>{{row["privileged_level"]}}</td>
-
-                        {%if row["email"]!=session["user"]%}
-                          {%if row["status"]=="enabled"%}
-                          <td><a href = "{{ url_for('disable_user', user_id = row['id']) }}" onclick="location.reload();" class="btn btn-warning">Disable</a></td>
-                          {%else%}
-                          <td><a href = "{{ url_for('enable_user', user_id = row['id']) }}" onclick="location.reload();" class="btn btn-success">Enable</a></td>
-                          {%endif%}
                         
-                        <td><a href = "{{ url_for('update_user', user_id = row['id']) }}" class="btn btn-info">Update</a></td>
-                        {%else%}
-                        <td><a href = "{{ url_for('disable_user', user_id = row['id']) }}" disabled onclick="location.reload();" class="btn btn-warning">Disable</a></td>
-                        <td><a href = "{{ url_for('update_user', user_id = row['id']) }}" disabled class="btn btn-info">Update</a></td>
-                        {%endif%}
+                        
+                          {%if row["ui_status"]=="enabled"%}
+                          <td><a href = "{{ url_for('disable_ui')}}" onclick="location.reload();" class="btn btn-warning">Disable</a></td>
+                          {%else%}
+                          <td><a href = "{{ url_for('enable_ui')}}" onclick="location.reload();" class="btn btn-success">Enable</a></td>
+                          {%endif%}
 
-                        </tr>
+                          {%if row["api_status"]=="enabled"%}
+                          <td><a href = "{{ url_for('disable_api')}}" onclick="location.reload();" class="btn btn-warning">Disable</a></td>
+                          {%else%}
+                          <td><a href = "{{ url_for('enable_api')}}" onclick="location.reload();" class="btn btn-success">Enable</a></td>
+                          {%endif%}
+
+                          </tr>
                     {% endfor %}
                     {%endif%}
                     

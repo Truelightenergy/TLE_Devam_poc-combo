@@ -31,6 +31,33 @@ def setup_session(auth_token):
     session["user"] = payload["client_email"]
     session["level"] = payload["role"]
 
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    """
+    signup to the applications
+    """
+    
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    
+
+    if rest_api_condition:
+        email = request.args.get("email")
+        password = request.args.get("password")
+        json_obj, status_code = api_util.signup(email, password)
+        return jsonify(json_obj), status_code
+    else:
+        if request.method=="POST":
+            email = request.form.get("email")
+            password = request.form.get("password")
+            json_obj, status_code = api_util.signup(email, password)
+            if status_code==200:
+                return render_template('signup.html',  flash_message=True, message_toast = "Signup Successfully", message_flag = "success", page_type = "download"), 200
+            else:
+                return render_template('signup.html',  flash_message=True, message_toast = "Login Failed", message_flag = "error", page_type = "download"), 403
+        else:
+            return render_template('signup.html')
+        
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """
@@ -55,7 +82,7 @@ def login():
 
     
 @app.route('/logout', methods=['GET', 'POST'])
-@roles.readonly_token_required
+
 def logout():
     """
     logout to the applications
@@ -111,12 +138,14 @@ def view_user():
     else:
         json_obj, status_code  = api_util.view_user()
         return render_template("view_user.html", data = json_obj["data"])
+    
+
 
 
 # application endpoint
-@app.route('/delete_user/<user_id>', methods=['GET', 'POST'])
+@app.route('/disable_user/<user_id>', methods=['GET', 'POST'])
 @roles.admin_token_required
-def delete_user(user_id):
+def disable_user(user_id):
     """
     delete particular user ADIMN
     """
@@ -125,28 +154,64 @@ def delete_user(user_id):
     
     if rest_api_condition:
         setup_session(request.headers['Authorization'].split()[1])
-        json_obj, status_code = api_util.delete_user(user_id)
+        json_obj, status_code = api_util.enable_disable_user(user_id, "disabled")
         return jsonify(json_obj), status_code
     else:
         
-        json_obj, status_code = api_util.delete_user(user_id)
+        json_obj, status_code = api_util.enable_disable_user(user_id, "disabled")
         record = auth_obj.get_all_users()
         if status_code==200:
-            return render_template('view_user.html', flash_message=True, message_toast = "User Deleted", message_flag = "success", page_type = "download", data=record)
+            return render_template('view_user.html', flash_message=True, message_toast = "User disabled", message_flag = "success", page_type = "download", data=record)
         else:
-            return render_template('view_user.html', flash_message=True, message_toast = "Unable to delete user", message_flag = "error", page_type = "download", data=record)
+            return render_template('view_user.html', flash_message=True, message_toast = "Unable to disable user", message_flag = "error", page_type = "download", data=record)
         
 # api endpoint
-@app.route('/delete_user', methods=['GET', 'POST'])
+@app.route('/disable_user', methods=['GET', 'POST'])
 @roles.admin_token_required
-def delete_user_using_email():
+def disable_user_using_email():
     """
-    delete particular user ADIMN
+    disable particular user ADIMN
     """
-
     email = request.args.get("email")
     setup_session(request.headers['Authorization'].split()[1])
-    json_obj, status_code = api_util.delete_user_from_api(email)
+    json_obj, status_code = api_util.enable_disable_user_from_api(email, "disabled")
+    return jsonify(json_obj), status_code
+
+
+
+# application endpoint
+@app.route('/enable_user/<user_id>', methods=['GET', 'POST'])
+@roles.admin_token_required
+def enable_user(user_id):
+    """
+    disable particular user ADIMN
+    """
+
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    
+    if rest_api_condition:
+        setup_session(request.headers['Authorization'].split()[1])
+        json_obj, status_code = api_util.enable_disable_user(user_id, "enabled")
+        return jsonify(json_obj), status_code
+    else:
+        
+        json_obj, status_code = api_util.enable_disable_user(user_id, "enabled")
+        record = auth_obj.get_all_users()
+        if status_code==200:
+            return render_template('view_user.html', flash_message=True, message_toast = "User enabled", message_flag = "success", page_type = "download", data=record)
+        else:
+            return render_template('view_user.html', flash_message=True, message_toast = "Unable to enable user", message_flag = "error", page_type = "download", data=record)
+        
+# api endpoint
+@app.route('/enable_user', methods=['GET', 'POST'])
+@roles.admin_token_required
+def enable_user_using_email():
+    """
+    enable particular user ADIMN
+    """
+    email = request.args.get("email")
+    setup_session(request.headers['Authorization'].split()[1])
+    json_obj, status_code = api_util.enable_disable_user_from_api(email, "enabled")
     return jsonify(json_obj), status_code
 
 # application endpoint
@@ -154,7 +219,7 @@ def delete_user_using_email():
 @roles.admin_token_required
 def update_user(user_id):
     """
-    delete particular user
+    enable particular user
     """
 
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
@@ -228,7 +293,13 @@ def index():
         response = api_util.application_startup()
         return response
     
-
+@app.route('/home', methods=['GET', 'POST'])
+@roles.readonly_token_required
+def home():
+    """
+    start up aplications
+    """
+    return render_template("index.html")
 
 # figure out how to get with curl as well
 @app.route('/upload_csv', methods=['GET','POST'])
@@ -318,7 +389,143 @@ def get_logs():
         json_obj = api_util.app_logging_api()
         return json_obj,200
     else:
-        return render_template("log_streaming.html")       
+        return render_template("log_streaming.html")  
+
+@app.route('/upload_status', methods=['GET', 'POST'])
+@roles.readonly_token_required
+def upload_status():
+    """
+    view all uploads of applications 
+    """
+    
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    if rest_api_condition:
+        setup_session(request.headers['Authorization'].split()[1])
+        return jsonify(auth_obj.get_all_uploads_data()),200
+    else:
+        json_obj, status_code  = api_util.view_uploads()
+        return render_template("upload_status.html", data = json_obj["data"])   
+    
+
+@app.route('/maintainance', methods=['GET', 'POST'])
+def maintainance():
+    """
+    view all uploads of applications 
+    """
+    return render_template("maintainance.html")
+
+
+# application endpoint
+@app.route('/enable_ui', methods=['GET', 'POST'])
+@roles.admin_token_required
+def enable_ui():
+    """
+    disable particular user ADIMN
+    """
+
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    
+    if rest_api_condition:
+        setup_session(request.headers['Authorization'].split()[1])
+        json_obj, status_code = api_util.switch_ui("enabled")
+        return jsonify(json_obj), status_code
+    else:
+        
+        json_obj, status_code = api_util.switch_ui("enabled")
+        record = auth_obj.get_site_controls()
+        if status_code==200:
+            return render_template('site_control.html', flash_message=True, message_toast = "UI enabled", message_flag = "success", page_type = "download", data=record)
+        else:
+            return render_template('site_control.html', flash_message=True, message_toast = "Unable to enable UI", message_flag = "error", page_type = "download", data=record)
+
+
+@app.route('/disable_ui', methods=['GET', 'POST'])
+@roles.admin_token_required
+def disable_ui():
+    """
+    disable particular user ADIMN
+    """
+
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    
+    if rest_api_condition:
+        setup_session(request.headers['Authorization'].split()[1])
+        json_obj, status_code = api_util.switch_ui("disabled")
+        return jsonify(json_obj), status_code
+    else:
+        
+        json_obj, status_code = api_util.switch_ui("disabled")
+        record = auth_obj.get_site_controls()
+        if status_code==200:
+            return render_template('site_control.html', flash_message=True, message_toast = "UI disabled", message_flag = "success", page_type = "download", data=record)
+        else:
+            return render_template('site_control.html', flash_message=True, message_toast = "Unable to disable UI", message_flag = "error", page_type = "download", data=record)
+
+# application endpoint
+@app.route('/enable_api', methods=['GET', 'POST'])
+@roles.admin_token_required
+def enable_api():
+    """
+    disable particular user ADIMN
+    """
+
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    
+    if rest_api_condition:
+        setup_session(request.headers['Authorization'].split()[1])
+        json_obj, status_code = api_util.switch_api("enabled")
+        return jsonify(json_obj), status_code
+    else:
+        
+        json_obj, status_code = api_util.switch_api("enabled")
+        record = auth_obj.get_site_controls()
+        if status_code==200:
+            return render_template('site_control.html', flash_message=True, message_toast = "API Enabled", message_flag = "success", page_type = "download", data=record)
+        else:
+            return render_template('site_control.html', flash_message=True, message_toast = "Unable to enable API", message_flag = "error", page_type = "download", data=record)
+
+
+@app.route('/disable_api', methods=['GET', 'POST'])
+@roles.admin_token_required
+def disable_api():
+    """
+    disable particular user ADIMN
+    """
+
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    
+    if rest_api_condition:
+        setup_session(request.headers['Authorization'].split()[1])
+        json_obj, status_code = api_util.switch_api("disabled")
+        return jsonify(json_obj), status_code
+    else:
+        
+        json_obj, status_code = api_util.switch_api("disabled")
+        record = auth_obj.get_site_controls()
+        if status_code==200:
+            return render_template('site_control.html', flash_message=True, message_toast = "API disable", message_flag = "success", page_type = "download", data=record)
+        else:
+            return render_template('site_control.html', flash_message=True, message_toast = "Unable to disable API", message_flag = "error", page_type = "download", data=record)
+
+
+@app.route('/site_control', methods=['GET', 'POST'])
+@roles.admin_token_required
+def site_control():
+    """
+    view all status of applications
+    """
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    
+    if rest_api_condition:
+        setup_session(request.headers['Authorization'].split()[1])
+        return jsonify(auth_obj.get_site_controls_data()),200
+        
+    else:
+        record = auth_obj.get_site_controls()
+        return render_template("site_control.html", data = record)
+    
+    
+
 
 if __name__ == "__main__":
     print("Starting")

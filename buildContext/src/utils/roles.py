@@ -11,8 +11,18 @@ class RolesDecorator:
     def login(self):
     
         # Redirect to the new URL
+        
         response = make_response('')
-        response.headers['Location'] = '/login'
+        response.headers['Location'] = '/home'
+        response.status_code = 302
+        return response
+    
+    
+    def maintainance(self):
+    
+        # Redirect to the new URL
+        response = make_response('')
+        response.headers['Location'] = '/maintainance'
         response.status_code = 302
         return response
 
@@ -27,11 +37,24 @@ class RolesDecorator:
             try:
                 data = self.auth_obj.decode_auth_token(token)[1]
                 user_role = data['role']
+                email = data["client_email"]
             except:
                 return jsonify({'message': 'Token is Invalid'}) if 'Authorization' in request.headers else self.login()
 
             if user_role not in ('read_only_user', 'admin', 'read_write_user'):
                 return jsonify({'message': 'Unauthorized access'}) if 'Authorization' in request.headers else self.login()
+            if not self.auth_obj.verify_user_status(email):
+                return jsonify({'message': 'User Disabled'}) if 'Authorization' in request.headers else self.login()
+
+            if user_role !="admin":
+                if 'Authorization' in request.headers:
+                    if not self.auth_obj.verify_api():
+                        return jsonify({'message': 'API Disabled'})
+                else:
+                    if not self.auth_obj.verify_ui():
+                        return self.maintainance()
+
+
 
             return f(*args, **kwargs)
         return decorated_function
@@ -48,11 +71,23 @@ class RolesDecorator:
             try:
                 data = self.auth_obj.decode_auth_token(token)[1]
                 user_role = data['role']
+                email = data["client_email"]
             except:
                 return jsonify({'message': 'Token is Invalid'}) if 'Authorization' in request.headers else self.login()
 
             if user_role not in ('admin', 'read_write_user'):
                 return jsonify({'message': 'Unauthorized access'}) if 'Authorization' in request.headers else self.login()
+            
+            if not self.auth_obj.verify_user_status(email):
+                return jsonify({'message': 'User Disabled'}) if 'Authorization' in request.headers else self.login()
+            
+            if user_role !="admin":
+                if 'Authorization' in request.headers:
+                    if not self.auth_obj.verify_api():
+                        return jsonify({'message': 'API Disabled'})
+                else:
+                    if not self.auth_obj.verify_ui():
+                        return self.maintainance()
 
             return f(*args, **kwargs)
         return decorated_function
@@ -69,11 +104,15 @@ class RolesDecorator:
             try:
                 data = self.auth_obj.decode_auth_token(token)[1]
                 user_role = data['role']
+                email = data["client_email"]
             except:
                 return jsonify({'message': 'Token is Invalid'}) if 'Authorization' in request.headers else self.login()
 
             if user_role not in ('admin'):
                 return jsonify({'message': 'Unauthorized access'}) if 'Authorization' in request.headers else self.login()
+            
+            if not self.auth_obj.verify_user_status(email):
+                return jsonify({'message': 'User Disabled'}) if 'Authorization' in request.headers else self.login()
 
             return f(*args, **kwargs)
         return decorated_function

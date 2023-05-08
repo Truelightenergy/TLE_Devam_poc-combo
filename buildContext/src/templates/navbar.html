@@ -25,19 +25,41 @@
         </li>
 
     {%if session["level"]=="admin" or session["level"]=="read_write_user"%} 
-        <li>
-            <a href="{{ url_for('upload_csv')}}">
-                <i class="fa fa-file-text-o" aria-hidden="true"></i>
-                <span>Upload CSV</span>
-            </a>
+            <li data-toggle="collapse" data-target="#uploads" class=" nav-item collapsed active">
+            <input type="checkbox" id="uploads-toggle" class="nav-toggle">
+            
+            <label for="uploads-toggle" class="nav-label"><i class="fa fa-upload"></i> Uploads <span class="arrow"></span>
+            </label>
+           
+            <!-- <a href="#" ><i class="fa fa-user"></i"> Users <span class="arrow"></span></a> -->
         </li>
-        <li>
-            <a href="#">
-                <i class="fa fa-file-archive-o" aria-hidden="true"></i>
-                <span>Upload Zip (todo)</span>
-            </a>
-        </li>
+            <ul class="nav-submenu sub-menu collapse custom-margins" id="uploads">
+                <li>
+                    <a href="{{ url_for('upload_csv')}}">
+                        <i class="fa fa-file-text-o" aria-hidden="true"></i>
+                        <span>CSV</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-file-archive-o" aria-hidden="true"></i>
+                        <span>Zip (todo)</span>
+                    </a>
+                </li>
+            </ul>
+
+
+
+
     {%endif%}	
+
+        <li>
+            <a href="{{ url_for('upload_status')}}">
+                <i class="fa fa-refresh" aria-hidden="true"></i>
+                <span>Recent Uploads</span>
+            </a>
+        </li>
+
         <li>
             <a href="{{ url_for('download_data')}}">
                 <i class="fa fa-download" aria-hidden="true"></i>
@@ -49,6 +71,13 @@
             <a href="{{ url_for('get_logs')}}">
                 <i class="fa fa-clock-o" aria-hidden="true"></i>
                 <span>Logs</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="{{ url_for('site_control')}}">
+                <i class="fa  fa-cog" aria-hidden="true"></i>
+                <span>Site</span>
             </a>
         </li>
         

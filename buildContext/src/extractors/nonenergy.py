@@ -33,13 +33,38 @@ class NonEnergy:
             end_date = str(datetime.strptime(end_date_stamp, "%Y%m%d").date())
             
 
-            if control_area == "isone" or control_area == "pjm" or control_area == "ercot":
-                data_frame = None
-                psql_query = f"select * from trueprice.{control_area}_nonenergy where LOWER(strip) = '{strip.lower()}' and month::date >= '{start_date}' and month::date <= '{end_date}';"
-                data_frame = pd.read_sql_query(sql=psql_query, con=self.engine.connect())
-                return data_frame, "success"  
-            else:
-                return None, "Unable to Fetch Results"
+            if control_area not in ["isone", "pjm", "ercot"]:
+                    return None, "Unable to Fetch Results"
+            
+            elif control_area == "isone":
+                psql_query = f"""
+                    select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_nonenergy 
+                    UNION
+                    select id, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_nonenergy_history
+                    where LOWER(strip) = '{strip.lower()}' and month::date >= '{start_date}' and month::date <= '{end_date}'
+                    order by curvestart desc,strip;
+                """
+            elif control_area == "pjm":
+                psql_query = f"""
+                    select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_nonenergy 
+                    UNION
+                    select id, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_nonenergy_history
+                    where LOWER(strip) = '{strip.lower()}' and month::date >= '{start_date}' and month::date <= '{end_date}'
+                    order by curvestart desc,strip;
+                """
+            elif control_area == "ercot":
+                psql_query = f"""
+                    select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_nonenergy 
+                    UNION
+                    select id, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_nonenergy_history
+                    where LOWER(strip) = '{strip.lower()}' and month::date >= '{start_date}' and month::date <= '{end_date}'
+                    order by curvestart desc,strip;
+                """
+                print(psql_query)
+
+            data_frame = None
+            data_frame = pd.read_sql_query(sql=psql_query, con=self.engine.connect())
+            return data_frame, "success"  
         
         except:
             import traceback, sys

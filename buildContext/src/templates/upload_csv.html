@@ -16,12 +16,8 @@
 
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 	<link rel="stylesheet" href="/static/css/style.css">
+	<link rel="stylesheet" href="/static/css/scroll_bar.css">
 	
-
-
-
-	
-
 
 </head>
 <body>
@@ -41,7 +37,7 @@
 				<div class="col-md-12">
 				
 		
-		<div class="upload_form_cont">
+		<div class="upload_form_cont myBox">
 			<b><h1 style="color: white;">Data Uploader</h1></b>
 			<br/>
 			<form id="upload_form"  enctype="multipart/form-data" method="post">
@@ -75,7 +71,7 @@
 					* if database has cob marked data for timestamp, any same/newer same data is ignored</br>
 
 
-				<div>	
+				</div>	
 			
 				
 
@@ -93,6 +89,6 @@
 </div>
 		 </div>   
 	</div>
-</div>
 </body>
+{% include 'footer.html'%}
 </html>

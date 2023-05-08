@@ -80,7 +80,7 @@ class Ercot_Energy:
             elif not same and not new_exists and not old_exists and not cob_exists: # upsert new data
                 r = df.to_sql(f"{data.controlArea}_energy", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
                 if r is not None:
-                    return "Insert succeeded, new data inserted"
+                    return "Data Inserted"
                 return "Insert aborted, failed to insert new data"
                     
             elif old_exists: # perform scd-2

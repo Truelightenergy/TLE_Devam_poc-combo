@@ -4,7 +4,7 @@ If all works, this is all that is needed to start:
 
 Sometimes (network issues I think), you might have to run these steps:
 
-`docker compose  -f "docker-compose.yml" up -d --build postgres-setup-1 postgres-setup-2`
+`docker compose  -f "docker/docker-compose.yml" up -d --build postgres-setup-1 postgres-setup-2`
 
 Setup minio
 

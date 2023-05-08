@@ -84,24 +84,21 @@ class Ingestion:
             else:
                 valid.append(meta)
 
-        # todo - storage to s3
-        # add sha later
+        # ingestion to the database
         for m in valid:
-            result = steps["storage"](m) # store before we place in db
+            result = steps["ingestion"](m) # store before we place in db
             if result is not None:
-                if result == "Data Inserted":
+                if result in ["Data Inserted", "Data updated"]:
                     continue
                 else:
                     return result
 
         # insert db / api check each as we go (need to find way to redo/short-circuit/single file, etc.)
         for m in valid:
-            result = steps["ingestion"](m) # insert/update db
+            result = steps["storage"](m) # insert/update db
             if result is not None:
                 return result
-            # result = steps["validate_api"](m) # validate data made it to db via api
-            # if result is not None:
-            #     return result
+            
         return result
     
     # todo - s3
@@ -147,7 +144,7 @@ class Ingestion:
                 
                 response = s3_client.Bucket(bucket).upload_file(file_name, object_name)
                 
-        except ClientError as e:
+        except Exception as e:
             logging.error(e)
             return "failed to upload to s3"
         logging.info(f"{file_name} uploaded to s3")
@@ -168,11 +165,11 @@ class Ingestion:
         files = [file]
         result = None
         if re.search("nonenergy", file, re.IGNORECASE):
-            result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.non_energy.ingestion, "validate_api": self.validate_api})
+            result = self.process(files, {"validate_data":self.validate, "ingestion":self.non_energy.ingestion, "storage":self.storage, "validate_api": self.validate_api})
         elif re.search("energy", file, re.IGNORECASE):
-            result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.energy.ingestion, "validate_api": self.validate_api})
+            result = self.process(files, {"validate_data":self.validate, "ingestion":self.energy.ingestion, "storage":self.storage, "validate_api": self.validate_api})
         elif re.search("rec", file, re.IGNORECASE):
-            result = self.process(files, {"validate_data":self.validate, "storage":self.storage, "ingestion":self.rec.ingestion, "validate_api": self.validate_api})
+            result = self.process(files, {"validate_data":self.validate, "ingestion":self.rec.ingestion, "storage":self.storage, "validate_api": self.validate_api})
         else:
             result = "Shouldn't be here"
         
