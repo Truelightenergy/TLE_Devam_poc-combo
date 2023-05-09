@@ -46,7 +46,7 @@ class Util:
     Handles all the api calls 
     """
 
-    def __init__(self, secret_key, secret_salt):
+    def __init__(self, auths):
         """
         all the intializers will be handled here
         """
@@ -57,7 +57,7 @@ class Util:
         self.create_storage_folder()
         self.ingestor = Ingestion()
         self.extractor = Extractor()
-        self.auth_obj = Auths(secret_key, secret_salt)
+        self.auth_obj = auths
 
     def signup(self, email, pswd, prv_level="read_only_user"):
         """

@@ -13,7 +13,7 @@ class RolesDecorator:
         # Redirect to the new URL
         
         response = make_response('')
-        response.headers['Location'] = '/home'
+        response.headers['Location'] = '/login'
         response.status_code = 302
         return response
     

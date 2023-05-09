@@ -9,8 +9,8 @@ from utils.revoke_tokens import RevokedTokens
 
 secret_key = "super-scret-key" #env variable
 secret_salt = "secret-salt" #env variable
-api_util = Util(secret_key, secret_salt)
 auth_obj = Auths(secret_key, secret_salt)
+api_util = Util(auth_obj)
 revoked_jwt = RevokedTokens()
 roles = RolesDecorator(auth_obj, revoked_jwt)
 
