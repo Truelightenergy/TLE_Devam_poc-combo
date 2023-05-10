@@ -386,7 +386,7 @@ class Util:
         query_strings = dict()
         query_strings['iso'] = request.form.get('iso')
         query_strings["curve_type"] = request.form.get('curve_type')
-        query_strings["strip"] = request.form.get('strip').split("_")[-1]
+        query_strings["strip"] = request.form.getlist('strip')
         query_strings["type"] = request.form.get('type')
         start = str(request.form.get('start')).split("-")
         query_strings["start"] = "".join(start)
@@ -406,9 +406,8 @@ class Util:
         """
         extracts the dataset from the database based on the characteristics
         """
-
         data_frame, status = self.extractor.get_custom_data(query_strings)
-        file_name = f'{query_strings["curve_type"]}_{query_strings["iso"]}_{query_strings["strip"]}_{query_strings["start"]}_{query_strings["end"]}'
+        file_name = f'{query_strings["curve_type"]}_{query_strings["iso"]}_{"_".join(query_strings["strip"])}_{query_strings["start"]}_{query_strings["end"]}'
         if status == "success":
             if query_strings["type"]=="csv":
                 resp = Response(
