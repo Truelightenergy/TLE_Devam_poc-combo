@@ -21,6 +21,7 @@ class PjmNonEnergyHelper:
             df_data.columns = df_data.iloc[0]
             df_data = df_data.drop(df_data.index[0])
             df_data.dropna(axis = 0, how = 'all', inplace=True)
+            df_data.dropna(axis = 1, how = 'all', inplace=True)
 
 
             # making the headers dataframe and tranposing it

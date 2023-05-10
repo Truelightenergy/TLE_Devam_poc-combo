@@ -343,6 +343,43 @@ services:
           sub_cost_component varchar(50)
         );
 
+        -- nyiso nonenergy
+        CREATE TABLE trueprice.nyiso_nonenergy (
+          id serial PRIMARY KEY,
+          curveStart TIMESTAMPTZ, -- per file name (sans tz)
+          month TIMESTAMPTZ,
+          data NUMERIC(20,10), 
+          control_area varchar(50),
+          state varchar(50),
+          load_zone varchar(50),
+          capacity_zone varchar(50),
+          utility varchar(50),
+          strip varchar(4),
+          cost_group varchar(50),
+          cost_component varchar(50),
+          sub_cost_component varchar(50)
+        );
+        
+        -- old data
+        -- union old and new data for all data (versus is_current column)
+        CREATE TABLE trueprice.nyiso_nonenergy_history (
+          id serial PRIMARY KEY,
+          curveStart TIMESTAMPTZ, -- per file name (sans tz)
+          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+          month TIMESTAMPTZ,
+          data NUMERIC(20,10),
+          control_area varchar(50),
+          state varchar(50),
+          load_zone varchar(50),
+          capacity_zone varchar(50),
+          utility varchar(50),
+          strip varchar(4),
+          cost_group varchar(50),
+          cost_component varchar(50),
+          sub_cost_component varchar(50)
+        );
+
+
         -- pjm rec
         -- new data
         CREATE TABLE trueprice.pjm_rec(
