@@ -122,7 +122,7 @@ class Ingestion:
         if object_name is None:
             object_name = os.path.basename(file_name)
 
-        condition =(not "LOCALDEV" in os.environ)
+        condition = False and (not "LOCALDEV" in os.environ)
         # upload file to s3
         s3_client = None
         if condition:

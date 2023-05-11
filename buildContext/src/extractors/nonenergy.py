@@ -38,7 +38,7 @@ class NonEnergy:
             end_date = str(datetime.strptime(end_date_stamp, "%Y%m%d").date())
             
 
-            if control_area not in ["isone", "pjm", "ercot", "nyiso"]:
+            if control_area not in ["isone", "pjm", "ercot", "nyiso", "miso"]:
                     return None, "Unable to Fetch Results"
             
             elif control_area == "isone":
@@ -69,7 +69,15 @@ class NonEnergy:
                     order by curvestart desc,strip;
                 """
             elif control_area == "nyiso":
-                print("*****************")
+                psql_query = f"""
+                    select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_nonenergy 
+                    where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
+                    UNION
+                    select id, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_nonenergy_history
+                    where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
+                    order by curvestart desc,strip;
+                """
+            elif control_area == "miso":
                 psql_query = f"""
                     select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_nonenergy 
                     where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
