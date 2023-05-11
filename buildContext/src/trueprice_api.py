@@ -347,6 +347,7 @@ def get_data():
     if rest_api_condition:
         setup_session(request.headers['Authorization'].split()[1])
     args = request.args.to_dict()
+    args['strip'] = request.args.getlist('strip')
     response, status = api_util.extract_data(args)
     if status != "success":
         return status

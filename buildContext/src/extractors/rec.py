@@ -25,7 +25,12 @@ class Rec:
         """
         try:
             control_area = query_strings["iso"]
-            strip = query_strings["strip"]
+            strips = query_strings["strip"]
+            strip_filters = list()
+            for strip in strips:
+                strip = strip.split("_")[-1]
+                strip_filters.append(f"LOWER(strip) = '{strip.lower()}'")
+            strip_query = " OR ".join(strip_filters)
             start_date_stamp = query_strings["start"]
             end_date_stamp = query_strings["end"]
 
@@ -47,6 +52,7 @@ class Rec:
                             DE_Solar_percent, DE_Solar_amount, DE_RECs_percent, DE_REC_amount, IL_Total_Cost_per_MWh_amount,
                             IL_PER_o_load_covered_by_Supplier_vs_Utility_percent, IL_Total_Standard_percent, IL_Solar_percent,
                             IL_Solar_amount, IL_Wind_percent, IL_Wind_amount, IL_ACP_percent, IL_ACP_amount from trueprice.{control_area}_rec 
+                    where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                     UNION
                      select id, strip, curvestart, curveend, Month, NJ_Total_Cost_per_MWh_amount, NJ_Solar_percent, NJ_Solar_amount, NJ_Class_I_percent, NJ_Class_I_amount, 
                             NJ_Class_II_percent, NJ_Class_II_amount, OH_Total_Cost_per_MWh_amount, OH_Solar_percent, OH_Solar_In_State_amount,
@@ -58,7 +64,7 @@ class Rec:
                             DE_Solar_percent, DE_Solar_amount, DE_RECs_percent, DE_REC_amount, IL_Total_Cost_per_MWh_amount,
                             IL_PER_o_load_covered_by_Supplier_vs_Utility_percent, IL_Total_Standard_percent, IL_Solar_percent,
                             IL_Solar_amount, IL_Wind_percent, IL_Wind_amount, IL_ACP_percent, IL_ACP_amount from trueprice.{control_area}_rec_history
-                    where LOWER(strip) = '{strip.lower()}' and month::date >= '{start_date}' and month::date <= '{end_date}'
+                    where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                     order by curvestart desc,strip;
                 """
             elif control_area == "isone":
@@ -80,6 +86,7 @@ class Rec:
                         me_class_1_price, me_thermal, me_thermal_price, me_class_2,
                         me_class_2_price, ri_total_cost_per_mwh, ri_new, ri_new_price,
                         ri_existing, ri_existing_price from trueprice.{control_area}_rec 
+                    where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                     UNION
                     select id, strip, curvestart, curveend, month, ct_total_cost_per_mwh, ct_class_i, ct_class_i_price,
                             ct_class_ii, ct_class_ii_price, ct_class_iii,
@@ -98,27 +105,29 @@ class Rec:
                             me_class_1_price, me_thermal, me_thermal_price, me_class_2,
                             me_class_2_price, ri_total_cost_per_mwh, ri_new, ri_new_price,
                             ri_existing, ri_existing_price from trueprice.{control_area}_rec_history
-                    where LOWER(strip) = '{strip.lower()}' and month::date >= '{start_date}' and month::date <= '{end_date}'
+                    where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                     order by curvestart desc,strip;
                 """
             elif control_area == "nyiso":
                 psql_query = f"""
                     select id, strip, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, month, ny_total_cost_per_mwh, ny_class_i, ny_class_i_price,
                         ny_class_ii, ny_class_ii_price, ny_total_cost_per_mwh_zec_rate, ny_class_iii_zec, ny_class_iii_price from trueprice.{control_area}_rec 
+                        where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                     UNION
                     select id, strip, curvestart, curveend, month, ny_total_cost_per_mwh, ny_class_i, ny_class_i_price,
                             ny_class_ii, ny_class_ii_price, ny_total_cost_per_mwh_zec_rate, ny_class_iii_zec, ny_class_iii_price from trueprice.{control_area}_rec_history
-                    where LOWER(strip) = '{strip.lower()}' and month::date >= '{start_date}' and month::date <= '{end_date}'
+                    where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                     order by curvestart desc,strip;
                 """
             elif control_area == "ercot":
                 psql_query = f"""
                     select id, strip, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, month, tx_total_cost_per_mWh, tx_compliance, tx_rec_price, tx_year,
-                        tx_total_texas_competitive_load_mWh, tx_rps_mandate_mWh, tx_prct from trueprice.{control_area}_rec 
+                        tx_total_texas_competitive_load_mWh, tx_rps_mandate_mWh, tx_prct from trueprice.{control_area}_rec
+                        where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}' 
                     UNION
                     select id, strip, curvestart, curveend, month, tx_total_cost_per_mWh, tx_compliance, tx_rec_price, tx_year,
                         tx_total_texas_competitive_load_mWh, tx_rps_mandate_mWh, tx_prct from trueprice.{control_area}_rec_history
-                    where LOWER(strip) = '{strip.lower()}' and month::date >= '{start_date}' and month::date <= '{end_date}'
+                    where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                     order by curvestart desc,strip;
                 """
 

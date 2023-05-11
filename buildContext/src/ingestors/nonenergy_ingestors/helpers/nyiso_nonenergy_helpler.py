@@ -1,8 +1,8 @@
 """
-Helper function for isone
+Helper functions for nyiso
 """
 import pandas as pd
-class IsoneNonEnergyHelper:
+class NyisoNonEnergyHelper:
     def __init__(self):
         """
         constructor
@@ -23,7 +23,6 @@ class IsoneNonEnergyHelper:
             df_data.dropna(axis = 0, how = 'all', inplace=True)
             df_data.dropna(axis = 1, how = 'all', inplace=True)
 
-
             # making the headers dataframe and tranposing it
             df_info = df.iloc[1:9]
             df_info.reset_index(inplace=True, drop=True)
@@ -41,12 +40,16 @@ class IsoneNonEnergyHelper:
                 labels = ["Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component"]
                 for label in labels:
                     tmp_df[label] = df_info.at[index, label]
-                tmp_df["Sub Cost Component"] = col
+                if isinstance(col, float):
+                    tmp_df["Sub Cost Component"] = tmp_df["Cost Component"]
+                else:
+                    tmp_df["Sub Cost Component"] = col
                 tmp_df = tmp_df.reset_index(drop=True)
                 dataframes.append(tmp_df)
 
             resultant_df = pd.concat(dataframes, axis=0)
             resultant_df=resultant_df.sort_values("Date")
+            resultant_df['Data'].replace(' ', 0, inplace=True)
             resultant_df.reset_index(drop=True, inplace=True)
 
             # column renaming
