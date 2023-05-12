@@ -243,15 +243,15 @@ services:
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
           month TIMESTAMPTZ,
           data NUMERIC(20,10), 
-          control_area varchar(50),
-          state varchar(50),
-          load_zone varchar(50),
-          capacity_zone varchar(50),
-          utility varchar(50),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
           strip varchar(4),
-          cost_group varchar(50),
-          cost_component varchar(50),
-          sub_cost_component varchar(50)
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
         );
         
         -- old data
@@ -262,15 +262,15 @@ services:
           curveEnd TIMESTAMPTZ, -- per file name (sans tz)
           month TIMESTAMPTZ,
           data NUMERIC(20,10),
-          control_area varchar(50),
-          state varchar(50),
-          load_zone varchar(50),
-          capacity_zone varchar(50),
-          utility varchar(50),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
           strip varchar(4),
-          cost_group varchar(50),
-          cost_component varchar(50),
-          sub_cost_component varchar(50)
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
         );
 
         -- isone nonenergy
@@ -279,15 +279,15 @@ services:
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
           month TIMESTAMPTZ,
           data NUMERIC(12,8), 
-          control_area varchar(50),
-          state varchar(50),
-          load_zone varchar(50),
-          capacity_zone varchar(50),
-          utility varchar(50),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
           strip varchar(4),
-          cost_group varchar(50),
-          cost_component varchar(50),
-          sub_cost_component varchar(50)
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
         );
         -- old data
         -- union old and new data for all data (versus is_current column)
@@ -297,15 +297,15 @@ services:
           curveEnd TIMESTAMPTZ, -- per file name (sans tz)
           month TIMESTAMPTZ,
           data NUMERIC(12,8), 
-          control_area varchar(50),
-          state varchar(50),
-          load_zone varchar(50),
-          capacity_zone varchar(50),
-          utility varchar(50),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
           strip varchar(4),
-          cost_group varchar(50),
-          cost_component varchar(50),
-          sub_cost_component varchar(50)
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
         );
 
         -- pjm nonenergy
@@ -314,15 +314,15 @@ services:
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
           month TIMESTAMPTZ,
           data NUMERIC(20,10), 
-          control_area varchar(50),
-          state varchar(50),
-          load_zone varchar(50),
-          capacity_zone varchar(50),
-          utility varchar(50),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
           strip varchar(4),
-          cost_group varchar(50),
-          cost_component varchar(50),
-          sub_cost_component varchar(50)
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
         );
         -- old data
         -- union old and new data for all data (versus is_current column)
@@ -332,15 +332,15 @@ services:
           curveEnd TIMESTAMPTZ, -- per file name (sans tz)
           month TIMESTAMPTZ,
           data NUMERIC(20,10),
-          control_area varchar(50),
-          state varchar(50),
-          load_zone varchar(50),
-          capacity_zone varchar(50),
-          utility varchar(50),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
           strip varchar(4),
-          cost_group varchar(50),
-          cost_component varchar(50),
-          sub_cost_component varchar(50)
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
         );
 
         -- nyiso nonenergy
@@ -349,15 +349,15 @@ services:
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
           month TIMESTAMPTZ,
           data NUMERIC(20,10), 
-          control_area varchar(50),
-          state varchar(50),
-          load_zone varchar(50),
-          capacity_zone varchar(50),
-          utility varchar(50),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
           strip varchar(4),
-          cost_group varchar(50),
-          cost_component varchar(50),
-          sub_cost_component varchar(50)
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
         );
         
         -- old data
@@ -368,15 +368,51 @@ services:
           curveEnd TIMESTAMPTZ, -- per file name (sans tz)
           month TIMESTAMPTZ,
           data NUMERIC(20,10),
-          control_area varchar(50),
-          state varchar(50),
-          load_zone varchar(50),
-          capacity_zone varchar(50),
-          utility varchar(50),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
           strip varchar(4),
-          cost_group varchar(50),
-          cost_component varchar(50),
-          sub_cost_component varchar(50)
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
+        );
+
+      -- miso nonenergy
+        CREATE TABLE trueprice.miso_nonenergy (
+          id serial PRIMARY KEY,
+          curveStart TIMESTAMPTZ, -- per file name (sans tz)
+          month TIMESTAMPTZ,
+          data NUMERIC(20,10), 
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
+        );
+        
+        -- old data
+        -- union old and new data for all data (versus is_current column)
+        CREATE TABLE trueprice.miso_nonenergy_history (
+          id serial PRIMARY KEY,
+          curveStart TIMESTAMPTZ, -- per file name (sans tz)
+          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+          month TIMESTAMPTZ,
+          data NUMERIC(20,10),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
         );
 
 

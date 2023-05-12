@@ -10,9 +10,9 @@ Implements the Slowly Changed Dimensions to insert the data into database
 import pandas as pd
 import datetime
 from database_connection import ConnectDatabase
-from .helpers.nyiso_nonenergy_helpler import NyisoNonEnergyHelper
+from .helpers.miso_nonenergy_helpler import MisoNonEnergyHelper
 
-class Nyiso_NonEnergy:
+class Miso_NonEnergy:
     """
     constructor which will makes the connection to the database
     """
@@ -23,7 +23,7 @@ class Nyiso_NonEnergy:
         """
         data_base = ConnectDatabase()
         self.engine = data_base.get_engine()
-        self.herlper = NyisoNonEnergyHelper()
+        self.herlper = MisoNonEnergyHelper()
 
     #Zone ID,Ancillary,Load Zone,Month,Price,Billing Determinant,,,,
 
@@ -36,6 +36,7 @@ class Nyiso_NonEnergy:
             df['date'] = pd.to_datetime(df['date'])
             df['data'] = df['data'].astype(float)
             df = df.fillna(0.0)
+            print(df)
             if df is None:
                 return "File Format Issue"
             

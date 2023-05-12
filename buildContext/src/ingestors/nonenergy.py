@@ -6,6 +6,7 @@ from .nonenergy_ingestors.isone_nonenergy import Isone_NonEnergy
 from .nonenergy_ingestors.pjm_nonenergy import Pjm_NonEnergy
 from .nonenergy_ingestors.ercot_nonenergy import Ercot_NonEnergy
 from .nonenergy_ingestors.nyiso_nonenergy import Nyiso_NonEnergy
+from .nonenergy_ingestors.miso_nonenergy import Miso_NonEnergy
 
 
 class NonEnergy:
@@ -21,6 +22,7 @@ class NonEnergy:
         self.pjm_ingestor = Pjm_NonEnergy()
         self.ercot_ingestor = Ercot_NonEnergy()
         self.nyiso_ingestor = Nyiso_NonEnergy()
+        self.miso_ingestor = Miso_NonEnergy()
         
     def ingestion(self, data):
         """
@@ -35,3 +37,5 @@ class NonEnergy:
             return self.ercot_ingestor.ingestion(data)
         elif data.controlArea == "nyiso":
             return self.nyiso_ingestor.ingestion(data)
+        elif data.controlArea == "miso":
+            return self.miso_ingestor.ingestion(data)
