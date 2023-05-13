@@ -17,14 +17,17 @@ class MisoNonEnergyHelper:
             df = data_frame
             # setting up the data's dataframe
             df_data = df.iloc[10:]
+            df_data = df_data.dropna(axis = 1, how = 'all')
+            df_data = df_data.dropna(axis = 0, how = 'all')
             df_data.reset_index(inplace=True, drop=True)
             df_data.columns = df_data.iloc[0]
             df_data = df_data.drop(df_data.index[0])
-            df_data.dropna(axis = 0, how = 'all', inplace=True)
-            df_data.dropna(axis = 1, how = 'all', inplace=True)
+
 
             # making the headers dataframe and tranposing it
             df_info = df.iloc[1:9]
+            df_info = df_info.dropna(axis = 1, how = 'all')
+            df_info = df_info.dropna(axis = 0, how = 'all')
             df_info.reset_index(inplace=True, drop=True)
             df_info = df_info.transpose()
             df_info.columns = df_info.iloc[0]
@@ -49,13 +52,17 @@ class MisoNonEnergyHelper:
 
             resultant_df = pd.concat(dataframes, axis=0)
             resultant_df=resultant_df.sort_values("Date")
-            resultant_df['Data'].replace(' ', 0, inplace=True)
+            resultant_df['Data'].fillna(0, inplace=True)
+            resultant_df['Data'].replace('[\$,]', '', regex=True, inplace=True)
+            resultant_df['Data'].replace('[\%,]', '', regex=True, inplace=True)
             resultant_df.reset_index(drop=True, inplace=True)
 
             # column renaming
             resultant_df = resultant_df.rename(columns=lambda x: x.replace(' ', '_').lower())
             return resultant_df
         except:
-            return None
+            import traceback, sys
+            print(traceback.format_exc())
+            return "File Format Not Matched"
 
         

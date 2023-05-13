@@ -1,3 +1,8 @@
+
+
+# STATUS
+# need to know which columns make the row unique so we can do the update, we can't use month/strip here because they don't change
+
 """
 Implements the Slowly Changed Dimensions to insert the data into database
 """
@@ -5,6 +10,7 @@ Implements the Slowly Changed Dimensions to insert the data into database
 import pandas as pd
 import datetime
 from database_connection import ConnectDatabase
+from .helpers.ercot_rec_helper import ErcotRecHelper
 
 class Ercot_Rec:
     """
@@ -13,68 +19,30 @@ class Ercot_Rec:
     
     def __init__(self):
         """
-        makes the 
+        makes the connection to the databases
         """
         data_base = ConnectDatabase()
         self.engine = data_base.get_engine()
+        self.herlper = ErcotRecHelper()
 
-    def pre_processings(self, df):
-        """
-        makes some pre-processing to the dataframe
-        """
-        df = df.dropna(how='all', axis=1)
-        df.columns = df.columns.str.replace('\.\d+', '', regex=True)
-        df.columns = df.columns.astype(str) +'_'+ df.iloc[0].astype(str)
-        df = df.drop(df.index[0])
+    #Zone ID,Ancillary,Load Zone,Month,Price,Billing Determinant,,,,
 
-
-        fill_values = {
-            col: '$0' if '$' in str(df[col]) else '0'
-            for col in df.columns
-            }
-        df.fillna(fill_values, inplace=True)
-
-        df[df.columns[2:]] = df[df.columns[2:]].replace('[\$,]', '', regex=True)
-        df[df.columns[2:]]  = df[df.columns[2:]].replace('[\%,]', '', regex=True)
-
-        df[df.columns[2:]] = df[df.columns[2:]].astype(float)
-        df[df.columns[5]] = df[df.columns[5]].astype(int)
-        df['TX_EY'] = pd.to_datetime(df['TX_EY'])
-
-        
-        
-
-        return df
-    
-    def renaming_columns(self, df):
-        """
-        rename the columns accordingly
-        """
-
-        df = df.rename(columns={
-            df.columns[0]: 'month', 
-            df.columns[1]: 'strip',
-            df.columns[2] : 'tx_total_cost_per_mWh',
-            df.columns[3] : 'tx_compliance' ,
-            df.columns[4] : 'tx_rec_price',
-            df.columns[5] : 'tx_year',
-            df.columns[6] : 'tx_total_texas_competitive_load_mWh',
-            df.columns[7] : 'tx_rps_mandate_mWh',
-            df.columns[8] : 'tx_prct'} )
-        df.columns = df.columns.str.lower()
-    
-        return df
-    
     def ingestion(self, data):
-        """
-        Handling Ingestion for rec
-        """
+
+
         try:
-            df = pd.read_csv(data.fileName)
-            # some pre processings
-            df = self.pre_processings(df)
-            # renaming columns
-            df = self.renaming_columns(df)
+            df = pd.read_csv(data.fileName, header=None)
+            df= self.herlper.setup_dataframe(df)
+            if not isinstance(df, pd.DataFrame):
+               return "File Format Not Matched"
+            
+
+            df['date'] = pd.to_datetime(df['date'])
+            df['data'] = df['data'].astype(float)
+            df.rename(inplace=True, columns={
+                'block_type' : 'strip', 
+                'date' : 'month'
+            })
 
             df.insert(0, 'curvestart', data.curveStart) # date on file, not the internal zone/month column
             # df.insert(0, 'strip', data.strip) # stored as object, don't freak on dtypes
@@ -119,18 +87,15 @@ class Ercot_Rec:
                         with current as (
                             -- get the current rows in the database, all of them, not just things that will change
 
-                            select id, strip, curvestart, month, tx_total_cost_per_mWh, tx_compliance, tx_rec_price, tx_year, 
-                            tx_total_texas_competitive_load_mWh, tx_rps_mandate_mWh, tx_prct 
+                            select id, month, curvestart, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component 
                             from trueprice.{data.controlArea}_rec where curvestart>='{sod}' and curvestart<='{eod}'
                         ),
                         backup as (
                             -- take current rows and insert into database but with a new "curveend" timestamp
 
-                            insert into trueprice.{data.controlArea}_rec_history (id, strip, curvestart, curveend,
-                            month, tx_total_cost_per_mWh, tx_compliance, tx_rec_price, tx_year, tx_total_texas_competitive_load_mWh, tx_rps_mandate_mWh, tx_prct)
+                            insert into trueprice.{data.controlArea}_rec_history (id, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component)
 
-                            select id, strip, curvestart, '{curveend}' as curveend, month, tx_total_cost_per_mWh, tx_compliance, tx_rec_price, tx_year,
-                            tx_total_texas_competitive_load_mWh, tx_rps_mandate_mWh, tx_prct
+                            select id, month, curvestart, '{curveend}' as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component
                             from current
                         ),
                         single as (
@@ -140,20 +105,31 @@ class Ercot_Rec:
 
                         update trueprice.{data.controlArea}_rec set
                         curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
-                        strip = newdata.strip,
                         month = newdata.month,
-                        tx_total_cost_per_mWh = newdata.tx_total_cost_per_mWh,
-                        tx_compliance = newdata.tx_compliance,
-                        tx_rec_price = newdata.tx_rec_price,
-                        tx_year = newdata.tx_year,
-                        tx_total_texas_competitive_load_mWh =newdata.tx_total_texas_competitive_load_mWh,
-                        tx_rps_mandate_mWh = newdata.tx_rps_mandate_mWh,
-                        tx_prct = newdata.tx_prct
+                        data = newdata.data, 
+                        control_area = newdata.control_area,
+                        state = newdata.state,
+                        load_zone = newdata.load_zone,
+                        capacity_zone = newdata.capacity_zone,
+                        utility = newdata.utility,
+                        strip = newdata.strip,
+                        cost_group = newdata.cost_group,
+                        cost_component = newdata.cost_component,
+                        sub_cost_component = newdata.sub_cost_component
 
                         from 
                             trueprice.{tmp_table_name} as newdata -- our csv data
                         where 
-                            trueprice.{data.controlArea}_rec.strip = newdata.strip 
+                            trueprice.{data.controlArea}_rec.strip = newdata.strip
+                            and trueprice.{data.controlArea}_rec.month = newdata.month 
+                            and trueprice.{data.controlArea}_rec.control_area = newdata.control_area
+                            and trueprice.{data.controlArea}_rec.state = newdata.state
+                            and trueprice.{data.controlArea}_rec.load_zone = newdata.load_zone 
+                            and trueprice.{data.controlArea}_rec.utility = newdata.utility
+                            and trueprice.{data.controlArea}_rec.cost_group = newdata.cost_group
+                            and trueprice.{data.controlArea}_rec.cost_component = newdata.cost_component
+                            and trueprice.{data.controlArea}_rec.sub_cost_component = newdata.sub_cost_component                            
+                
                             and trueprice.{data.controlArea}_rec.month = newdata.month 
                             and trueprice.{data.controlArea}_rec.curvestart=(select curvestart from single)
                     '''        

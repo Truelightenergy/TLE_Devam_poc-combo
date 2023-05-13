@@ -1,3 +1,8 @@
+
+
+# STATUS
+# need to know which columns make the row unique so we can do the update, we can't use month/strip here because they don't change
+
 """
 Implements the Slowly Changed Dimensions to insert the data into database
 """
@@ -5,6 +10,7 @@ Implements the Slowly Changed Dimensions to insert the data into database
 import pandas as pd
 import datetime
 from database_connection import ConnectDatabase
+from .helpers.nyiso_rec_helper import NyisoRecHelper
 
 class Nyiso_Rec:
     """
@@ -13,61 +19,33 @@ class Nyiso_Rec:
     
     def __init__(self):
         """
-        makes the 
+        makes the connection to the databases
         """
         data_base = ConnectDatabase()
         self.engine = data_base.get_engine()
+        self.herlper = NyisoRecHelper()
 
-    def pre_processings(self, df):
-        """
-        makes some pre-processing to the dataframe
-        """
+    #Zone ID,Ancillary,Load Zone,Month,Price,Billing Determinant,,,,
 
-        df.columns = df.columns.str.replace('\.\d+', '', regex=True)
-        df.columns = df.columns.astype(str) +'_'+ df.iloc[0].astype(str)
-        df.columns = df.columns.str.lower()
-        df = df.drop(df.index[0])
-
-        fill_values = {
-            col: '$0' if '$' in str(df[col]) else '0'
-            for col in df.columns
-            }
-        df.fillna(fill_values, inplace=True)
-        df[df.columns[2:]] = df[df.columns[2:]].replace('[\$,]', '', regex=True)
-        df[df.columns[2:]]  = df[df.columns[2:]].replace('[\%,]', '', regex=True)
-        df[df.columns[2:]] = df[df.columns[2:]].astype(float)
-        df['ny_ey'] = pd.to_datetime(df['ny_ey'])
-
-        return df
-    
-    def renaming_columns(self, df):
-        """
-        rename the columns accordingly
-        """
-
-        df = df.rename(columns={
-            
-            'ny_ey': 'month',
-            df.columns[1]: 'strip'} )
-        
-        return df
-    
     def ingestion(self, data):
-        """
-        Handling Ingestion for rec
-        """
-        try:
 
-            df = pd.read_csv(data.fileName)
-            # some pre processings
-            df = self.pre_processings(df)
-            # renaming columns
-            df = self.renaming_columns(df)
+
+        try:
+            df = pd.read_csv(data.fileName, header=None)
+            df= self.herlper.setup_dataframe(df)
+            if not isinstance(df, pd.DataFrame):
+               return "File Format Not Matched"
+            
+
+            df['date'] = pd.to_datetime(df['date'])
+            df['data'] = df['data'].astype(float)
+            df.rename(inplace=True, columns={
+                'block_type' : 'strip', 
+                'date' : 'month'
+            })
 
             df.insert(0, 'curvestart', data.curveStart) # date on file, not the internal zone/month column
             # df.insert(0, 'strip', data.strip) # stored as object, don't freak on dtypes
-            
-
 
             # using exists always return true or false versus empty/None
             sod = data.curveStart.strftime('%Y-%m-%d') # drop time, since any update should be new
@@ -93,7 +71,7 @@ class Nyiso_Rec:
                 r = df.to_sql(f"{data.controlArea}_rec", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
                 if r is not None:
                     return "Data Inserted"
-                return "Failed to insert"          
+                return "Failed to insert"         
 
             elif old_exists: # if there exists old data, handle it with slowly changing dimensions
                 tmp_table_name = f"{data.controlArea}_rec{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
@@ -107,20 +85,15 @@ class Nyiso_Rec:
                         with current as (
                             -- get the current rows in the database, all of them, not just things that will change
 
-                            select id, strip, curvestart, month, ny_total_cost_per_mwh, ny_class_i, ny_class_i_price,
-                            ny_class_ii, ny_class_ii_price, ny_total_cost_per_mwh_zec_rate, ny_class_iii_zec, ny_class_iii_price 
+                            select id, month, curvestart, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component 
                             from trueprice.{data.controlArea}_rec where curvestart>='{sod}' and curvestart<='{eod}'
                         ),
                         backup as (
                             -- take current rows and insert into database but with a new "curveend" timestamp
 
-                            insert into trueprice.{data.controlArea}_rec_history (id, strip, curvestart, curveend,
-                            month, ny_total_cost_per_mwh, ny_class_i, ny_class_i_price,
-                            ny_class_ii, ny_class_ii_price, ny_total_cost_per_mwh_zec_rate,
-                            ny_class_iii_zec, ny_class_iii_price)
+                            insert into trueprice.{data.controlArea}_rec_history (id, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component)
 
-                            select id, strip, curvestart, '{curveend}' as curveend, month, ny_total_cost_per_mwh, ny_class_i, ny_class_i_price,
-                            ny_class_ii, ny_class_ii_price, ny_total_cost_per_mwh_zec_rate, ny_class_iii_zec, ny_class_iii_price
+                            select id, month, curvestart, '{curveend}' as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component
                             from current
                         ),
                         single as (
@@ -130,21 +103,31 @@ class Nyiso_Rec:
 
                         update trueprice.{data.controlArea}_rec set
                         curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
-                        strip = newdata.strip,
                         month = newdata.month,
-                        ny_total_cost_per_mwh  = newdata.ny_total_cost_per_mwh,
-                        ny_class_i =  newdata.ny_class_i,
-                        ny_class_i_price = newdata.ny_class_i_price,
-                        ny_class_ii = newdata.ny_class_ii,
-                        ny_class_ii_price = newdata.ny_class_ii_price,
-                        ny_total_cost_per_mwh_zec_rate = newdata.ny_total_cost_per_mwh_zec_rate,
-                        ny_class_iii_zec = newdata.ny_class_iii_zec,
-                        ny_class_iii_price = newdata.ny_class_iii_price
+                        data = newdata.data, 
+                        control_area = newdata.control_area,
+                        state = newdata.state,
+                        load_zone = newdata.load_zone,
+                        capacity_zone = newdata.capacity_zone,
+                        utility = newdata.utility,
+                        strip = newdata.strip,
+                        cost_group = newdata.cost_group,
+                        cost_component = newdata.cost_component,
+                        sub_cost_component = newdata.sub_cost_component
 
                         from 
                             trueprice.{tmp_table_name} as newdata -- our csv data
                         where 
-                            trueprice.{data.controlArea}_rec.strip = newdata.strip 
+                            trueprice.{data.controlArea}_rec.strip = newdata.strip
+                            and trueprice.{data.controlArea}_rec.month = newdata.month 
+                            and trueprice.{data.controlArea}_rec.control_area = newdata.control_area
+                            and trueprice.{data.controlArea}_rec.state = newdata.state
+                            and trueprice.{data.controlArea}_rec.load_zone = newdata.load_zone 
+                            and trueprice.{data.controlArea}_rec.utility = newdata.utility
+                            and trueprice.{data.controlArea}_rec.cost_group = newdata.cost_group
+                            and trueprice.{data.controlArea}_rec.cost_component = newdata.cost_component
+                            and trueprice.{data.controlArea}_rec.sub_cost_component = newdata.sub_cost_component                            
+                
                             and trueprice.{data.controlArea}_rec.month = newdata.month 
                             and trueprice.{data.controlArea}_rec.curvestart=(select curvestart from single)
                     '''        
