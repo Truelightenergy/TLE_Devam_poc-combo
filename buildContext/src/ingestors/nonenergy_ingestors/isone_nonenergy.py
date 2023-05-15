@@ -34,10 +34,11 @@ class Isone_NonEnergy:
         try:
             df = pd.read_csv(data.fileName, header=None)
             df= self.herlper.setup_dataframe(df)
+            if not isinstance(df, pd.DataFrame):
+               return "File Format Not Matched"
+            
             df['date'] = pd.to_datetime(df['date'])
             df['data'] = df['data'].astype(float)
-            if df is None:
-                return "File Format Issue"
             
 
             df.rename(inplace=True, columns={

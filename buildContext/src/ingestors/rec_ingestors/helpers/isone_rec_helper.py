@@ -1,13 +1,28 @@
 """
-Helper functions for ercot
+Helper functions for isone
 """
 import pandas as pd
-class ErcotNonEnergyHelper:
+class IsoneRecHelper:
     def __init__(self):
         """
         constructor
         """
         pass
+
+    def renaming_columns(self, df):
+        """
+        rename the columns accordingly
+        """
+
+        df.columns =  df.iloc[0].astype(str) +'_'+ df.iloc[1].astype(str)
+        df.columns = df.columns.str.lower()
+        df = df.drop([df.index[0], df.index[1]])
+        df.reset_index(inplace=True, drop=True)
+        df = df.rename(columns={
+        df.columns[0]: 'Date'
+        })
+    
+        return df
 
     def setup_dataframe(self, data_frame):
         """
@@ -15,16 +30,13 @@ class ErcotNonEnergyHelper:
         """
         try:
             df = data_frame
-            # setting up the data's dataframe
             df_data = df.iloc[10:]
             df_data = df_data.dropna(axis = 1, how = 'all')
             df_data = df_data.dropna(axis = 0, how = 'all')
             df_data.reset_index(inplace=True, drop=True)
-            df_data.columns = df_data.iloc[0]
-            df_data = df_data.drop(df_data.index[0])
-            df_data.reset_index(inplace=True, drop=True)
-
-
+            df_data = self.renaming_columns(df_data)
+        
+            
             # making the headers dataframe and tranposing it
             df_info = df.iloc[1:9]
             df_info = df_info.dropna(axis = 1, how = 'all')
@@ -33,12 +45,13 @@ class ErcotNonEnergyHelper:
             df_info = df_info.transpose()
             df_info.columns = df_info.iloc[0]
             df_info = df_info.drop(df_info.index[0])
-            df_info = df_info.dropna(how='all', axis=0)
             df_info.reset_index(inplace=True, drop=True)
+            
 
             # formating the dataframe
             dataframes = []
             for index, col in enumerate(df_data.columns[1:]):
+                
                 
                 tmp_df = df_data[["Date"]].copy()
                 tmp_df.loc[:, 'Data'] = df_data.iloc[:, index+1]
@@ -62,8 +75,10 @@ class ErcotNonEnergyHelper:
             # column renaming
             resultant_df = resultant_df.rename(columns=lambda x: x.replace(' ', '_').lower())
             return resultant_df
-        except:
+        except Exception as e:
+
             import traceback, sys
             print(traceback.format_exc())
             return "File Format Not Matched"
+
         

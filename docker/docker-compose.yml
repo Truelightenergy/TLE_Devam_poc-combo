@@ -418,315 +418,153 @@ services:
 
         -- pjm rec
         -- new data
-        CREATE TABLE trueprice.pjm_rec(
+        CREATE TABLE trueprice.pjm_rec (
           id serial PRIMARY KEY,
-          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          Month TIMESTAMPTZ,
-          NJ_Total_Cost_per_MWh_amount NUMERIC(12,8),
-          NJ_Solar_percent NUMERIC(12,8),
-          NJ_Solar_amount NUMERIC(12,8),
-          NJ_Class_I_percent NUMERIC(12,8),
-          NJ_Class_I_amount NUMERIC(12,8), 
-          NJ_Class_II_percent NUMERIC(12,8), 
-          NJ_Class_II_amount NUMERIC(12,8),
-          OH_Total_Cost_per_MWh_amount NUMERIC(12,8),
-          OH_Solar_percent NUMERIC(12,8), 
-          OH_Solar_In_State_amount NUMERIC(12,8),
-          OH_Solar_Adj_amount NUMERIC(12,8), 
-          OH_RECs_percent NUMERIC(12,8),
-          OH_In_State_amount NUMERIC(12,8), 
-          OH_Adj_amount NUMERIC(12,8),
-          PA_Total_Cost_per_MWh_amount NUMERIC(12,8),
-          PA_Solar_percent NUMERIC(12,8),
-          PA_Solar_amount NUMERIC(12,8), 
-          PA_Tier_I_percent NUMERIC(12,8),
-          PA_Tier_I_amount NUMERIC(12,8), 
-          PA_Tier_II_percent NUMERIC(12,8),
-          PA_Tier_II_amount NUMERIC(12,8),
-          MD_Total_Cost_per_MWh_amount NUMERIC(12,8),
-          MD_Solar_percent NUMERIC(12,8), 
-          MD_Solar_amount NUMERIC(12,8), 
-          MD_Tier_I_percent NUMERIC(12,8),
-          MD_Tier_I_amount NUMERIC(12,8), 
-          MD_Tier_II_percent NUMERIC(12,8), 
-          MD_Tier_II_amount NUMERIC(12,8),
-          DC_Total_Cost_per_MWh_amount NUMERIC(12,8),
-          DC_Solar_percent NUMERIC(12,8),
-          DC_Solar_amount NUMERIC(12,8),
-          DC_Tier_I_percent NUMERIC(12,8),
-          DC_Tier_I_amount NUMERIC(12,8),
-          DC_Tier_II_percent NUMERIC(12,8),
-          DC_Tier_II_amount NUMERIC(12,8),
-          DE_Total_Cost_per_MWh_amount NUMERIC(12,8),
-          DE_Solar_percent NUMERIC(12,8), 
-          DE_Solar_amount NUMERIC(12,8),
-          DE_RECs_percent NUMERIC(12,8),
-          DE_REC_amount NUMERIC(12,8), 
-          IL_Total_Cost_per_MWh_amount NUMERIC(12,8),
-          IL_PER_o_load_covered_by_Supplier_vs_Utility_percent NUMERIC(12,8),
-          IL_Total_Standard_percent NUMERIC(12,8),
-          IL_Solar_percent NUMERIC(12,8),
-          IL_Solar_amount NUMERIC(12,8),
-          IL_Wind_percent NUMERIC(12,8), 
-          IL_Wind_amount NUMERIC(12,8),
-          IL_ACP_percent NUMERIC(12,8),
-          IL_ACP_amount NUMERIC(12,8)
-        );       
-
+          month TIMESTAMPTZ,
+          data NUMERIC(20,10), 
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
+        );
+        
         -- old data
+        -- union old and new data for all data (versus is_current column)
         CREATE TABLE trueprice.pjm_rec_history (
-          id serial, -- not primary, this is fk to pjm_rec
-          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          id serial PRIMARY KEY,
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per new file name
-          Month TIMESTAMPTZ,
-          NJ_Total_Cost_per_MWh_amount NUMERIC(12,8),
-          NJ_Solar_percent NUMERIC(12,8),
-          NJ_Solar_amount NUMERIC(12,8),
-          NJ_Class_I_percent NUMERIC(12,8),
-          NJ_Class_I_amount NUMERIC(12,8), 
-          NJ_Class_II_percent NUMERIC(12,8), 
-          NJ_Class_II_amount NUMERIC(12,8),
-          OH_Total_Cost_per_MWh_amount NUMERIC(12,8),
-          OH_Solar_percent NUMERIC(12,8), 
-          OH_Solar_In_State_amount NUMERIC(12,8),
-          OH_Solar_Adj_amount NUMERIC(12,8), 
-          OH_RECs_percent NUMERIC(12,8),
-          OH_In_State_amount NUMERIC(12,8), 
-          OH_Adj_amount NUMERIC(12,8),
-          PA_Total_Cost_per_MWh_amount NUMERIC(12,8),
-          PA_Solar_percent NUMERIC(12,8),
-          PA_Solar_amount NUMERIC(12,8), 
-          PA_Tier_I_percent NUMERIC(12,8),
-          PA_Tier_I_amount NUMERIC(12,8), 
-          PA_Tier_II_percent NUMERIC(12,8),
-          PA_Tier_II_amount NUMERIC(12,8),
-          MD_Total_Cost_per_MWh_amount NUMERIC(12,8),
-          MD_Solar_percent NUMERIC(12,8), 
-          MD_Solar_amount NUMERIC(12,8), 
-          MD_Tier_I_percent NUMERIC(12,8),
-          MD_Tier_I_amount NUMERIC(12,8), 
-          MD_Tier_II_percent NUMERIC(12,8), 
-          MD_Tier_II_amount NUMERIC(12,8),
-          DC_Total_Cost_per_MWh_amount NUMERIC(12,8),
-          DC_Solar_percent NUMERIC(12,8),
-          DC_Solar_amount NUMERIC(12,8),
-          DC_Tier_I_percent NUMERIC(12,8),
-          DC_Tier_I_amount NUMERIC(12,8),
-          DC_Tier_II_percent NUMERIC(12,8),
-          DC_Tier_II_amount NUMERIC(12,8),
-          DE_Total_Cost_per_MWh_amount NUMERIC(12,8),
-          DE_Solar_percent NUMERIC(12,8), 
-          DE_Solar_amount NUMERIC(12,8),
-          DE_RECs_percent NUMERIC(12,8),
-          DE_REC_amount NUMERIC(12,8), 
-          IL_Total_Cost_per_MWh_amount NUMERIC(12,8),
-          IL_PER_o_load_covered_by_Supplier_vs_Utility_percent NUMERIC(12,8),
-          IL_Total_Standard_percent NUMERIC(12,8),
-          IL_Solar_percent NUMERIC(12,8),
-          IL_Solar_amount NUMERIC(12,8),
-          IL_Wind_percent NUMERIC(12,8), 
-          IL_Wind_amount NUMERIC(12,8),
-          IL_ACP_percent NUMERIC(12,8),
-          IL_ACP_amount NUMERIC(12,8)
+          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+          month TIMESTAMPTZ,
+          data NUMERIC(20,10),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
         );
 
         --ercot rec
         -- new data
-        CREATE TABLE trueprice.ercot_rec(
+        CREATE TABLE trueprice.ercot_rec (
           id serial PRIMARY KEY,
-          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ, 
-          tx_total_cost_per_mWh NUMERIC(12,8),
-          tx_compliance NUMERIC(12,8), 
-          tx_rec_price NUMERIC(12,8),
-          tx_year NUMERIC(12,8),
-          tx_total_texas_competitive_load_mWh NUMERIC(20,10),
-          tx_rps_mandate_mWh NUMERIC(20,10),
-          tx_prct NUMERIC(12,8)
-          );
-
-        --old data
+          month TIMESTAMPTZ,
+          data NUMERIC(20,10), 
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
+        );
+        
+        -- old data
+        -- union old and new data for all data (versus is_current column)
         CREATE TABLE trueprice.ercot_rec_history (
-          id serial, -- not primary, this is fk to pjm_rec
-          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+          id serial PRIMARY KEY,
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per new file name
-          month TIMESTAMPTZ, 
-          tx_total_cost_per_mWh NUMERIC(12,8),
-          tx_compliance NUMERIC(12,8), 
-          tx_rec_price NUMERIC(12,8),
-          tx_year NUMERIC(12,8),
-          tx_total_texas_competitive_load_mWh NUMERIC(20,10),
-          tx_rps_mandate_mWh NUMERIC(20,10),
-          tx_prct NUMERIC(12,8)
-          );
+          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+          month TIMESTAMPTZ,
+          data NUMERIC(20,10),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
+        );
+
 
         --isone rec
         --new data
-        CREATE TABLE trueprice.isone_rec(
+        CREATE TABLE trueprice.isone_rec (
           id serial PRIMARY KEY,
-          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ, 
-          ct_total_cost_per_mwh NUMERIC(12,8),
-          ct_class_i NUMERIC(12,8), 
-          ct_class_i_price NUMERIC(12,8),
-          ct_class_ii NUMERIC(12,8),
-          ct_class_ii_price NUMERIC(12,8), 
-          ct_class_iii  NUMERIC(12,8),
-          ct_class_iii_price NUMERIC(12,8), 
-          ma_total_cost_per_mwh NUMERIC(12,8),
-          ma_rps_class_i_total NUMERIC(12,8),
-          ma_rps_class_i NUMERIC(12,8),
-          ma_class_i_price NUMERIC(12,8),
-          ma_solar_carve_out_i NUMERIC(12,8),
-          ma_srec_i_price NUMERIC(12,8),
-          ma_solar_carve_out_ii NUMERIC(12,8),
-          ma_srec_ii_price NUMERIC(12,8),
-          ma_class_ii_non_waste NUMERIC(12,8), 
-          ma_class_ii_nw_price NUMERIC(12,8),
-          ma_class_ii_waste NUMERIC(12,8),
-          ma_class_ii_waste_price NUMERIC(12,8),
-          ma_aps NUMERIC(12,8),
-          ma_aps_price NUMERIC(12,8),
-          ma_ces_obligation NUMERIC(12,8),
-          ma_ces_less_rps_i_ NUMERIC(12,8),
-          ma_ces_price NUMERIC(12,8),
-          ma_cps NUMERIC(12,8),
-          ma_cps_price NUMERIC(12,8),
-          ma_ces_e NUMERIC(12,8),
-          ma_ces_e_price NUMERIC(12,8),
-          nh_total_cost_per_mwh NUMERIC(12,8),
-          nh_class_i_total NUMERIC(12,8),
-          nh_class_i NUMERIC(12,8),
-          nh_class_i_price NUMERIC(12,8),
-          nh_class_i_thermal NUMERIC(12,8),
-          nh_class_i_thermal_price NUMERIC(12,8),
-          nh_class_ii NUMERIC(12,8),
-          nh_class_ii_price NUMERIC(12,8),
-          nh_class_iii NUMERIC(12,8),
-          nh_class_iii_price NUMERIC(12,8),
-          nh_class_iv NUMERIC(12,8),
-          nh_class_iv_price NUMERIC(12,8),
-          me_total_cost_per_mwh NUMERIC(12,8),
-          me_new_and_1a_total NUMERIC(12,8),
-          me_1a NUMERIC(12,8),
-          me_1a_acp NUMERIC(12,8),
-          me_class_1 NUMERIC(12,8),
-          me_class_1_price NUMERIC(12,8), 
-          me_thermal NUMERIC(12,8),
-          me_thermal_price NUMERIC(12,8),
-          me_class_2 NUMERIC(12,8),
-          me_class_2_price NUMERIC(12,8),
-          ri_total_cost_per_mwh NUMERIC(12,8),
-          ri_new NUMERIC(12,8),
-          ri_new_price NUMERIC(12,8),
-          ri_existing NUMERIC(12,8),
-          ri_existing_price NUMERIC(12,8)
+          month TIMESTAMPTZ,
+          data NUMERIC(20,10), 
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
         );
         
-        CREATE TABLE trueprice.isone_rec_history(
+        -- old data
+        -- union old and new data for all data (versus is_current column)
+        CREATE TABLE trueprice.isone_rec_history (
           id serial PRIMARY KEY,
-          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per new file name
-          month TIMESTAMPTZ, 
-          ct_total_cost_per_mwh NUMERIC(12,8),
-          ct_class_i NUMERIC(12,8), 
-          ct_class_i_price NUMERIC(12,8),
-          ct_class_ii NUMERIC(12,8),
-          ct_class_ii_price NUMERIC(12,8), 
-          ct_class_iii  NUMERIC(12,8),
-          ct_class_iii_price NUMERIC(12,8), 
-          ma_total_cost_per_mwh NUMERIC(12,8),
-          ma_rps_class_i_total NUMERIC(12,8),
-          ma_rps_class_i NUMERIC(12,8),
-          ma_class_i_price NUMERIC(12,8),
-          ma_solar_carve_out_i NUMERIC(12,8),
-          ma_srec_i_price NUMERIC(12,8),
-          ma_solar_carve_out_ii NUMERIC(12,8),
-          ma_srec_ii_price NUMERIC(12,8),
-          ma_class_ii_non_waste NUMERIC(12,8), 
-          ma_class_ii_nw_price NUMERIC(12,8),
-          ma_class_ii_waste NUMERIC(12,8),
-          ma_class_ii_waste_price NUMERIC(12,8),
-          ma_aps NUMERIC(12,8),
-          ma_aps_price NUMERIC(12,8),
-          ma_ces_obligation NUMERIC(12,8),
-          ma_ces_less_rps_i_ NUMERIC(12,8),
-          ma_ces_price NUMERIC(12,8),
-          ma_cps NUMERIC(12,8),
-          ma_cps_price NUMERIC(12,8),
-          ma_ces_e NUMERIC(12,8),
-          ma_ces_e_price NUMERIC(12,8),
-          nh_total_cost_per_mwh NUMERIC(12,8),
-          nh_class_i_total NUMERIC(12,8),
-          nh_class_i NUMERIC(12,8),
-          nh_class_i_price NUMERIC(12,8),
-          nh_class_i_thermal NUMERIC(12,8),
-          nh_class_i_thermal_price NUMERIC(12,8),
-          nh_class_ii NUMERIC(12,8),
-          nh_class_ii_price NUMERIC(12,8),
-          nh_class_iii NUMERIC(12,8),
-          nh_class_iii_price NUMERIC(12,8),
-          nh_class_iv NUMERIC(12,8),
-          nh_class_iv_price NUMERIC(12,8),
-          me_total_cost_per_mwh NUMERIC(12,8),
-          me_new_and_1a_total NUMERIC(12,8),
-          me_1a NUMERIC(12,8),
-          me_1a_acp NUMERIC(12,8),
-          me_class_1 NUMERIC(12,8),
-          me_class_1_price NUMERIC(12,8), 
-          me_thermal NUMERIC(12,8),
-          me_thermal_price NUMERIC(12,8),
-          me_class_2 NUMERIC(12,8),
-          me_class_2_price NUMERIC(12,8),
-          ri_total_cost_per_mwh NUMERIC(12,8),
-          ri_new NUMERIC(12,8),
-          ri_new_price NUMERIC(12,8),
-          ri_existing NUMERIC(12,8),
-          ri_existing_price NUMERIC(12,8)
+          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+          month TIMESTAMPTZ,
+          data NUMERIC(20,10),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
         );
+
 
       -- nyiso rec
-      -- new data
-      --old data
-        CREATE TABLE trueprice.nyiso_rec (
-          id serial, -- not primary, this is fk to pjm_rec
-          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
+      CREATE TABLE trueprice.nyiso_rec (
+          id serial PRIMARY KEY,
           curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ, 
-          ny_total_cost_per_mwh NUMERIC(12,8),
-          ny_class_i NUMERIC(12,8),
-          ny_class_i_price NUMERIC(12,8),
-          ny_class_ii NUMERIC(12,8),
-          ny_class_ii_price NUMERIC(12,8),
-          ny_total_cost_per_mwh_zec_rate NUMERIC(12,8),
-          ny_class_iii_zec NUMERIC(12,8),
-          ny_class_iii_price NUMERIC(12,8)
-
-        );
-
-      -- old data
-      CREATE TABLE trueprice.nyiso_rec_history (
-          id serial, -- not primary, this is fk to pjm_rec
-          strip varchar(4), -- 7X8, 2X16, 7X24, etc. maybe enum one day
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per new file name
           month TIMESTAMPTZ,
-          ny_total_cost_per_mwh NUMERIC(12,8),
-          ny_class_i NUMERIC(12,8),
-          ny_class_i_price NUMERIC(12,8),
-          ny_class_ii NUMERIC(12,8),
-          ny_class_ii_price NUMERIC(12,8),
-          ny_total_cost_per_mwh_zec_rate NUMERIC(12,8),
-          ny_class_iii_zec NUMERIC(12,8),
-          ny_class_iii_price NUMERIC(12,8) 
-
+          data NUMERIC(20,10), 
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
         );
+        
+        -- old data
+        -- union old and new data for all data (versus is_current column)
+        CREATE TABLE trueprice.nyiso_rec_history (
+          id serial PRIMARY KEY,
+          curveStart TIMESTAMPTZ, -- per file name (sans tz)
+          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+          month TIMESTAMPTZ,
+          data NUMERIC(20,10),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
+        );
+
         
       --Authentication table
       CREATE TABLE trueprice.users (
