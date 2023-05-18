@@ -480,5 +480,3 @@ class Util:
             logging.error(f"{session['user']}: ui is not{status}")
             return {"flash_message": True, "message_toast": f"ui is not{status}", "message_flag":"error"},400
 
-
-    

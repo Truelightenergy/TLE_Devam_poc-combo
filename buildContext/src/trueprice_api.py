@@ -1,9 +1,12 @@
+import os
 from utils.endpoints import Util
-from flask import Flask, request, session, jsonify, redirect, url_for, render_template
+from flask import Flask, request, session, jsonify, redirect, url_for, render_template, make_response
 from utils.roles import RolesDecorator
 from functools import wraps
 from utils.auths import Auths
 from utils.revoke_tokens import RevokedTokens
+
+
 
 
 
@@ -51,9 +54,9 @@ def signup():
             password = request.form.get("password")
             json_obj, status_code = api_util.signup(email, password)
             if status_code==200:
-                return render_template('signup.html',  flash_message=True, message_toast = "Signup Successfully", message_flag = "success", page_type = "download"), 200
+                return render_template('signup.html',  flash_message=True, message_toast = "Signup Successfully", message_flag = "success"), 200
             else:
-                return render_template('signup.html',  flash_message=True, message_toast = "Login Failed", message_flag = "error", page_type = "download"), 403
+                return render_template('signup.html',  flash_message=True, message_toast = "Signup Failed", message_flag = "error"), 403
         else:
             return render_template('signup.html')
         
@@ -76,7 +79,7 @@ def login():
             if status_code==200:
                 return api_util.application_startup()
             else:
-                return render_template('login.html',  flash_message=True, message_toast = "Login Failed", message_flag = "error", page_type = "download"), 403
+                return render_template('login.html',  flash_message=True, message_toast = "Login Failed", message_flag = "error"), 403
         else:
             return render_template('login.html')
 
@@ -116,9 +119,9 @@ def create_user():
             prv_level, email, pswd= request.form.get('prv_level'), request.form.get("email"),request.form.get("password")
             json_obj, status_code = api_util.create_user(email, pswd, prv_level)
             if status_code==200:
-                return render_template('create_user.html', flash_message=True, message_toast = "User Created", message_flag = "success", page_type = "download")
+                return render_template('create_user.html', flash_message=True, message_toast = "User Created", message_flag = "success")
             else:
-                return render_template('create_user.html', flash_message=True, message_toast = "Unable to create user", message_flag = "error", page_type = "download")
+                return render_template('create_user.html', flash_message=True, message_toast = "Unable to create user", message_flag = "error")
         else:
             return render_template("create_user.html")
 
@@ -143,13 +146,17 @@ def view_user():
 
 
 # application endpoint
-@app.route('/disable_user/<user_id>', methods=['GET', 'POST'])
+@app.route('/disable_user_ui', methods=['GET', 'POST'])
 @roles.admin_token_required
-def disable_user(user_id):
+def disable_user_ui():
     """
     delete particular user ADIMN
     """
 
+    user_id = request.args.get('user_id')
+    if not user_id:
+        record = auth_obj.get_all_users()
+        return render_template('view_user.html', data=record)
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
     if rest_api_condition:
@@ -161,10 +168,12 @@ def disable_user(user_id):
         json_obj, status_code = api_util.enable_disable_user(user_id, "disabled")
         record = auth_obj.get_all_users()
         if status_code==200:
-            return render_template('view_user.html', flash_message=True, message_toast = "User disabled", message_flag = "success", page_type = "download", data=record)
+            return render_template('view_user.html', flash_message=True, message_toast = "User Disabled", message_flag = "success", data = record)                
         else:
-            return render_template('view_user.html', flash_message=True, message_toast = "Unable to disable user", message_flag = "error", page_type = "download", data=record)
+            return render_template('view_user.html', flash_message=True, message_toast = "Unable to disable user", message_flag = "error", data = record)
+                    
         
+            
 # api endpoint
 @app.route('/disable_user', methods=['GET', 'POST'])
 @roles.admin_token_required
@@ -180,13 +189,17 @@ def disable_user_using_email():
 
 
 # application endpoint
-@app.route('/enable_user/<user_id>', methods=['GET', 'POST'])
+@app.route('/enable_user_ui', methods=['GET', 'POST'])
 @roles.admin_token_required
-def enable_user(user_id):
+def enable_user_ui():
     """
     disable particular user ADIMN
     """
-
+    user_id = request.args.get('user_id')
+    if not user_id:
+        record = auth_obj.get_all_users()
+        return render_template('view_user.html', data=record)
+    
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
     if rest_api_condition:
@@ -198,10 +211,10 @@ def enable_user(user_id):
         json_obj, status_code = api_util.enable_disable_user(user_id, "enabled")
         record = auth_obj.get_all_users()
         if status_code==200:
-            return render_template('view_user.html', flash_message=True, message_toast = "User enabled", message_flag = "success", page_type = "download", data=record)
+            return render_template('view_user.html', flash_message=True, message_toast = "User Disabled", message_flag = "success", data = record)                
         else:
-            return render_template('view_user.html', flash_message=True, message_toast = "Unable to enable user", message_flag = "error", page_type = "download", data=record)
-        
+            return render_template('view_user.html', flash_message=True, message_toast = "Unable to disable user", message_flag = "error", data = record)
+           
 # api endpoint
 @app.route('/enable_user', methods=['GET', 'POST'])
 @roles.admin_token_required
@@ -215,13 +228,17 @@ def enable_user_using_email():
     return jsonify(json_obj), status_code
 
 # application endpoint
-@app.route('/update_user/<user_id>', methods=['GET', 'POST'])
+@app.route('/update_user_ui', methods=['GET', 'POST'])
 @roles.admin_token_required
-def update_user(user_id):
+def update_user_ui():
     """
     enable particular user
     """
-
+    user_id = request.args.get('user_id')
+    if not user_id:
+        record = auth_obj.get_all_users()
+        return render_template('view_user.html', data=record)
+    
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     if rest_api_condition:
         setup_session(request.headers['Authorization'].split()[1])
@@ -232,13 +249,13 @@ def update_user(user_id):
             json_obj, status_code = api_util.update_user(user_id)
             record = auth_obj.get_all_users()
             if status_code==200:
-                return render_template('view_user.html', flash_message=True, message_toast = "User Updated", message_flag = "success", page_type = "download", data = record)
+                return render_template('view_user.html', flash_message=True, message_toast = "User Updated", message_flag = "success", data = record)                
             else:
-                return render_template('view_user.html', flash_message=True, message_toast = "Unable to update user", message_flag = "error", page_type = "download", data = record)
+                return render_template('view_user.html', flash_message=True, message_toast = "Unable to update user", message_flag = "error", data = record)
         else:
             record = auth_obj.get_user(user_id)
             return render_template("update_user.html", data = record)
-        
+   
 # api endpoint
 @app.route('/update_user', methods=['GET', 'POST'])
 @roles.admin_token_required
@@ -272,9 +289,9 @@ def update_password():
             email, old_pswd, new_pswd = session["user"], request.form.get("old_password"), request.form.get("password")
             json_obj, status_code = api_util.update_password(email, old_pswd, new_pswd )
             if status_code==200:
-                return render_template("update_password.html",  flash_message=True, message_toast = "password updated", message_flag = "success", page_type = "download")
+                return render_template("update_password.html",  flash_message=True, message_toast = "password updated", message_flag = "success")
             else:
-                return render_template("update_password.html",  flash_message=True, message_toast = "unable to update password", message_flag = "error", page_type = "download") 
+                return render_template("update_password.html",  flash_message=True, message_toast = "unable to update password", message_flag = "error") 
         return render_template("update_password.html")
 
 
@@ -322,9 +339,9 @@ def upload_csv():
             session["acceptance"]=None
             
             if status_code==200:
-                return render_template('upload_csv.html', flash_message=True, message_toast = "Data Inserted", message_flag = "success", page_type = "upload")        
+                return render_template('upload_csv.html', flash_message=True, message_toast = "Data Inserted", message_flag = "success")        
             else:    
-                return render_template('upload_csv.html', flash_message=True, message_toast = json_obj["message_toast"], message_flag = "error", page_type = "upload")
+                return render_template('upload_csv.html', flash_message=True, message_toast = json_obj["message_toast"], message_flag = "error")
         else:
             session["acceptance"] = request.headers.get('Accept')
             return render_template('upload_csv.html')
@@ -369,7 +386,7 @@ def download_data():
         if request.method == 'POST':
             response, status = api_util.download_data()
             if status != "success":
-                return render_template('download_data.html',  flash_message=True, message_toast = status, message_flag = "error", page_type = "download")
+                return render_template('download_data.html',  flash_message=True, message_toast = status, message_flag = "error")
             else:
                 return response
         else:
@@ -435,9 +452,9 @@ def enable_ui():
         json_obj, status_code = api_util.switch_ui("enabled")
         record = auth_obj.get_site_controls()
         if status_code==200:
-            return render_template('site_control.html', flash_message=True, message_toast = "UI enabled", message_flag = "success", page_type = "download", data=record)
+            return render_template('site_control.html', flash_message=True, message_toast = "UI enabled", message_flag = "success", data=record)
         else:
-            return render_template('site_control.html', flash_message=True, message_toast = "Unable to enable UI", message_flag = "error", page_type = "download", data=record)
+            return render_template('site_control.html', flash_message=True, message_toast = "Unable to enable UI", message_flag = "error", data=record)
 
 
 @app.route('/disable_ui', methods=['GET', 'POST'])
@@ -458,9 +475,9 @@ def disable_ui():
         json_obj, status_code = api_util.switch_ui("disabled")
         record = auth_obj.get_site_controls()
         if status_code==200:
-            return render_template('site_control.html', flash_message=True, message_toast = "UI disabled", message_flag = "success", page_type = "download", data=record)
+            return render_template('site_control.html', flash_message=True, message_toast = "UI disabled", message_flag = "success",data=record)
         else:
-            return render_template('site_control.html', flash_message=True, message_toast = "Unable to disable UI", message_flag = "error", page_type = "download", data=record)
+            return render_template('site_control.html', flash_message=True, message_toast = "Unable to disable UI", message_flag = "error", data=record)
 
 # application endpoint
 @app.route('/enable_api', methods=['GET', 'POST'])
@@ -481,9 +498,9 @@ def enable_api():
         json_obj, status_code = api_util.switch_api("enabled")
         record = auth_obj.get_site_controls()
         if status_code==200:
-            return render_template('site_control.html', flash_message=True, message_toast = "API Enabled", message_flag = "success", page_type = "download", data=record)
+            return render_template('site_control.html', flash_message=True, message_toast = "API Enabled", message_flag = "success", data=record)
         else:
-            return render_template('site_control.html', flash_message=True, message_toast = "Unable to enable API", message_flag = "error", page_type = "download", data=record)
+            return render_template('site_control.html', flash_message=True, message_toast = "Unable to enable API", message_flag = "error", data=record)
 
 
 @app.route('/disable_api', methods=['GET', 'POST'])
@@ -504,9 +521,9 @@ def disable_api():
         json_obj, status_code = api_util.switch_api("disabled")
         record = auth_obj.get_site_controls()
         if status_code==200:
-            return render_template('site_control.html', flash_message=True, message_toast = "API disable", message_flag = "success", page_type = "download", data=record)
+            return render_template('site_control.html', flash_message=True, message_toast = "API disable", message_flag = "success",data=record)
         else:
-            return render_template('site_control.html', flash_message=True, message_toast = "Unable to disable API", message_flag = "error", page_type = "download", data=record)
+            return render_template('site_control.html', flash_message=True, message_toast = "Unable to disable API", message_flag = "error", data=record)
 
 
 @app.route('/site_control', methods=['GET', 'POST'])

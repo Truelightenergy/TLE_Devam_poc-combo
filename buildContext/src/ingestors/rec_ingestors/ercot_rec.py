@@ -147,4 +147,4 @@ class Ercot_Rec:
         except:
             import traceback, sys
             print(traceback.format_exc())
-            return traceback.format_exc()
+            return "Unable to make it to db."

@@ -1,98 +1,136 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-	<title>Update user</title>
-	<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-	<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <meta charset="utf-8">
+    <title>Update User</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
 
-	<script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.3/umd/popper.min.js"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
- 
-	
-	<script src="https://malsup.github.io/jquery.form.js"></script> 
-	<link href="/static/css/notification.css" rel="stylesheet"/>
-	<script src="/static/js/notification.js"></script>
+    <!-- Favicon -->
+    <link href="static/img/favicon.ico" rel="icon">
 
-	<link rel="stylesheet" href="/static/css/download_data.css">
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@500;700&display=swap" rel="stylesheet"> 
+    
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
 
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-	<link rel="stylesheet" href="/static/css/style.css">
-	
+    <!-- Libraries Stylesheet -->
+    <link href="static/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="static/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="static/css/style.css" rel="stylesheet">
+
+    <!-- scroll_bar -->
+    <script src="static/js/multiselect.js" ></script>
+    <style>
 
 
-
-	
+    </style>
+    
 
 </head>
-<body>
-	
 
-	<input type="checkbox" id="checkbox">
-	
-	<div class="body">
-		{% include 'navbar.html'%}
-		
-		<div class="section">
-			<div class="container">
-				<div class="row">
-				<div class="col-md-3"></div>
-				<div class="login_form_cont">
-					<b><h1 style="color: white;" class="text-center">Update User</h1></b>
-					<div class="form-group">
-						<form id="login_forms" enctype="multipart/form-data" method="post">
-								
-							
-                    	{% for row in data %}
-							<div class="row">
-							<label for="email" class="col-md-12"><h4>Email:</h4></label>
-							<div class="col-md-12">
-								<input type="input" placeholder="Enter your Email" value="{{row['email']}}" disabled  class="form-control mt-3 bg-dark text-white" required id="email" name="email" style="font-size:18pt;height:40px;">
-							</div>
-							</div>
-		
-							<div class="row">
-								<label for="end" class="col-md-12"><h4>Privileged Level</h4></label>
-								<div class="col-md-12">
-									<select name="prv_level" class="form-control mt-2 bg-dark text-white" style="font-size:18pt;height:40px;">
-										<option value="admin" {% if row['privileged_level'] == 'admin' %} selected{% endif %}>Admin</option>
+<body>
+   
+    <div class="container-fluid position-relative d-flex p-0">
+        <!-- Spinner Start -->
+        <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <!-- Spinner End -->
+
+
+        <!-- Sidebar Start -->
+        <div class="sidebar pe-4 pb-3">
+            {% include 'navbar.html'%}
+        </div>
+        <!-- Sidebar End -->
+
+
+         <!-- Content Start -->
+         <div class="content">
+            <!-- Navbar Start -->
+            {% include 'upper_navbar.html'%}
+            <!-- Navbar End -->
+
+            {% include 'notification.html'%}
+
+            <!-- Blank Start -->
+            <div class="container-fluid pt-4 px-4">
+                <div class="row g-4 align-items-center justify-content-center mx-0  mt-5">
+                    <div class="col-sm-12 col-xl-6">
+                        <div class="bg-secondary rounded h-100 p-4">
+                            <h6 class="mb-4">Update</h6>
+                            <form id="download_forms" enctype="multipart/form-data" method="post">
+                                {% for row in data %}
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="input" placeholder="Enter your Email" value="{{row['email']}}"   class="form-control mt-2 bg-dark text-white " disabled required id="email" name="email">
+                                                                
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="prv_level" class="form-label">Privileged Level</label>
+                                    <select name="prv_level" id ="prv_level" class="form-control mt-2 bg-dark text-white" >
+                                        <option value="admin" {% if row['privileged_level'] == 'admin' %} selected {% endif %}>Admin</option>
 										<option value="read_write_user"{% if row['privileged_level'] == 'read_write_user' %} selected{% endif %}>Read & Write User</option>
 										<option value="read_only_user"{% if row['privileged_level'] == 'read_only_user' %} selected{% endif %}>Read Only User</option>
-										
-									</select>
-								</div>
-							</div>
-						{% endfor %}
-		
-		
-							<div class="row">
-							<div class="col-md-12">
-								<input type="submit"  value="Update User" id="save" class = "col-md-12 btn-success btn-lg mt-5" />
-							</div>
-							</div>
+                                    </select>
+                                </div>
+                                {%endfor%}
+                                
+                                <div class="mb-3">
+                                    <input type="submit" value="Update User" id="save" class="btn btn-outline-primary w-100 m-2">
+                                </div>
+                                <div class="mb-3">
+                                    <input id="cancelButton"  onclick="location.reload();" class = "btn btn-dark w-100 m-2" type="button" value="Cancel">
+                                </div>
+                            </form>
+                        </div>
+                    </div>                
+            </div>
 
-							<div class="row">
-								<div class="col-md-12">
-									<input id="cancelButton"  onclick="location.reload();" class = "col-md-12 btn-secondary btn-lg mt-5" type="button" value="Cancel">
-								</div>
-							</div>
-				
-					
-						
-							
-						
-		
-					</form>
-					</div>
-		
-			
-			</div>
-		</div>
-		
-		</div>
-		 </div>   
-	</div>
-</div>
+            
+            </div>
+            <!-- Blank End -->
+
+
+            <!-- Footer Start -->
+            {% include 'footer.html'%}
+            <!-- Footer End -->
+        </div>
+        <!-- Content End -->
+
+
+        <!-- Back to Top -->
+         
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="static/lib/chart/chart.min.js"></script>
+    <script src="static/lib/easing/easing.min.js"></script>
+    <script src="static/lib/waypoints/waypoints.min.js"></script>
+    <script src="static/lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="static/lib/tempusdominus/js/moment.min.js"></script>
+    <script src="static/lib/tempusdominus/js/moment-timezone.min.js"></script>
+    <script src="static/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="static/js/main.js"></script>
 </body>
-{% include 'footer.html'%}
+
 </html>
