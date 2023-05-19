@@ -1,0 +1,34 @@
+{% if flash_message == True %}
+{%if message_flag == 'error'%}
+
+    <div class="alert alert-primary alert-dismissible fade show col-md-4" id="alert" role="alert" style="width:50%; margin:0 auto;" >
+        <i class="fa fa-exclamation-circle me-2"></i>{{message_toast}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    
+
+
+{%else%}
+
+    
+    
+
+
+    
+    <div class="alert alert-success alert-dismissible fade show col-md-4 " id="alert" role="alert" style="width:50%; margin:0 auto;">
+        <i class="fa fa-exclamation-circle me-2"></i>{{message_toast}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    
+
+{% endif %}
+
+{% endif %}
+
+
+<script>
+
+setTimeout(function(){
+  $('#alert').remove();
+}, 3000);
+</script>

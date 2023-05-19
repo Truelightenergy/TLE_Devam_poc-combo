@@ -61,8 +61,10 @@ class Auths:
         """
         try:
             query = f"UPDATE trueprice.users SET password = '{new_password}' WHERE email = '{email}';"
-            self.engine.execute(query)
-            return True
+            result = self.engine.execute(query)
+            if result.rowcount > 0:
+                return True
+            return False
         except:
             return False
           
@@ -206,8 +208,10 @@ class Auths:
         """
         try:
             query = f"UPDATE trueprice.users SET status = '{status}' WHERE id={user_id};"
-            self.engine.execute(query)
-            return True
+            result = self.engine.execute(query)
+            if result.rowcount > 0:
+                return True
+            return False
         except:
             return False
         
@@ -218,8 +222,10 @@ class Auths:
 
         try:
             query = f"UPDATE trueprice.users SET status = '{status}'  WHERE email='{user_email}';"
-            self.engine.execute(query)
-            return True
+            result = self.engine.execute(query)
+            if result.rowcount > 0:
+                return True
+            return False
         except:
             return False
         
@@ -230,8 +236,10 @@ class Auths:
         """
         try:
             query = f"UPDATE trueprice.users SET privileged_level = '{prv_level}' WHERE id={user_id};"
-            self.engine.execute(query)
-            return True
+            result = self.engine.execute(query)
+            if result.rowcount > 0:
+                return True
+            return False
         except:
             return False
         
@@ -241,8 +249,10 @@ class Auths:
         """
         try:
             query = f"UPDATE trueprice.users SET privileged_level = '{prv_level}' WHERE email='{user_email}';"
-            self.engine.execute(query)
-            return True
+            result = self.engine.execute(query)
+            if result.rowcount > 0:
+                return True
+            return False
         except:
             return False
 
@@ -262,8 +272,10 @@ class Auths:
             query = f"UPDATE trueprice.users SET password = '{hashed_new_salted_password}' WHERE email='{email}' and password ='{hashed_old_salted_password}';"
 
             
-            self.engine.execute(query)
-            return True
+            result = self.engine.execute(query)
+            if result.rowcount > 0:
+                return True
+            return False
         except:
             return False
 
@@ -343,8 +355,10 @@ class Auths:
 
         try:
             query = f"UPDATE trueprice.site SET api_status = '{status}'  WHERE admin='tle_admin';"
-            self.engine.execute(query)
-            return True
+            result = self.engine.execute(query)
+            if result.rowcount > 0:
+                return True
+            return False
         except:
             return False
         
@@ -357,8 +371,10 @@ class Auths:
 
         try:
             query = f"UPDATE trueprice.site SET ui_status = '{status}'  WHERE admin='tle_admin';"
-            self.engine.execute(query)
-            return True
+            result = self.engine.execute(query)
+            if result.rowcount > 0:
+                return True
+            return False
         except:
             return False
         

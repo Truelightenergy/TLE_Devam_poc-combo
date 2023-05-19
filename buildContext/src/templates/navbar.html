@@ -1,130 +1,39 @@
-<nav class="side-bar">
-    <div style = "margin-bottom: 20px;"></div>
 
-    <a class = "u-name-larger" href="{{ url_for('index') }}">
-        <b>TRUEPrice</b>        
+
+<nav class="navbar bg-secondary navbar-dark">
+    <a href="{{ url_for('index') }}" class="navbar-brand mx-4 mb-3">
+        <h3 class="text-primary"><i class="fa fa-bolt me-2"></i>TRUEPrice</h3>
     </a>
     
-    <a class = "u-name" href="{{ url_for('index') }}">
-        <b>TLE</b>
-    </a>
-    
-    <ul>
-        <li>
-            <a href="{{ url_for('index') }}">
-                <i class="fa fa-home" aria-hidden="true"></i>
-                <span>Home</span>
-            </a>
-        </li>
-   <!-- -------- -->
-        <li>
-            <a href="{{ url_for('update_password') }}">
-                <i class="fa fa-key" aria-hidden="true"></i>
-                <span>Password</span>
-            </a>
-        </li>
-
-    {%if session["level"]=="admin" or session["level"]=="read_write_user"%} 
-            <li data-toggle="collapse" data-target="#uploads" class=" nav-item collapsed active">
-            <input type="checkbox" id="uploads-toggle" class="nav-toggle">
-            
-            <label for="uploads-toggle" class="nav-label"><i class="fa fa-upload"></i> Uploads <span class="arrow"></span>
-            </label>
-           
-            <!-- <a href="#" ><i class="fa fa-user"></i"> Users <span class="arrow"></span></a> -->
-        </li>
-            <ul class="nav-submenu sub-menu collapse custom-margins" id="uploads">
-                <li>
-                    <a href="{{ url_for('upload_csv')}}">
-                        <i class="fa fa-file-text-o" aria-hidden="true"></i>
-                        <span>CSV</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#">
-                        <i class="fa fa-file-archive-o" aria-hidden="true"></i>
-                        <span>Zip (todo)</span>
-                    </a>
-                </li>
-            </ul>
-
-
-
-
-    {%endif%}	
-
-        <li>
-            <a href="{{ url_for('upload_status')}}">
-                <i class="fa fa-refresh" aria-hidden="true"></i>
-                <span>Recent Uploads</span>
-            </a>
-        </li>
-
-        <li>
-            <a href="{{ url_for('download_data')}}">
-                <i class="fa fa-download" aria-hidden="true"></i>
-                <span>Downloads</span>
-            </a>
-        </li>
-        {%if session["level"]=="admin"%} 
-        <li>
-            <a href="{{ url_for('get_logs')}}">
-                <i class="fa fa-clock-o" aria-hidden="true"></i>
-                <span>Logs</span>
-            </a>
-        </li>
-
-        <li>
-            <a href="{{ url_for('site_control')}}">
-                <i class="fa  fa-cog" aria-hidden="true"></i>
-                <span>Site</span>
-            </a>
-        </li>
-        
-
-        
-        <li data-toggle="collapse" data-target="#users" class=" nav-item collapsed active">
-            <input type="checkbox" id="users-toggle" class="nav-toggle">
-            
-            <label for="users-toggle" class="nav-label"><i class="fa fa-user"></i> Users <span class="arrow"></span>
-            </label>
-           
-            <!-- <a href="#" ><i class="fa fa-user"></i"> Users <span class="arrow"></span></a> -->
-        </li>
-            <ul class="nav-submenu sub-menu collapse custom-margins" id="users">
-              <li>
-                <a href="{{ url_for('create_user')}}"> 
-                  <i class="fa fa-plus" aria-hidden="true"></i>
-                  <span>Create User</span>
-                </a>
-              </li>
-              <li>
-                <a href="{{ url_for('view_user')}}">
-                  <i class="fa fa-eye" aria-hidden="true"></i>
-                  <span>View User</span>    
-                </a>
-              </li>
-            </ul>
-
+    <div class="navbar-nav w-100">
+        <a href="{{ url_for('index') }}" class="nav-item nav-link {% if request.path == '/home' %}active{% endif %}"><i class="fa fa-home me-2"></i>Home</a>
+        <a href="{{ url_for('update_password')}}" class="nav-item nav-link {% if request.path == '/update_password' %}active{% endif %} "><i class="fa fa-key me-2"></i>Password</a>
+        {%if session["level"]=="admin" or session["level"]=="read_write_user"%} 
+            <div class="nav-item dropdown">
+                <a href="#" class="nav-link dropdown-toggle {% if request.path == '/upload_csv' %}active{% endif %}" data-bs-toggle="dropdown"><i class="fa fa-upload me-2"></i>Uploads</a>
+                <div class="dropdown-menu bg-transparent border-0">
+                    <a href="{{ url_for('upload_csv')}}" class="dropdown-item"><i class="fa fa-file me-2"></i>CSV</a>
+                    <a href="#" class="dropdown-item disabled"><i class="fa fa-archive me-2"></i>ZIP</a>
+                </div>
+            </div>
         {%endif%}
 
-        <li>
-            <a href="{{ url_for('logout')}}">
-                <i class="fa fa-power-off" aria-hidden="true"></i>
-                <span>Logout</span>
-            </a>
-        </li>
-                
-          
-    </ul>
+
+        <a href="{{ url_for('upload_status')}}" class="nav-item nav-link {% if request.path == '/upload_status' %}active{% endif %}"><i class="fa fa-clipboard me-2"></i>Recent Uploads</a>
+        <a href="{{ url_for('download_data')}}" class="nav-item nav-link {% if request.path == '/download_data' %}active{% endif %}"><i class="fa fa-download me-2"></i>Downloads</a>
+        {%if session["level"]=="admin"%} 
+            <a href="{{ url_for('get_logs')}}" class="nav-item nav-link {% if request.path == '/get_logs' %}active{% endif %} "><i class="fa fa-clock me-2"></i>Logs</a>
+            <a href="{{ url_for('site_control')}}" class="nav-item nav-link {% if request.path == '/site_control' %}active{% endif %}"><i class="fa fa-cog me-2"></i>Site</a>
+            <div class="nav-item dropdown">
+                <a href="#" class="nav-link dropdown-toggle {% if request.path == '/create_user' or request.path == '/view_user' %}active{% endif %}" data-bs-toggle="dropdown"><i class="far fa-user me-2"></i>User</a>
+                <div class="dropdown-menu bg-transparent border-0">
+                    <a href="{{ url_for('create_user')}}" class="dropdown-item"><i class="fa fa-plus me-2"></i>Create</a>
+                    <a href="{{ url_for('view_user')}}" class="dropdown-item"><i class="fa fa-eye me-2"></i>View</a>
+                    
+                    
+                </div>
+            </div>
+        {%endif%}
+        <a href="{{ url_for('logout')}}" class="nav-item nav-link"><i class="fa fa-power-off me-2"></i>Log Out</a>
+    </div>
 </nav>
-
-
-<link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-<script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-<!-- <script src="//code.jquery.com/jquery-1.11.1.min.js"></script> -->
-
-
-
-
-
