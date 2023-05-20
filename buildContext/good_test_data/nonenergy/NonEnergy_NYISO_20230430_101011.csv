@@ -9,9 +9,9 @@ Cost Group,Ancillaries,Ancillaries,Ancillaries,Ancillaries,Ancillaries,Ancillari
 Cost Component,Reserve,Regulation,NYISO Cost of Ops,Uplift,VSS/Black Start,NTAC,FERC Fee Recovery,ROS,LHV,NYC
 ,,,,,,,,,,
 Date,Reserve,Regulation,NYISO Cost of Ops,Uplift,VSS/Black Start,NTAC,FERC Fee Recovery,ROS,LHV,NYC
-1/1/2010,0.919,0.444,0.7136,0.73,0.44,0.73,0,#N/A,#N/A,#N/A
+1/1/2010,110,0.444,0.7136,0.73,0.44,0.73,0,#N/A,#N/A,#N/A
 2/1/2010,0.17,0.37,0.7136,1.21,0.44,0.8,0,#N/A,#N/A,#N/A
-3/1/2010,0.26,0.4,0.7136,0.81,0.44,0.91,0,#N/A,#N/A,#N/A
+3/1/2010,0.26,110,0.7136,0.81,0.44,0.91,0,#N/A,#N/A,#N/A
 4/1/2010,0.29,0.32,0.7136,0.62,0.44,1.22,0,#N/A,#N/A,#N/A
 5/1/2010,0.32,0.3,0.7136,0.32,0.44,0.98,0,#N/A,#N/A,#N/A
 6/1/2010,0.14,0.31,0.7136,2.37,0.44,1.48,0,#N/A,#N/A,#N/A

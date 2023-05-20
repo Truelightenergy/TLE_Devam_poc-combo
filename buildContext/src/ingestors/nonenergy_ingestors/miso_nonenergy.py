@@ -86,55 +86,46 @@ class Miso_NonEnergy:
                 with self.engine.connect() as con:
                     curveend = data.curveStart # the new data ends the old data
                     backup_query = f'''
-                        with current as (
-                            -- get the current rows in the database, all of them, not just things that will change
 
-                            select id, month, curvestart, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component 
-                            from trueprice.{data.controlArea}_nonenergy where curvestart>='{sod}' and curvestart<='{eod}'
-                        ),
-                        backup as (
-                            -- take current rows and insert into database but with a new "curveend" timestamp
+                    
+                        -- insertion to the database in history table
+                            with current as (
+                                -- get the current rows in the database, all of them, not just things that will change
 
-                            insert into trueprice.{data.controlArea}_nonenergy_history (id, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component)
+                                select id, month, curvestart, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component 
+                                from trueprice.{data.controlArea}_nonenergy where curvestart>='{sod}' and curvestart<='{eod}'
+                            ),
+                            backup as (
+                                -- take current rows and insert into database but with a new "curveend" timestamp
 
-                            select id, month, curvestart, '{curveend}' as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component
-                            from current
-                        ),
-                        single as (
-                            select curvestart from current limit 1
-                        )
+                                insert into trueprice.{data.controlArea}_nonenergy_history (month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component)
+
+                                select month, curvestart, '{curveend}' as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component
+                                from current
+                            ),
+                            single as (
+                                select curvestart from current limit 1
+                            ),
+                        
+                        
                         -- update the existing "current" with the new "csv"
+                        
+                            deletion as(
+                            DELETE from trueprice.{data.controlArea}_nonenergy
+                            WHERE curvestart = (select curvestart from single)
 
-                        update trueprice.{data.controlArea}_nonenergy set
-                        curvestart = newdata.curveStart, -- this reflects the intra update, should only be the time not the date
-                        month = newdata.month,
-                        data = newdata.data, 
-                        control_area = newdata.control_area,
-                        state = newdata.state,
-                        load_zone = newdata.load_zone,
-                        capacity_zone = newdata.capacity_zone,
-                        utility = newdata.utility,
-                        strip = newdata.strip,
-                        cost_group = newdata.cost_group,
-                        cost_component = newdata.cost_component,
-                        sub_cost_component = newdata.sub_cost_component
+                            ),
 
-                        from 
-                            trueprice.{tmp_table_name} as newdata -- our csv data
-                        where 
-                            trueprice.{data.controlArea}_nonenergy.strip = newdata.strip
-                            and trueprice.{data.controlArea}_nonenergy.month = newdata.month 
-                            and trueprice.{data.controlArea}_nonenergy.control_area = newdata.control_area
-                            and trueprice.{data.controlArea}_nonenergy.state = newdata.state
-                            and trueprice.{data.controlArea}_nonenergy.load_zone = newdata.load_zone 
-                            and trueprice.{data.controlArea}_nonenergy.utility = newdata.utility
-                            and trueprice.{data.controlArea}_nonenergy.cost_group = newdata.cost_group
-                            and trueprice.{data.controlArea}_nonenergy.cost_component = newdata.cost_component
-                            and trueprice.{data.controlArea}_nonenergy.sub_cost_component = newdata.sub_cost_component                            
-                
-                            and trueprice.{data.controlArea}_nonenergy.month = newdata.month 
-                            and trueprice.{data.controlArea}_nonenergy.curvestart=(select curvestart from single)
-                    '''        
+                            updation as (
+                            insert into trueprice.{data.controlArea}_nonenergy (month, curvestart, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component)
+
+                            select month, curvestart, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component
+                                from trueprice.{tmp_table_name}
+                            )
+                        select * from trueprice.{data.controlArea}_nonenergy;
+                   
+                    
+                    '''       
                 
 
                     # finally execute the query
