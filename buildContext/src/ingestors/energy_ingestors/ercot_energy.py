@@ -1,53 +1,60 @@
+
+
+# STATUS
+# need to know which columns make the row unique so we can do the update, we can't use month/strip here because they don't change
+
 """
 Implements the Slowly Changed Dimensions to insert the data into database
 """
-import datetime
-import pandas as pd
-from database_connection import ConnectDatabase
 
-class Ercot_Energy:
+import pandas as pd
+import datetime
+from database_connection import ConnectDatabase
+from .helpers.ercot_energy_helper import ErcotEnergyHelper
+
+class Ercot_energy:
     """
     constructor which will makes the connection to the database
     """
     
     def __init__(self):
         """
-        makes the 
+        makes the connection to the databases
         """
         data_base = ConnectDatabase()
         self.engine = data_base.get_engine()
+        self.herlper = ErcotEnergyHelper()
+
+    #Zone ID,Ancillary,Load Zone,Month,Price,Billing Determinant,,,,
 
     def ingestion(self, data):
-        """
-        Handling Ingestion for energy for iso ercot
-        """
+
+
         try:
-            # WARNING the provided CSV has many empty rows which are not skipped because they are empty strings
-            date_cols = ['Zone']
-            df = pd.read_csv(data.fileName, header=[2], skiprows=(3,3), dtype={
-                'Zone': str, # Bad CSV header (should be curveStart or Month)
-            }, parse_dates=date_cols) # acts as context manager
-            df.dropna(axis=1, how='all', inplace=True)
-            df.rename(columns={df.columns[1]: 'Strip'}, inplace=True)
+            df = pd.read_csv(data.fileName, header=None)
+            df= self.herlper.setup_dataframe(df)
+            if not isinstance(df, pd.DataFrame):
+               return "File Format Not Matched"
+            
 
-            df[df.columns[2:]] = df[df.columns[2:]].replace('[\$,]', '', regex=True).astype(float) # see warning on Float64Dtype, this removes money and converts to float
-
+            df['date'] = pd.to_datetime(df['date'])
+            df['data'] = df['data'].astype(float)
             df.rename(inplace=True, columns={
-                'Zone': 'month', 
-                'Strip': 'strip', 
-                'NORTH ZONE':'north_amount',
-                'HOUSTON ZONE':'houston_amount',
-                'SOUTH ZONE':'south_amount',
-                'WEST ZONE':'west_amount'
+                'block_type' : 'strip', 
+                'date' : 'month'
             })
-        
+
             if "_cob" in data.fileName:
                 df.insert(0, 'cob', 1)
             else:
                 df.insert(0, 'cob', 0)
 
             df["cob"] = df["cob"].astype(bool)
+
             df.insert(0, 'curvestart', data.curveStart) # date on file, not the internal zone/month column
+            # df.insert(0, 'strip', data.strip) # stored as object, don't freak on dtypes
+            
+
 
             # using exists always return true or false versus empty/None
             sod = data.curveStart.strftime('%Y-%m-%d') # drop time, since any update should be new
@@ -88,42 +95,52 @@ class Ercot_Energy:
                 r = df.to_sql(f'{tmp_table_name}', con = self.engine, if_exists = 'replace', chunksize=1000, schema="trueprice", index=False)
                 if r is None:
                     return "Unable to create temp data table for update"
+                            
 
-                # history/update
                 with self.engine.connect() as con:
                     curveend = data.curveStart # the new data ends the old data
                     backup_query = f'''
-                        with current as (
-                            -- get the current rows in the database, all of them, not just things that will change
-                            select id, strip, cob, curvestart, month, north_amount, houston_amount, south_amount, west_amount from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}'
-                        ),
-                        backup as (
-                            -- take current rows and insert into database but with a new "curveend" timestamp
-                            insert into trueprice.{data.controlArea}_energy_history (id, strip, cob, curvestart, curveend, month, north_amount, houston_amount, south_amount, west_amount)
-                            select id, strip, cob, curvestart, '{curveend}' as curveend, month, north_amount, houston_amount, south_amount, west_amount
-                            from current
-                        ),
-                        single as (
-                            select curvestart from current limit 1 -- small temp table to get this data further down
-                        )
+
+                    
+                        -- insertion to the database in history table
+                            with current as (
+                                -- get the current rows in the database, all of them, not just things that will change
+
+                                select id, cob, month, curvestart, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component 
+                                from trueprice.{data.controlArea}_energy where curvestart>='{sod}' and curvestart<='{eod}'
+                            ),
+                            backup as (
+                                -- take current rows and insert into database but with a new "curveend" timestamp
+
+                                insert into trueprice.{data.controlArea}_energy_history ( cob, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component)
+
+                                select  cob, month, curvestart, '{curveend}' as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component
+                                from current
+                            ),
+                            single as (
+                                select curvestart from current limit 1
+                            ),
+                        
+                        
                         -- update the existing "current" with the new "csv"
-                        --north_amount, houston_amount, south_amount, west_amount
-                        update trueprice.{data.controlArea}_energy set
-                        strip = newdata.strip,
-                        cob = newdata.cob,
-                        month = newdata.month,
-                        curvestart = newdata.curveStart, -- this reflects the intra update
-                        north_amount = newdata.north_amount, -- mindless update all cols, we don't know which ones updated so try them all
-                        houston_amount = newdata.houston_amount,
-                        south_amount = newdata.south_amount,
-                        west_amount = newdata.west_amount
-                        from 
-                            trueprice.{tmp_table_name} as newdata -- our csv data
-                        where 
-                            trueprice.{data.controlArea}_energy.strip = newdata.strip 
-                            and trueprice.{data.controlArea}_energy.month = newdata.month 
-                            and trueprice.{data.controlArea}_energy.curvestart=(select curvestart from single)
-                    '''                
+                        
+                            deletion as(
+                            DELETE from trueprice.{data.controlArea}_energy
+                            WHERE curvestart = (select curvestart from single)
+
+                            ),
+
+                            updation as (
+                            insert into trueprice.{data.controlArea}_energy ( cob, month, curvestart, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component)
+
+                            select  cob, month, curvestart, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component
+                                from trueprice.{tmp_table_name}
+                            )
+                        select * from trueprice.{data.controlArea}_energy;
+                   
+                    
+                    '''          
+                
 
                     # finally execute the query
                     r = con.execute(backup_query)            
@@ -134,4 +151,4 @@ class Ercot_Energy:
         except:
             import traceback, sys
             print(traceback.format_exc())
-            return traceback.format_exc()
+            return "Failure in Ingestion"

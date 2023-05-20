@@ -3,11 +3,11 @@ Implements the Slowly Changed Dimensions to insert the data into database
 """
 
 import pandas as pd
-from .energy_ingestors.isone_energy import Isone_Energy
-from .energy_ingestors.ercot_energy import Ercot_Energy
-from .energy_ingestors.pjm_energy import Pjm_Energy
-from .energy_ingestors.miso_energy import Miso_Energy
-from .energy_ingestors.nyiso_energy import Nyiso_Energy
+from .energy_ingestors.isone_energy import Isone_energy
+from .energy_ingestors.ercot_energy import Ercot_energy
+from .energy_ingestors.pjm_energy import Pjm_energy
+from .energy_ingestors.miso_energy import Miso_energy
+from .energy_ingestors.nyiso_energy import Nyiso_energy
 
 class Energy:
     """
@@ -18,11 +18,11 @@ class Energy:
         """
         makes the 
         """
-        self.isone_ingestor = Isone_Energy()
-        self.ercot_ingestor = Ercot_Energy()
-        self.pjm_ingestor = Pjm_Energy()
-        self.miso_ingestor = Miso_Energy()
-        self.nyiso_ingestor = Nyiso_Energy()
+        self.isone_ingestor = Isone_energy()
+        self.ercot_ingestor = Ercot_energy()
+        self.pjm_ingestor = Pjm_energy()
+        self.miso_ingestor = Miso_energy()
+        self.nyiso_ingestor = Nyiso_energy()
 
     def ingestion(self, data):
         """
