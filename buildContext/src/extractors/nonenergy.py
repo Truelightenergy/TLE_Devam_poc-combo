@@ -19,6 +19,8 @@ class NonEnergy:
         data_base = ConnectDatabase()
         self.engine = data_base.get_engine()
 
+
+
     def extraction(self, query_strings):
         """
         Handling extraction for ancillarydata

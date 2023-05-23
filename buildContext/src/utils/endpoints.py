@@ -406,18 +406,18 @@ class Util:
         """
         extracts the dataset from the database based on the characteristics
         """
-        data_frame, status = self.extractor.get_custom_data(query_strings)
+        data_frame, status = self.extractor.get_custom_data(query_strings, query_strings["type"])
         file_name = f'{query_strings["curve_type"]}_{query_strings["iso"]}_{"_".join(query_strings["strip"])}_{query_strings["start"]}_{query_strings["end"]}'
         if status == "success":
             if query_strings["type"]=="csv":
                 resp = Response(
-                    data_frame.to_csv(index=False),
+                    data_frame.to_csv(),
                     mimetype="text/csv",
                     headers={"Content-disposition":
                     "attachment; filename="+file_name+".csv"}), status
             
             elif query_strings["type"]=="json":
-                resp = Response(data_frame.to_json(orient="records"), 
+                resp = Response(data_frame.to_json(orient='records'), 
                     mimetype='application/json',
                     headers={'Content-Disposition':'attachment;filename='+file_name+'.json'}), status
             

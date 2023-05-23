@@ -19,6 +19,7 @@ class Energy:
         data_base = ConnectDatabase()
         self.engine = data_base.get_engine()
 
+
     def extraction(self, query_strings):
         """
         Handling extraction for ancillarydata
@@ -89,6 +90,8 @@ class Energy:
                 
             data_frame = None
             data_frame = pd.read_sql_query(sql=psql_query, con=self.engine.connect())
+            
+            
             return data_frame, "success"  
             
 

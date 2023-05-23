@@ -18,6 +18,7 @@ class Rec:
         """
         data_base = ConnectDatabase()
         self.engine = data_base.get_engine()
+    
 
     def extraction(self, query_strings):
         """
