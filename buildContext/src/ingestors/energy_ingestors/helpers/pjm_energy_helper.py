@@ -14,36 +14,12 @@ class PjmEnergyHelper:
         rename the columns accordingly
         """
 
-        df.columns =  df.iloc[0].astype(str) +'_'+ df.iloc[1].astype(str)
-        df.columns = df.columns.str.lower()
-        df = df.drop([df.index[0], df.index[1]])
+        df.columns =  df.iloc[0].astype(str)
+        df = df.drop([df.index[0]])
         df.reset_index(inplace=True, drop=True)
-
+        
         df.rename(inplace=True, columns={
-            df.columns[0]: 'Date',
-            df.columns[1]:'aeco_amount',
-            df.columns[2]:'aep_amount',
-            df.columns[3]:'aps_amount', 
-            df.columns[4]:'atsi_amount', 
-            df.columns[5]:'bge_amount', 
-            df.columns[6]:'comed_amount', 
-            df.columns[7]:'day_amount', 
-            df.columns[8]:'deok_amount', 
-            df.columns[9]:'dom_amount', 
-            df.columns[10]:'dpl_amount', 
-            df.columns[11]:'duq_amount', 
-            df.columns[12]:'jcpl_amount', 
-            df.columns[13]:'meted_amount', 
-            df.columns[14]:'peco_amount', 
-            df.columns[15]:'penelec_amount', 
-            df.columns[16]:'pepco_amount', 
-            df.columns[17]:'ppl_amount', 
-            df.columns[18]:'pseg_amount', 
-            df.columns[19]:'reco_amount', 
-            df.columns[20]:'west_amount', 
-            df.columns[21]:'ad_amount', 
-            df.columns[22]:'ni_amount', 
-            df.columns[23]:'east_amount'
+                df.columns[0]: 'Date'
             })
     
         return df

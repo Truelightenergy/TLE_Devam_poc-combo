@@ -405,5 +405,24 @@ class Auths:
             return flag
         except:
             return False
+        
+    def get_user_current_role(self, email):
+        """
+        on the basis of email it returns  back the user role
+        """
+
+        try:
+            query = f"select * from trueprice.users where email='{email}';"
+            results = self.engine.execute(query).fetchall()
+            role = None
+            for row in results:
+                role = row['privileged_level']
+                break
+            return role
+        
+        except:
+            return None
+
+        
 
 

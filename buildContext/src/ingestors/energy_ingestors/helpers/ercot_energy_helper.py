@@ -14,12 +14,12 @@ class ErcotEnergyHelper:
         rename the columns accordingly
         """
 
+        df.columns =  df.iloc[0].astype(str)
+        df = df.drop([df.index[0]])
+        df.reset_index(inplace=True, drop=True)
+        
         df.rename(inplace=True, columns={
-            df.columns[0]: 'Date', 
-            df.columns[1]:'north_amount',
-            df.columns[2]:'houston_amount',
-            df.columns[3]:'south_amount',
-            df.columns[4]:'west_amount'
+                df.columns[0]: 'Date'
             })
     
         return df
@@ -33,8 +33,6 @@ class ErcotEnergyHelper:
             df_data = df.iloc[10:]
             df_data = df_data.dropna(axis = 1, how = 'all')
             df_data = df_data.dropna(axis = 0, how = 'all')
-            df_data.reset_index(inplace=True, drop=True)
-            df_data = df_data.drop([df.index[0], df.index[1]])
             df_data.reset_index(inplace=True, drop=True)
             df_data = self.renaming_columns(df_data)
             

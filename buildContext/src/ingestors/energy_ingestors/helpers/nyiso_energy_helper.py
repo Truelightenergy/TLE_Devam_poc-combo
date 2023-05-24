@@ -14,25 +14,13 @@ class NyisoEnergyHelper:
         rename the columns accordingly
         """
 
-        df.columns =  df.iloc[0].astype(str) +'_'+ df.iloc[1].astype(str)
-        df.columns = df.columns.str.lower()
-        df = df.drop([df.index[0], df.index[1]])
+        df.columns =  df.iloc[0].astype(str)
+        df = df.drop([df.index[0]])
         df.reset_index(inplace=True, drop=True)
         
         df.rename(inplace=True, columns={
-            df.columns[0]: 'Date',
-            df.columns[1]: 'zone_a_amount',
-            df.columns[2]: 'zone_b_amount',
-            df.columns[3]: 'zone_c_amount',
-            df.columns[4]: 'zone_d_amount',
-            df.columns[5]: 'zone_e_amount',
-            df.columns[6]: 'zone_f_amount',
-            df.columns[7]: 'zone_g_amount',
-            df.columns[8]: 'zone_h_amount',
-            df.columns[9]: 'zone_i_amount',
-            df.columns[10]: 'zone_j_amount',
-            df.columns[11]: 'zone_k_amount'
-                })
+                df.columns[0]: 'Date'
+            })
     
         return df
 

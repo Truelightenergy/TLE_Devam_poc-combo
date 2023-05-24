@@ -14,18 +14,13 @@ class MisoEnergyHelper:
         rename the columns accordingly
         """
 
-        df.columns =  df.iloc[0].astype(str) +'_'+ df.iloc[1].astype(str)
-        df.columns = df.columns.str.lower()
-        df = df.drop([df.index[0], df.index[1]])
+        df.columns =  df.iloc[0].astype(str)
+        df = df.drop([df.index[0]])
         df.reset_index(inplace=True, drop=True)
-
+        
         df.rename(inplace=True, columns={
-            df.columns[0]: 'Date',
-            df.columns[1]: 'amilcips_amount',
-            df.columns[2]: 'amilcilco_amount',
-            df.columns[3]: 'amilip_amount',
-            df.columns[4]: 'indy_amount'
-        })
+                df.columns[0]: 'Date'
+            })
     
         return df
 
