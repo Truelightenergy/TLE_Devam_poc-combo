@@ -4,6 +4,43 @@ System resides in AWS us-east-2 region. Consists of 1 EC2 instance ()
 
 ## Production Database
 * Postgres 15
+* db truprice `postgres=> \c trueprice`
+* schema trueprice
+* tables
+```
+trueprice=> \dt+ trueprice.*
+                                               List of relations
+  Schema   |          Name           | Type  | Owner  | Persistence | Access method |    Size    | Description 
+-----------+-------------------------+-------+--------+-------------+---------------+------------+-------------
+ trueprice | ercot_energy            | table | docker | permanent   | heap          | 256 kB     | 
+ trueprice | ercot_energy_history    | table | docker | permanent   | heap          | 136 kB     | 
+ trueprice | ercot_nonenergy         | table | docker | permanent   | heap          | 0 bytes    | 
+ trueprice | ercot_nonenergy_history | table | docker | permanent   | heap          | 0 bytes    | 
+ trueprice | ercot_rec               | table | docker | permanent   | heap          | 0 bytes    | 
+ trueprice | ercot_rec_history       | table | docker | permanent   | heap          | 0 bytes    | 
+ trueprice | isone_energy            | table | docker | permanent   | heap          | 264 kB     | 
+ trueprice | isone_energy_history    | table | docker | permanent   | heap          | 120 kB     | 
+ trueprice | isone_nonenergy         | table | docker | permanent   | heap          | 0 bytes    | 
+ trueprice | isone_nonenergy_history | table | docker | permanent   | heap          | 0 bytes    | 
+ trueprice | isone_rec               | table | docker | permanent   | heap          | 0 bytes    | 
+ trueprice | isone_rec_history       | table | docker | permanent   | heap          | 0 bytes    | 
+ trueprice | miso_energy             | table | docker | permanent   | heap          | 200 kB     | 
+ trueprice | miso_energy_history     | table | docker | permanent   | heap          | 104 kB     | 
+ trueprice | nyiso_energy            | table | docker | permanent   | heap          | 264 kB     | 
+ trueprice | nyiso_energy_history    | table | docker | permanent   | heap          | 136 kB     | 
+ trueprice | nyiso_rec               | table | docker | permanent   | heap          | 0 bytes    | 
+ trueprice | nyiso_rec_history       | table | docker | permanent   | heap          | 0 bytes    | 
+ trueprice | pjm_energy              | table | docker | permanent   | heap          | 440 kB     | 
+ trueprice | pjm_energy_history      | table | docker | permanent   | heap          | 200 kB     | 
+ trueprice | pjm_nonenergy           | table | docker | permanent   | heap          | 0 bytes    | 
+ trueprice | pjm_nonenergy_history   | table | docker | permanent   | heap          | 0 bytes    | 
+ trueprice | pjm_rec                 | table | docker | permanent   | heap          | 0 bytes    | 
+ trueprice | pjm_rec_history         | table | docker | permanent   | heap          | 0 bytes    | 
+ trueprice | site                    | table | docker | permanent   | heap          | 8192 bytes | 
+ trueprice | uploads                 | table | docker | permanent   | heap          | 16 kB      | 
+ trueprice | users                   | table | docker | permanent   | heap          | 16 kB      | 
+(27 rows)
+```
 * Custom DB Parameter group (ron-reduce-tls-pgcat)
   * `rds.force_ssl` = 0 (allow non SSL)
 * private network access only
