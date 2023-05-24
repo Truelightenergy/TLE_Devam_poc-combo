@@ -14,22 +14,12 @@ class IsoneEnergyHelper:
         rename the columns accordingly
         """
 
-        df.columns =  df.iloc[0].astype(str) +'_'+ df.iloc[1].astype(str)
-        df.columns = df.columns.str.lower()
-        df = df.drop([df.index[0], df.index[1]])
+        df.columns =  df.iloc[0].astype(str)
+        df = df.drop([df.index[0]])
         df.reset_index(inplace=True, drop=True)
         
         df.rename(inplace=True, columns={
-                df.columns[0]: 'Date',
-                df.columns[1]:'maine_amount',
-                df.columns[2]: 'newhampshire_amount',
-                df.columns[3]:'vermont_amount',
-                df.columns[4]:'connecticut_amount', 
-                df.columns[5]:'rhodeisland_amount', 
-                df.columns[6]:'semass_amount', 
-                df.columns[7]:'wcmass_amount', 
-                df.columns[8]:'nemassbost_amount', 
-                df.columns[9]:'mass_amount'
+                df.columns[0]: 'Date'
             })
     
         return df
