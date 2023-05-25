@@ -22,6 +22,14 @@ class IsoneRecHelper:
         df.columns[0]: 'Date'
         })
     
+        columns = df.columns.tolist()
+
+        # Rename the columns separately
+        columns[33] = 'class_i_thermal_prct'
+        columns[34] = 'class_i_thermal_price'
+
+        # Update the dataframe with the modified column names
+        df.columns = columns
         return df
 
     def setup_dataframe(self, data_frame):

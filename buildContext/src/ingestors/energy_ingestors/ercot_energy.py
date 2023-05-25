@@ -74,6 +74,7 @@ class Ercot_energy:
             """
             r = pd.read_sql(check_query, self.engine)
             same, old_exists, new_exists, cob_exists = r.exists[0], r.exists[1], r.exists[2], r.exists[3]
+            
 
             if same: # if data already exists neglect it
                 return "Insert aborted, data already exists based on timestamp and strip"

@@ -44,46 +44,46 @@ class Energy:
             
             elif control_area == "isone":
                 psql_query = f"""
-                    select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
+                    select id, cob,  month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
                     where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                     UNION
-                    select id, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy_history
+                    select id, cob, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy_history
                     where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                     order by curvestart desc,strip;
                 """
             elif control_area == "pjm":
                 psql_query = f"""
-                    select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
+                    select id, cob, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
                     where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                     UNION
-                    select id, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy_history
+                    select id, cob, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy_history
                     where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                     order by curvestart desc,strip;
                 """
             elif control_area == "ercot":
                 psql_query = f"""
-                    select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
+                    select id, cob, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
                     where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                     UNION
-                    select id, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy_history
+                    select id, cob, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy_history
                     where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                     order by curvestart desc,strip;
                 """
             elif control_area == "nyiso":
                 psql_query = f"""
-                    select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
+                    select id, cob, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
                     where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                     UNION
-                    select id, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy_history
+                    select id, cob, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy_history
                     where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                     order by curvestart desc,strip;
                 """
             elif control_area == "miso":
                 psql_query = f"""
-                    select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
+                    select id, cob, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
                     where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                     UNION
-                    select id, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy_history
+                    select id, cob, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy_history
                     where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                     order by curvestart desc,strip;
                 """
