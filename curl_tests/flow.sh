@@ -9,6 +9,7 @@ curl -v -X POST -H "Content-Type: multipart/form-data" -F "file=@buildContext/go
 
 #download data
 curl -sw "%{http_code}" "http://127.0.0.1:5555/get_data?start=20230301&end=20280301&iso=ercot&strip=7x8&strip=5x16&strip=2x16&curve_type=energy&type=csv" > api_results.txt -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRfZW1haWwiOiJhbGlAZ21haWwuY29tIiwiY2xpZW50X3Bhc3N3b3JkIjoiZWVlNmFkZTMzMTRjMGRhYWM2ZTgzOTNjN2JmZjk2YTU0ZmQ4ODYzYjhlMmI3NjljZmNiMzIyMTBlMjkwODFiNjdkNzIzYWJmOWUxZmIzN2Y2MTM2ZDc4Y2Q4ZmRhZmY2NWUyMThkNDZhODY1ZTc2ODIyMmNmOGUyMzQ3YmUzZmMiLCJyb2xlIjoiYWRtaW4iLCJleHAiOjE2ODQzNDEwNDh9.FeYl14XxPl4ZyctgkmGUMbg__w3HuaxT17-4BN1GaDk'
+
 # create user
 curl -X POST "http://127.0.0.1:5555/create_user?email=ali.haider@gmail.com&password=1234&prv_level=admin" -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRfZW1haWwiOiJjbGllbnRfZW1haWwiLCJjbGllbnRfcGFzc3dvcmQiOiIzOTkwYzNlOTg5NTY1ZWY4MGJlMzE4MWMyNDFjNzc0ZjhjY2QyZTU4Y2EyNmNmZWM2MThkMDAxMmE2ZWM1Y2FlOGNmZjQ2NGMwOTgyMDk3NTllZDQxY2FiYzJkZjRmZTU4ZDBjZDk0Mzg4NWZiMjVhMjc5NGQ2NTNjM2M4NDA1ZiIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTY4Mjk1MDg1M30.I28m_kcamLQVPYlVqaIaPXlKN7tjw1kGPk-lgmP6HM0'
 
@@ -50,3 +51,8 @@ curl -v -X POST "http://127.0.0.1:5555/enable_api" -H 'Authorization: Bearer eyJ
 
 # logout
 curl -v -X POST http://127.0.0.1:5555/logout -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRfZW1haWwiOiJhbGkuaGFpZGVyQHRlY2hsaWFuY2UuY29tIiwiY2xpZW50X3Bhc3N3b3JkIjoiNTU0ZTVjODRlMGY3YzVhOGU5ZjkzZGFhNzg5ODQ2NmFiMTAxYWNmM2RkOTY4YzliN2Q0OTY1NDQxOGFiZjk3ZDY3MGEwN2M3MDM0OWM4OTVjM2VlYTFkYzhiMDNlYTRiNjViMGJkYjAyNmZkZTdmZTg2ZDRkYjRjYmMyNjkyNWMiLCJyb2xlIjoiYWRtaW4iLCJleHAiOjE2ODM2NDUwODN9.fI4AmQ3G562k-epstIBKG_NGGwQ1Zc2WlPiqlomZO3g'
+
+
+curl -v -X POST -H "Content-Type: multipart/form-data" -F "file=@/home/alee/Documents/truelight/poc-combo/buildContext/good_test_data/nonenergy/NonEnergy_ERCOT_20230419_101010.csv" http://127.0.0.1:5555/upload_csv -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRfZW1haWwiOiJhbGlAdGVjaGxpYW5jZS5jb20iLCJjbGllbnRfcGFzc3dvcmQiOiIzOTkwYzNlOTg5NTY1ZWY4MGJlMzE4MWMyNDFjNzc0ZjhjY2QyZTU4Y2EyNmNmZWM2MThkMDAxMmE2ZWM1Y2FlOGNmZjQ2NGMwOTgyMDk3NTllZDQxY2FiYzJkZjRmZTU4ZDBjZDk0Mzg4NWZiMjVhMjc5NGQ2NTNjM2M4NDA1ZiIsInJvbGUiOiJyZWFkX3dyaXRlX3VzZXIiLCJleHAiOjE2ODUwNjkyODR9.7-KgyfcaOPO_uZUXmGIKM870St4H4Cijr4fEl62J-4U'
+
+curl -sw "%{http_code}" "http://127.0.0.1:5555/get_data?start=20230301&end=20280301&iso=ercot&strip=7x8&strip=5x16&strip=2x16&curve_type=nonenergy&type=csv" > api_results.txt -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRfZW1haWwiOiJhbGlAdGVjaGxpYW5jZS5jb20iLCJjbGllbnRfcGFzc3dvcmQiOiIzOTkwYzNlOTg5NTY1ZWY4MGJlMzE4MWMyNDFjNzc0ZjhjY2QyZTU4Y2EyNmNmZWM2MThkMDAxMmE2ZWM1Y2FlOGNmZjQ2NGMwOTgyMDk3NTllZDQxY2FiYzJkZjRmZTU4ZDBjZDk0Mzg4NWZiMjVhMjc5NGQ2NTNjM2M4NDA1ZiIsInJvbGUiOiJyZWFkX3dyaXRlX3VzZXIiLCJleHAiOjE2ODUwNjkyODR9.7-KgyfcaOPO_uZUXmGIKM870St4H4Cijr4fEl62J-4U'

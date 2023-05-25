@@ -4,7 +4,6 @@ flask_file_upload/
 defaulted_file_upload/
 logs/
 sql_class.md
-lib/
 bin/
 pyvenv.cfg
 curl_tests/*.txt
