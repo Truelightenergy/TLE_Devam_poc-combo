@@ -390,6 +390,10 @@ class Util:
         query_strings["type"] = request.form.get('type')
         start = str(request.form.get('start')).split("-")
         query_strings["start"] = "".join(start)
+        if request.form.get('history'):
+            query_strings['history'] = True
+        else:
+            query_strings['history'] = False
 
         end = str(request.form.get('end')).split("-")
         query_strings["end"] = "".join(end)

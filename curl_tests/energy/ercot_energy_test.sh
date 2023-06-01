@@ -1,13 +1,16 @@
 #!/bin/bash -x
 
-
 export DB_IP=localhost
 export API_IP=127.0.0.1
 export DB_USER=postgres
 export PGPASSWORD=postgres
 
-# curl -d "email=ali.haider@techliance.com&password=admin&submit=Login" --dump-header headers http://$API_IP:5555/login
-# curl -L -b headers http://$API_IP:5555/logout
+
+response=$(curl -d "email=ali.haider@techliance.com&password=admin&submit=Login" -s http://127.0.0.1:5555/login)
+# Extract the authentication token from the response using grep and cut
+token=$(echo "$response" | grep -o '"access_token":"[^"]*' | cut -d '"' -f 4)
+# Print the authentication token
+echo "Authentication token: $token"
 
 # WARNING truncates table
 truncate_energy () {
@@ -25,7 +28,7 @@ psql_check () {
 
 # $1 == "iso"
 api_check () {
-  curl -sw "%{http_code}" "http://$API_IP:5555/get_data?start=20230301&end=20280301&iso=$1&strip=7x8&curve_type=energy&type=csv" > api_results.txt
+  curl -sw "%{http_code}" "http://127.0.0.1:5555/get_data?start=20030301&end=20380301&iso=$1&strip=7x24&strip=7x8&strip=5x16&strip=2x16&curve_type=energy&type=csv&history=false" > api_results.txt -H "Authorization: Bearer $token"
   if [[ $(wc -l api_results.txt | awk '{print $1}') -eq "62" ]]; then
     return 0
   fi
@@ -40,21 +43,16 @@ psql_history_check () {
 
 upload_check () {
   # curl -s -o /dev/null -w "%{http_code}" -H "Content-Type: multipart/form-data" -F "file=@$1" http://$API_IP:5001/upload
-  curl -v -X POST -H "Content-Type: multipart/form-data" -F "file=@$1" http://localhost:5555/upload_csv
+  curl -v -X POST -H "Content-Type: multipart/form-data" -F "file=@$1" http://localhost:5555/upload_csv  -H "Authorization: Bearer $token"
+
 }
 
-# $1 == "iso"
-# api_history_check () {
-#   curl -sw "%{http_code}" "http://$API_IP:5001/get_data?start=20230101&end=20291231&iso=$1&strip=5x16&curve_type=forwardcurve&type=csv" > api_results.txt
-#   if [[ $(wc -l api_results.txt | awk '{print $1}') -eq "62" ]]; then
-#     return 0
-#   fi
-# }
+
 
 truncate_energy "ercot"
 
 # upload 1
-if ! upload_check "buildContext/good_test_data/energy/Energy_ERCOT_20230330_083040.csv"; then
+if ! upload_check "/home/alee/Documents/truelight/poc-combo/buildContext/good_test_data/energy/Energy_ERCOT_20230522_082540.csv"; then
   printf "error upload_check"
 fi
 
@@ -68,7 +66,7 @@ if ! api_check "ercot"; then
   printf "error api_check"
 fi
 
-if ! upload_check "buildContext/good_test_data/energy/Energy_ERCOT_20230330_113740.csv"; then
+if ! upload_check "/home/alee/Documents/truelight/poc-combo/buildContext/good_test_data/energy/Energy_ERCOT_20230522_082541.csv"; then
   printf "error upload_check, intraday update"
 fi
 

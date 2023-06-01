@@ -13,9 +13,9 @@ token=$(echo "$response" | grep -o '"access_token":"[^"]*' | cut -d '"' -f 4)
 echo "Authentication token: $token"
 
 # WARNING truncates table
-truncate_rec () {
-  psql -h $DB_IP -U $DB_USER -c "truncate trueprice.$1_rec;" trueprice
-  psql -h $DB_IP -U $DB_USER -c "truncate trueprice.$1_rec_history;" trueprice
+truncate_nonenergy () {
+  psql -h $DB_IP -U $DB_USER -c "truncate trueprice.$1_nonenergy;" trueprice
+  psql -h $DB_IP -U $DB_USER -c "truncate trueprice.$1_nonenergy_history;" trueprice
 }
 
 # $1 == "iso"
@@ -28,14 +28,14 @@ psql_check () {
 
 # $1 == "iso"
 api_check () {
-  curl -sw "%{http_code}" "http://127.0.0.1:5555/get_data?start=20030301&end=20380301&iso=$1&strip=7x24&strip=7x8&strip=5x16&strip=2x16&curve_type=rec&type=csv&history=false" > api_results.txt -H "Authorization: Bearer $token"
+  curl -sw "%{http_code}" "http://127.0.0.1:5555/get_data?start=20030301&end=20380301&iso=$1&strip=7x24&strip=7x8&strip=5x16&strip=2x16&curve_type=nonenergy&type=csv&history=false" > api_results.txt -H "Authorization: Bearer $token"
   if [[ $(wc -l api_results.txt | awk '{print $1}') -eq "62" ]]; then
     return 0
   fi
 }
 
 psql_history_check () {
-  psql -h $DB_IP -U $DB_USER -c "select * from trueprice.$1_rec_history;" trueprice > psql_results.txt
+  psql -h $DB_IP -U $DB_USER -c "select * from trueprice.$1_nonenergy_history;" trueprice > psql_results.txt
   if [[ $(wc -l psql_results.txt | awk '{print $1}') -eq "65" ]]; then
     return 0
   fi
@@ -49,38 +49,38 @@ upload_check () {
 
 
 
-truncate_rec "nyiso"
+truncate_nonenergy "miso"
 
 # upload 1
-if ! upload_check "/home/alee/Documents/truelight/poc-combo/buildContext/good_test_data/rec/REC_NYISO_20230506_142700.csv"; then
+if ! upload_check "/home/alee/Documents/truelight/poc-combo/buildContext/good_test_data/nonenergy/NonEnergy_MISO_20230430_101010.csv"; then
   printf "error upload_check"
 fi
 
 # check existance via psql
-if ! psql_check "nyiso"; then
+if ! psql_check "miso"; then
   printf "error psql_check"
 fi
 
 # check existance via api
-if ! api_check "nyiso"; then
+if ! api_check "miso"; then
   printf "error api_check"
 fi
 
-if ! upload_check "/home/alee/Documents/truelight/poc-combo/buildContext/good_test_data/rec/REC_NYISO_20230506_142701.csv"; then
+if ! upload_check "/home/alee/Documents/truelight/poc-combo/buildContext/good_test_data/nonenergy/NonEnergy_MISO_20230430_101011.csv"; then
   printf "error upload_check, intraday update"
 fi
 
 # check existance via psql
-if ! psql_check "nyiso"; then
+if ! psql_check "miso"; then
   printf "error psql_check"
 fi
 
 # check existance via api
-if ! api_check "nyiso"; then
+if ! api_check "miso"; then
   printf "error api_check"
 fi
 
 # add history table versus current table
-if ! psql_history_check "nyiso"; then
+if ! psql_history_check "miso"; then
   printf "error api_history_check"
 fi
