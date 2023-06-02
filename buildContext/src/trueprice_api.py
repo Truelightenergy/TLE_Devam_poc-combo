@@ -365,6 +365,10 @@ def get_data():
         setup_session(request.headers['Authorization'].split()[1])
     args = request.args.to_dict()
     args['strip'] = request.args.getlist('strip')
+    if request.args.get('history')=="true":
+        args['history'] = True
+    else:
+        args['history'] = False
     response, status = api_util.extract_data(args)
     if status != "success":
         return status
