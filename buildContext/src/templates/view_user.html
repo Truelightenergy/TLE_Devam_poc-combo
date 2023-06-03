@@ -80,6 +80,7 @@
                             <th><strong>Level</strong></th>
                             <th><strong>Disable/Enable</strong></th>
                             <th><strong>Update</strong></th>
+                            <th><strong>Reset Password</strong></th>
                           </tr>
                           {% if data%}
                           {% for row in data %}
@@ -96,11 +97,13 @@
                               
                               
                               <td><a href = "/update_user_ui?user_id={{ row['id'] }}" class="btn btn-info">Update</a></td> 
+                              <td><a href = "/reset_password_ui?user_id={{ row['id'] }}" class="btn btn-primary">Reset</a></td> 
                               
                               
                               {%else%}
                               <td><a href = "/disable_user_ui?user_id={{ row['id'] }}"  class="btn btn-warning disabled">Disable</a></td>
                               <td><a href = "/update_user_ui?user_id={{ row['id'] }}" class="btn btn-info disabled">Update</a></td> 
+                              <td><a href = "/reset_password_ui?user_id={{ row['id'] }}" class="btn btn-primary disabled">Reset</a></td>
                               
                               {%endif%}
       

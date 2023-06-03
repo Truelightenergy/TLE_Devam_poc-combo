@@ -210,14 +210,14 @@ class Util:
         flag = self.auth_obj.enable_disable_user(user_id, status)
         if flag:
             logging.info(f"{session['user']}: user {status} with User id {user_id}")
-            return {"flash_message": True, "message_toast":f"User {status}", "message_flag":"error"},200
+            return {"flash_message": True, "message_toast":f"User {status}", "message_flag":"success"},200
         else:
             logging.error(f"{session['user']}: user not {status} with User id {user_id}")
             return {"flash_message": True, "message_toast": f"user not {status}", "message_flag":"error"},400
         
     def enable_disable_user_from_api(self, user_email, status):
         """
-        update the user privileged level 
+        enable diable user
         """
 
         flag = self.auth_obj.enable_disable_user_using_email(user_email, status)
@@ -227,6 +227,36 @@ class Util:
         else:
             logging.error(f"{session['user']}: user not {status} with User id {user_email}")
             return {"flash_message": True, "message_toast": f"user not {status}", "message_flag":"error"},400
+        
+
+    def reset_password(self, user_id):
+        """
+        reset user's password of applications
+        """
+        email = self.auth_obj.get_user_email(user_id)
+        flag = self.auth_obj.reset_user_password(user_id, email)
+
+        if flag:
+            logging.info(f"{session['user']}: Password Reset for user {email}")
+            return {"flash_message": True, "message_toast":f"Password Reset", "message_flag":"success"},200
+        else:
+            logging.error(f"{session['user']}: Unable to Reset password for user {email}")
+            return {"flash_message": True, "message_toast": f"Unable to Reset Password", "message_flag":"error"},400
+        
+
+    def reset_password_from_api(self, email):
+        """
+        reset user's password from api
+        """
+
+        flag = self.auth_obj.reset_user_password_for_api(email)
+
+        if flag:
+            logging.info(f"{session['user']}: Password Reset for user {email}")
+            return {"flash_message": True, "message_toast":f"Password Reset", "message_flag":"success"},200
+        else:
+            logging.error(f"{session['user']}: Unable to Reset password for user {email}")
+            return {"flash_message": True, "message_toast": f"Unable to Reset Password", "message_flag":"error"},400
         
 
 

@@ -422,6 +422,61 @@ class Auths:
         
         except:
             return None
+        
+    def get_user_email(self, user_id):
+        """
+        get email of user based on the id
+        """
+
+        try:
+            query = f"select * from trueprice.users where id={user_id};"
+            results = self.engine.execute(query).fetchall()
+            mail = None
+            for row in results:
+                mail = row['email']
+                break
+            return mail
+        
+        except:
+            return None
+        
+    def reset_user_password(self, user_id, password):
+        """
+        reset users password
+        """
+
+        salted_password = self.secret_salt + password 
+        hashed_salted_password = hashlib.sha512(salted_password.encode()).hexdigest()
+
+        try:
+            query = f"UPDATE trueprice.users SET password = '{hashed_salted_password}' WHERE id = {user_id};"
+            result = self.engine.execute(query)
+            if result.rowcount > 0:
+                return True
+            return False
+        except:
+            return False
+        
+    def reset_user_password_for_api(self, email):
+        """
+        reset users password
+        """
+
+        salted_password = self.secret_salt + email 
+        hashed_salted_password = hashlib.sha512(salted_password.encode()).hexdigest()
+
+        try:
+            query = f"UPDATE trueprice.users SET password = '{hashed_salted_password}' WHERE email = '{email}';"
+            result = self.engine.execute(query)
+            if result.rowcount > 0:
+                return True
+            return False
+        except:
+            return False
+
+
+        
+    
 
         
 

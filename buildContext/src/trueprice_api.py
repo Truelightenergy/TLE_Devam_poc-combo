@@ -288,6 +288,55 @@ def update_user_from_api():
     return jsonify(json_obj), status_code
 
 
+
+
+# application endpoint
+@app.route('/reset_password_ui', methods=['GET', 'POST'])
+@roles.admin_token_required
+def reset_password_ui():
+    """
+    reset password of particular user 
+    """
+
+    user_id = request.args.get('user_id')
+    if not user_id:
+        record = auth_obj.get_all_users()
+        return render_template('view_user.html', data=record)
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    
+    if rest_api_condition:
+        if not (request.args.get("user_id")):
+            return jsonify({"error": "Incorrect Params"}), 400
+        setup_session(request.headers['Authorization'].split()[1])
+        json_obj, status_code = api_util.reset_password(user_id)
+        return jsonify(json_obj), status_code
+    else:
+        
+        json_obj, status_code = api_util.reset_password(user_id)
+        record = auth_obj.get_all_users()
+        if status_code==200:
+            return render_template('view_user.html', flash_message=True, message_toast = "Reset Password", message_flag = "success", data = record)                
+        else:
+            return render_template('view_user.html', flash_message=True, message_toast = "Unable to to reset Password", message_flag = "error", data = record)
+                    
+        
+            
+# api endpoint
+@app.route('/reset_password', methods=['GET', 'POST'])
+@roles.admin_token_required
+def reset_password():
+    """
+    disable particular user ADIMN
+    """
+    if not (request.args.get("email")):
+            return jsonify({"error": "Incorrect Params"}), 400
+    email = request.args.get("email")
+    setup_session(request.headers['Authorization'].split()[1])
+    json_obj, status_code = api_util.reset_password_from_api(email)
+    return jsonify(json_obj), status_code
+
+
+
 @app.route('/update_password', methods=['GET', 'POST'])
 @roles.readonly_token_required
 def update_password():
