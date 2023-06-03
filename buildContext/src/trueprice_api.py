@@ -34,6 +34,9 @@ def setup_session(auth_token):
     session["user"] = payload["client_email"]
     session["level"] = payload["role"]
 
+
+
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     """
@@ -44,10 +47,14 @@ def signup():
     
 
     if rest_api_condition:
+        if not (request.args.get("email") and request.args.get("password")):
+            return jsonify({"error": "Incorrect Params"}), 400
         email = request.args.get("email")
         password = request.args.get("password")
         json_obj, status_code = api_util.signup(email, password)
         return jsonify(json_obj), status_code
+        
+            
     else:
         if request.method=="POST":
             email = request.form.get("email")
@@ -109,6 +116,8 @@ def create_user():
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
     if rest_api_condition:
+        if not (request.args.get("email") and request.args.get("password")  and request.args.get("prv_level")):
+            return jsonify({"error": "Incorrect Params"}), 400
         setup_session(request.headers['Authorization'].split()[1])
         prv_level, email, pswd= request.args.get('prv_level'), request.args.get("email"),request.args.get("password")
         json_obj, status_code = api_util.create_user(email, pswd, prv_level)
@@ -160,6 +169,8 @@ def disable_user_ui():
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
     if rest_api_condition:
+        if not (request.args.get("user_id")):
+            return jsonify({"error": "Incorrect Params"}), 400
         setup_session(request.headers['Authorization'].split()[1])
         json_obj, status_code = api_util.enable_disable_user(user_id, "disabled")
         return jsonify(json_obj), status_code
@@ -181,6 +192,8 @@ def disable_user_using_email():
     """
     disable particular user ADIMN
     """
+    if not (request.args.get("email")):
+            return jsonify({"error": "Incorrect Params"}), 400
     email = request.args.get("email")
     setup_session(request.headers['Authorization'].split()[1])
     json_obj, status_code = api_util.enable_disable_user_from_api(email, "disabled")
@@ -203,6 +216,8 @@ def enable_user_ui():
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
     if rest_api_condition:
+        if not (request.args.get("user_id")):
+            return jsonify({"error": "Incorrect Params"}), 400
         setup_session(request.headers['Authorization'].split()[1])
         json_obj, status_code = api_util.enable_disable_user(user_id, "enabled")
         return jsonify(json_obj), status_code
@@ -223,6 +238,8 @@ def enable_user_using_email():
     enable particular user ADIMN
     """
     email = request.args.get("email")
+    if not (request.args.get("email")):
+            return jsonify({"error": "Incorrect Params"}), 400
     setup_session(request.headers['Authorization'].split()[1])
     json_obj, status_code = api_util.enable_disable_user_from_api(email, "enabled")
     return jsonify(json_obj), status_code
@@ -241,6 +258,8 @@ def update_user_ui():
     
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     if rest_api_condition:
+        if not (request.args.get("user_id")):
+            return jsonify({"error": "Incorrect Params"}), 400
         setup_session(request.headers['Authorization'].split()[1])
         json_obj, status_code = api_util.update_user(user_id)
         return jsonify(json_obj), status_code
@@ -278,6 +297,9 @@ def update_password():
     
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     if rest_api_condition:
+        if not (request.args.get("old_password") and request.args.get("password")):
+            return jsonify({"error": "Incorrect Params"}), 400
+        
         setup_session(request.headers['Authorization'].split()[1])
         email, old_pswd, new_pswd = session["user"], request.args.get("old_password"), request.args.get("password")
         print(email, old_pswd, new_pswd)
@@ -375,6 +397,7 @@ def get_data():
     return response
 
 
+
 @app.route('/download_data', methods=['GET','POST'])
 @roles.readonly_token_required
 def download_data():
@@ -395,6 +418,24 @@ def download_data():
                 return response
         else:
             return render_template('download_data.html')
+        
+
+@app.route('/get_options', methods=['POST'])
+@roles.readonly_token_required
+def get_options():
+
+    """
+    makes the current drop down dynamic
+    """
+    curve = request.json['curve']
+    if curve=="energy":
+        option = ["ERCOT", "ISONE", "NYISO","MISO", "PJM"]
+    elif curve == "nonenergy":
+        option = ["ERCOT", "ISONE", "NYISO","MISO", "PJM"]
+    elif curve == "rec":
+        option = ["ERCOT", "ISONE", "NYISO", "PJM"]
+
+    return jsonify(option)
 
 @app.route("/log_stream", methods=['GET','POST'])
 @roles.admin_token_required

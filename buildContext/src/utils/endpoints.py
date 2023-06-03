@@ -252,6 +252,9 @@ class Util:
         update user of applications
         """
         levels = ['read_only_user', 'admin', 'read_write_user']
+        if not (request.args.get("email") and request.args.get("prv_level")):
+            return {"error": "Incorrect Params"}, 400
+        
         email, prv_level = request.args.get('email'), request.args.get('prv_level')
         if prv_level in levels:
             flag = self.auth_obj.update_user_using_email(email, prv_level)
