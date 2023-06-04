@@ -29,7 +29,7 @@ class RolesDecorator:
     def readonly_token_required(self, f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            token = request.headers.get('Authorization', '').split()[1] if 'Authorization' in request.headers else session.get('jwt_token')
+            token = request.headers.get('Authorization', '').split()[-1] if 'Authorization' in request.headers else session.get('jwt_token')
             
             # if token does not exist
             if not token:
@@ -78,7 +78,7 @@ class RolesDecorator:
     def readwrite_token_required(self, f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            token = request.headers.get('Authorization', '').split()[1] if 'Authorization' in request.headers else session.get('jwt_token')
+            token = request.headers.get('Authorization', '').split()[-1] if 'Authorization' in request.headers else session.get('jwt_token')
             # if token does not exist
             if not token:
                 return jsonify({'message': 'Token is missing'}) if 'Authorization' in request.headers else self.login()
@@ -124,7 +124,7 @@ class RolesDecorator:
     def admin_token_required(self, f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            token = request.headers.get('Authorization', '').split()[1] if 'Authorization' in request.headers else session.get('jwt_token')
+            token = request.headers.get('Authorization', '').split()[-1] if 'Authorization' in request.headers else session.get('jwt_token')
              # if token does not exist
             if not token:
                 return jsonify({'message': 'Token is missing'}) if 'Authorization' in request.headers else self.login()

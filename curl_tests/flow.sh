@@ -1,5 +1,5 @@
 # login 
-curl -d "email=ali.haider@techliance.com&password=admin&submit=Login"  http://127.0.0.1:5555/login
+curl -X POST "http://127.0.0.1:5555/login?email=ali.haider@techliance.com&password=admin" -H "accept: application/json"
 
 # signup
 curl -sw "%{http_code}" "http://127.0.0.1:5555/signup?email=ali@gmail.com&password=123"
