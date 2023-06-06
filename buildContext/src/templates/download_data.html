@@ -71,29 +71,32 @@
                         <div class="bg-secondary rounded h-100 p-4">
                             <h6 class="mb-4">Downloads</h6>
                             <form id="download_forms" enctype="multipart/form-data" method="post">
-                                <div class="mb-3">
-                                    <label for="iso" class="form-label">ISO</label>
-                                    <select name="iso" class="form-control mt-2 bg-dark text-white" >
-                                        <option value="ercot">ERCOT</option>
-                                        <option value="isone">ISONE</option>
-                                        <option value="miso">MISO</option>
-                                        <option value="nyiso">NYISO</option>
-                                        <option value="pjm">PJM</option>
-                                    </select>
-                                    
-                                </div>
-
+                                
                                 <div class="mb-3">
                                     <label for="curve_type" class="form-label">Curve</label>
-                                    <select name="curve_type" class="form-control mt-2 bg-dark text-white" >
+                                    <select name="curve_type" id ="curve_type" class="form-control mt-2 bg-dark text-white" >
                                         <option value="energy">Energy</option>
                                         <option value="nonenergy">Non-energy</option>
                                         <option value="rec">Rec</option>
                                     </select>
                                 </div>
+                                
+                                <div class="mb-3">
+                                    <label for="iso" class="form-label">ISO</label>
+                                    <select name="iso" id="iso" class="form-control mt-2 bg-dark text-white" >
+                                        <!-- <option value="ercot">ERCOT</option>
+                                        <option value="isone">ISONE</option>
+                                        <option value="miso">MISO</option>
+                                        <option value="nyiso">NYISO</option>
+                                        <option value="pjm">PJM</option> -->
+                                    </select>
+                                    
+                                </div>
+
+                                
 
                                 <div class="mb-3">
-                                    <label for="curve_type" class="form-label">Strip</label>
+                                    <label for="strip" class="form-label">Strip</label>
                                     <select name="strip" required id="strip" class=" col-md-12 form-control mt-2 bg-dark text-white chosen-select" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3" onchange="console.log(this.selectedOptions)">
                                         <option selected value="strip_5x16">5x16</option>
                                         <option value="strip_7x8">7x8</option>
@@ -201,6 +204,31 @@
         document.getElementById('start').value= start;
         document.getElementById('end').value= end;
       </script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+            $(document).ready(function() {
+                // Define the change event handler for curve type dropdown
+                $('#curve_type').change(function() {
+                    var selectedcurve = $(this).val();
+                    $.ajax({
+                        url: '/get_options',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ 'curve': selectedcurve }),
+                        success: function(response) {
+                            $('#iso').empty();
+                            $.each(response, function(index, value) {
+                                var html = '<option value="' + value.toLowerCase() + '">' + value + '</option>';
+                                $('#iso').append(html);
+                            });
+                        }
+                    });
+                });
+            
+                // Trigger the change event on curve type dropdown to populate ISO dropdown initially
+                $('#curve_type').trigger('change');
+            });
+        </script>
 </body>
 
 </html>

@@ -6,7 +6,8 @@ export DB_USER=postgres
 export PGPASSWORD=postgres
 
 
-response=$(curl -d "email=ali.haider@techliance.com&password=admin&submit=Login" -s http://127.0.0.1:5555/login)
+response=$(curl -X POST "http://127.0.0.1:5555/login?email=ali.haider@techliance.com&password=admin" -H "accept: application/json")
+
 # Extract the authentication token from the response using grep and cut
 token=$(echo "$response" | grep -o '"access_token":"[^"]*' | cut -d '"' -f 4)
 # Print the authentication token

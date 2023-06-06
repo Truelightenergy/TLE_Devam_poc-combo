@@ -5,7 +5,7 @@ from utils.roles import RolesDecorator
 from functools import wraps
 from utils.auths import Auths
 from utils.revoke_tokens import RevokedTokens
-
+from flasgger import Swagger
 
 
 
@@ -23,6 +23,22 @@ app.config['UPLOAD_FOLDER'] = api_util.UPLOAD_FOLDER
 app.config['SESSION_TYPE'] = 'filesystem'
 app.secret_key = 'super secret key' #env variable
 
+template = {
+    "securityDefinitions": {
+        "Bearer":
+            {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header",
+                 'description': "Type in the *'Value'* input box below: **'Bearer &lt;JWT&gt;'**, where JWT is the token"
+            }
+    }
+}
+
+
+
+swagger = Swagger(app, template=template)
+
 
 def setup_session(auth_token):
     """
@@ -34,20 +50,48 @@ def setup_session(auth_token):
     session["user"] = payload["client_email"]
     session["level"] = payload["role"]
 
+
+
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     """
-    signup to the applications
+    Signup to the application.
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - name: email
+        in: query
+        type: string
+        required: true
+        description: Email address
+      - name: password
+        in: query
+        type: string
+        required: true
+        description: Password
+    responses:
+      200:
+        description: Signup successful
+      400:
+        description: Incorrect parameters
+      403:
+        description: Signup failed
     """
     
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
 
     if rest_api_condition:
+        if not (request.args.get("email") and request.args.get("password")):
+            return jsonify({"error": "Incorrect Params"}), 400
         email = request.args.get("email")
         password = request.args.get("password")
         json_obj, status_code = api_util.signup(email, password)
         return jsonify(json_obj), status_code
+        
+            
     else:
         if request.method=="POST":
             email = request.form.get("email")
@@ -64,18 +108,43 @@ def signup():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """
-    login to the applications
+    Login to the application.
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - name: email
+        in: query
+        type: string
+        required: true
+        description: Email address
+      - name: password
+        in: query
+        type: string
+        required: true
+        description: Password
+    responses:
+      200:
+        description: Login successful
+      400:
+        description: Incorrect parameters
+      403:
+        description: Login failed
     """
     
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
 
     if rest_api_condition:
-        json_obj, status_code = api_util.login()
+        email = request.args.get('email')
+        pswd = request.args.get('password')
+        json_obj, status_code = api_util.login(email, pswd)
         return jsonify(json_obj), status_code
     else:
         if request.method=="POST":
-            json_obj, status_code = api_util.login()
+            email = request.form.get('email')
+            pswd = request.form.get('password')
+            json_obj, status_code = api_util.login(email, pswd)
             if status_code==200:
                 return api_util.application_startup()
             else:
@@ -85,15 +154,25 @@ def login():
 
     
 @app.route('/logout', methods=['GET', 'POST'])
-
+@roles.readonly_token_required
 def logout():
     """
-    logout to the applications
+    Logout from the application.
+    ---
+    tags:
+      - Authentication
+    security:
+        - Bearer: []
+    responses:
+      200:
+        description: Logout successful
+      302:
+        description: Redirect to login page
     """
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     if rest_api_condition:
-        setup_session(request.headers['Authorization'].split()[1])
-        revoked_jwt.add(request.headers['Authorization'].split()[1])
+        setup_session(request.headers['Authorization'].split()[-1])
+        revoked_jwt.add(request.headers['Authorization'].split()[-1])
         json_obj, status_code = api_util.logout()
         return jsonify(json_obj), status_code
     else:
@@ -105,11 +184,41 @@ def logout():
 def create_user():
     """
     create users for the applications #ADMIN
+    ---
+    tags:
+      - Users
+    security:
+        - Bearer: []
+    parameters:
+      - name: prv_level
+        in: query
+        type: string
+        required: true
+        description: User's privilege level
+      - name: email
+        in: query
+        type: string
+        required: true
+        description: User's email address
+      - name: password
+        in: query
+        type: string
+        required: true
+        description: User's password
+    responses:
+      200:
+        description: User creation successful
+      400:
+        description: Incorrect parameters provided
+      403:
+        description: Unable to create user
     """
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
     if rest_api_condition:
-        setup_session(request.headers['Authorization'].split()[1])
+        if not (request.args.get("email") and request.args.get("password")  and request.args.get("prv_level")):
+            return jsonify({"error": "Incorrect Params"}), 400
+        setup_session(request.headers['Authorization'].split()[-1])
         prv_level, email, pswd= request.args.get('prv_level'), request.args.get("email"),request.args.get("password")
         json_obj, status_code = api_util.create_user(email, pswd, prv_level)
         return jsonify(json_obj), status_code
@@ -131,11 +240,22 @@ def create_user():
 def view_user():
     """
     view all user of applications #ADMIN
+    ---
+    tags:
+      - Users - View User API
+    security:
+        - Bearer: []
+    responses:
+      200:
+        description: All user
+      302:
+        description: Redirect to login page
+    
     """
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
     if rest_api_condition:
-        setup_session(request.headers['Authorization'].split()[1])
+        setup_session(request.headers['Authorization'].split()[-1])
         return jsonify(auth_obj.get_all_users_data()),200
         
     else:
@@ -150,7 +270,25 @@ def view_user():
 @roles.admin_token_required
 def disable_user_ui():
     """
-    delete particular user ADIMN
+    Disable user from ui side
+    ---
+    tags:
+      - Users - Disable  User UI
+    security:
+        - Bearer: []
+    parameters:
+      - name: user_id
+        in: query
+        type: string
+        required: true
+        description: User ID to disable 
+    responses:
+      200:
+        description: User disabled successfully
+      400:
+        description: Incorrect parameters provided
+      403:
+        description: Unable to disable user
     """
 
     user_id = request.args.get('user_id')
@@ -160,7 +298,9 @@ def disable_user_ui():
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
     if rest_api_condition:
-        setup_session(request.headers['Authorization'].split()[1])
+        if not (request.args.get("user_id")):
+            return jsonify({"error": "Incorrect Params"}), 400
+        setup_session(request.headers['Authorization'].split()[-1])
         json_obj, status_code = api_util.enable_disable_user(user_id, "disabled")
         return jsonify(json_obj), status_code
     else:
@@ -179,10 +319,30 @@ def disable_user_ui():
 @roles.admin_token_required
 def disable_user_using_email():
     """
-    disable particular user ADIMN
+    Disable user from api
+    ---
+    tags:
+      - Users - Disable  User API
+    security:
+        - Bearer: []
+    parameters:
+      - name: email
+        in: query
+        type: string
+        required: true
+        description: User Email to disable 
+    responses:
+      200:
+        description: User disabled successfully
+      400:
+        description: Incorrect parameters provided
+      403:
+        description: Unable to disable user
     """
+    if not (request.args.get("email")):
+            return jsonify({"error": "Incorrect Params"}), 400
     email = request.args.get("email")
-    setup_session(request.headers['Authorization'].split()[1])
+    setup_session(request.headers['Authorization'].split()[-1])
     json_obj, status_code = api_util.enable_disable_user_from_api(email, "disabled")
     return jsonify(json_obj), status_code
 
@@ -193,7 +353,25 @@ def disable_user_using_email():
 @roles.admin_token_required
 def enable_user_ui():
     """
-    disable particular user ADIMN
+    Enable user from ui side
+    ---
+    tags:
+      - Users - Enable User UI
+    security:
+        - Bearer: []
+    parameters:
+      - name: user_id
+        in: query
+        type: string
+        required: true
+        description: User ID to enable 
+    responses:
+      200:
+        description: User enable successfully
+      400:
+        description: Incorrect parameters provided
+      403:
+        description: Unable to enable user
     """
     user_id = request.args.get('user_id')
     if not user_id:
@@ -203,7 +381,9 @@ def enable_user_ui():
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
     if rest_api_condition:
-        setup_session(request.headers['Authorization'].split()[1])
+        if not (request.args.get("user_id")):
+            return jsonify({"error": "Incorrect Params"}), 400
+        setup_session(request.headers['Authorization'].split()[-1])
         json_obj, status_code = api_util.enable_disable_user(user_id, "enabled")
         return jsonify(json_obj), status_code
     else:
@@ -220,10 +400,30 @@ def enable_user_ui():
 @roles.admin_token_required
 def enable_user_using_email():
     """
-    enable particular user ADIMN
+    Enable user from api
+    ---
+    tags:
+      - Users - Enable User API
+    security:
+        - Bearer: []
+    parameters:
+      - name: email
+        in: query
+        type: string
+        required: true
+        description: User Email to enable 
+    responses:
+      200:
+        description: User enable successfully
+      400:
+        description: Incorrect parameters provided
+      403:
+        description: Unable to enable user
     """
     email = request.args.get("email")
-    setup_session(request.headers['Authorization'].split()[1])
+    if not (request.args.get("email")):
+            return jsonify({"error": "Incorrect Params"}), 400
+    setup_session(request.headers['Authorization'].split()[-1])
     json_obj, status_code = api_util.enable_disable_user_from_api(email, "enabled")
     return jsonify(json_obj), status_code
 
@@ -233,6 +433,29 @@ def enable_user_using_email():
 def update_user_ui():
     """
     enable particular user
+    ---
+    tags:
+        - Users - Update User UI
+    security:
+        - Bearer: []
+    parameters:
+      - name: user_id
+        in: query
+        type: string
+        required: true
+        description: User ID to update
+      - name: prv_level
+        in: query
+        type: string
+        required: true
+        description: User's new privilege level
+    responses:
+      200:
+        description: User updated successfully
+      400:
+        description: Incorrect parameters provided
+      403:
+        description: Unable to update user
     """
     user_id = request.args.get('user_id')
     if not user_id:
@@ -241,12 +464,17 @@ def update_user_ui():
     
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     if rest_api_condition:
-        setup_session(request.headers['Authorization'].split()[1])
-        json_obj, status_code = api_util.update_user(user_id)
+        if not (request.args.get("user_id") and request.args.get('prv_level')):
+            return jsonify({"error": "Incorrect Params"}), 400
+        
+        prv_level= request.args.get('prv_level') 
+        setup_session(request.headers['Authorization'].split()[-1])
+        json_obj, status_code = api_util.update_user(user_id, prv_level)
         return jsonify(json_obj), status_code
     else:
         if request.method == 'POST':
-            json_obj, status_code = api_util.update_user(user_id)
+            prv_level= request.form.get('prv_level') 
+            json_obj, status_code = api_util.update_user(user_id, prv_level)
             record = auth_obj.get_all_users()
             if status_code==200:
                 return render_template('view_user.html', flash_message=True, message_toast = "User Updated", message_flag = "success", data = record)                
@@ -261,24 +489,162 @@ def update_user_ui():
 @roles.admin_token_required
 def update_user_from_api():
     """
-    delete particular user
+    enable particular user using api
+    ---
+    tags:
+        - Users - Update User API
+    security:
+        - Bearer: []
+    parameters:
+      - name: email
+        in: query
+        type: string
+        required: true
+        description: User Email to update
+      - name: prv_level
+        in: query
+        type: string
+        required: true
+        description: User's new privilege level
+    responses:
+      200:
+        description: User updated successfully
+      400:
+        description: Incorrect parameters provided
+      403:
+        description: Unable to update user
     """
 
-    setup_session(request.headers['Authorization'].split()[1])
+    setup_session(request.headers['Authorization'].split()[-1])
     json_obj, status_code = api_util.update_user_from_api()
     return jsonify(json_obj), status_code
+
+
+
+
+# application endpoint
+@app.route('/reset_password_ui', methods=['GET', 'POST'])
+@roles.admin_token_required
+def reset_password_ui():
+    """
+    reset password of particular user 
+     
+    ---
+    tags:
+      - Users - Password Reset UI
+    security:
+        - Bearer: []
+    parameters:
+      - name: user_id
+        in: query
+        type: string
+        required: true
+        description: User Id to reset its password
+    responses:
+      200:
+        description: User' password reset successfully
+      400:
+        description: Incorrect parameters provided
+      403:
+        description: Unable to reset password of user
+    """
+
+    user_id = request.args.get('user_id')
+    if not user_id:
+        record = auth_obj.get_all_users()
+        return render_template('view_user.html', data=record)
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    
+    if rest_api_condition:
+        if not (request.args.get("user_id")):
+            return jsonify({"error": "Incorrect Params"}), 400
+        setup_session(request.headers['Authorization'].split()[-1])
+        json_obj, status_code = api_util.reset_password(user_id)
+        return jsonify(json_obj), status_code
+    else:
+        
+        json_obj, status_code = api_util.reset_password(user_id)
+        record = auth_obj.get_all_users()
+        if status_code==200:
+            return render_template('view_user.html', flash_message=True, message_toast = "Reset Password", message_flag = "success", data = record)                
+        else:
+            return render_template('view_user.html', flash_message=True, message_toast = "Unable to to reset Password", message_flag = "error", data = record)
+                    
+        
+            
+# api endpoint
+@app.route('/reset_password', methods=['GET', 'POST'])
+@roles.admin_token_required
+def reset_password():
+    """
+    reset password of particular user 
+     
+    ---
+    tags:
+      - Users - Password Reset API
+    security:
+        - Bearer: []
+    parameters:
+      - name: email
+        in: query
+        type: string
+        required: true
+        description: User Id to reset its password
+    responses:
+      200:
+        description: User' password reset successfully
+      400:
+        description: Incorrect parameters provided
+      403:
+        description: Unable to reset password of user
+    """
+    if not (request.args.get("email")):
+            return jsonify({"error": "Incorrect Params"}), 400
+    email = request.args.get("email")
+    setup_session(request.headers['Authorization'].split()[-1])
+    json_obj, status_code = api_util.reset_password_from_api(email)
+    return jsonify(json_obj), status_code
+
 
 
 @app.route('/update_password', methods=['GET', 'POST'])
 @roles.readonly_token_required
 def update_password():
     """
-    update your password
+    Update your password
+    ---
+    tags:
+        - Users - Update Password
+    security:
+        - Bearer: []
+    parameters:
+      - name: old_password
+        in: query
+        type: string
+        required: true
+        description: Old password
+
+      - name: password
+        in: query
+        type: string
+        required: true
+        description: New Password
+      
+    responses:
+      200:
+        description: password updated successfully
+      400:
+        description: Incorrect parameters provided
+      403:
+        description: Unable to update password
     """
     
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     if rest_api_condition:
-        setup_session(request.headers['Authorization'].split()[1])
+        if not (request.args.get("old_password") and request.args.get("password")):
+            return jsonify({"error": "Incorrect Params"}), 400
+        
+        setup_session(request.headers['Authorization'].split()[-1])
         email, old_pswd, new_pswd = session["user"], request.args.get("old_password"), request.args.get("password")
         print(email, old_pswd, new_pswd)
         json_obj, status_code = api_util.update_password(email, old_pswd, new_pswd )
@@ -303,7 +669,7 @@ def index():
     """
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     if rest_api_condition:
-        setup_session(request.headers['Authorization'].split()[1])
+        setup_session(request.headers['Authorization'].split()[-1])
         response = api_util.application_startup()
         jsonify({"msg": "Index Page"}), 200
     else:
@@ -324,11 +690,31 @@ def home():
 def upload_csv():
     """
     handles the csv file uploads
+    ---
+    tags:
+      - Uploads CSV
+    security:
+        - Bearer: []
+    consumes:
+      - multipart/form-data
+    parameters:
+      - name: file
+        in: formData
+        type: file
+        required: true
+        description: The CSV file to upload
+    responses:
+      200:
+        description: Data inserted successfully
+      400:
+        description: Incorrect parameters provided
+      403:
+        description: Unable to insert data
     """
 
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     if rest_api_condition and ("acceptance" not in session):
-        setup_session(request.headers['Authorization'].split()[1])
+        setup_session(request.headers['Authorization'].split()[-1])
         json_obj, status_code = api_util.upload_csv()
         return jsonify(json_obj), status_code
         pass
@@ -358,11 +744,69 @@ def upload_zip():
 @roles.readonly_token_required
 def get_data():
     """
-    Extracts the data based on the query strings
+    get data from application
+    ---
+    tags:
+        - Users - Downloads
+    security:
+        - Bearer: []
+    parameters:
+      - name: start
+        in: query
+        type: string
+        format: date
+        required: true
+        description: Start Date
+    
+      - name: end
+        in: query
+        type: string
+        format: date
+        required: true
+        description: End Date
+
+      - name: curve_type
+        in: query
+        type: string
+        required: true
+        description: place the curve type
+
+      - name: iso
+        in: query
+        type: string
+        required: true
+        description: place the ISO
+
+      - name: strip
+        in: query
+        type: string
+        required: true
+        description: place the strip
+
+
+      - name: history
+        in: query
+        type:  boolean
+        required: true
+        description: true or false
+
+      - name: type
+        in: query
+        type: string
+        required: true
+        description: CSV or JSON
+      
+    responses:
+      200:
+        description: password updated successfully
+      400:
+        description: Incorrect parameters provided
+      403:
+        description: Unable to update password
     """
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     if rest_api_condition:
-        setup_session(request.headers['Authorization'].split()[1])
+        setup_session(request.headers['Authorization'].split()[-1])
     args = request.args.to_dict()
     args['strip'] = request.args.getlist('strip')
     if request.args.get('history')=="true":
@@ -375,6 +819,7 @@ def get_data():
     return response
 
 
+
 @app.route('/download_data', methods=['GET','POST'])
 @roles.readonly_token_required
 def download_data():
@@ -384,7 +829,7 @@ def download_data():
 
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     if rest_api_condition:
-        setup_session(request.headers['Authorization'].split()[1])
+        setup_session(request.headers['Authorization'].split()[-1])
         response, status = api_util.download_data()
     else:
         if request.method == 'POST':
@@ -395,6 +840,24 @@ def download_data():
                 return response
         else:
             return render_template('download_data.html')
+        
+
+@app.route('/get_options', methods=['POST'])
+@roles.readonly_token_required
+def get_options():
+
+    """
+    makes the current drop down dynamic
+    """
+    curve = request.json['curve']
+    if curve=="energy":
+        option = ["ERCOT", "ISONE", "NYISO","MISO", "PJM"]
+    elif curve == "nonenergy":
+        option = ["ERCOT", "ISONE", "NYISO","MISO", "PJM"]
+    elif curve == "rec":
+        option = ["ERCOT", "ISONE", "NYISO", "PJM"]
+
+    return jsonify(option)
 
 @app.route("/log_stream", methods=['GET','POST'])
 @roles.admin_token_required
@@ -405,7 +868,19 @@ def log_stream():
 @app.route("/get_logs", methods=['GET','POST'])
 @roles.admin_token_required
 def get_logs():
-    """returns logging information"""
+    """
+    Logs of the application.
+    ---
+    tags:
+      - Logs
+    security:
+        - Bearer: []
+    responses:
+      200:
+        description: Getting Logs successful
+      302:
+        description: Unable to get Logs
+    """
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     if rest_api_condition:
         json_obj = api_util.app_logging_api()
@@ -417,12 +892,22 @@ def get_logs():
 @roles.readonly_token_required
 def upload_status():
     """
-    view all uploads of applications 
+    get recent uploads
+    ---
+    tags:
+      - Recent Uploads
+    security:
+        - Bearer: []
+    responses:
+      200:
+        description: Uploads status
+      302:
+        description: Failed
     """
     
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     if rest_api_condition:
-        setup_session(request.headers['Authorization'].split()[1])
+        setup_session(request.headers['Authorization'].split()[-1])
         return jsonify(auth_obj.get_all_uploads_data()),200
     else:
         json_obj, status_code  = api_util.view_uploads()
@@ -442,13 +927,23 @@ def maintainance():
 @roles.admin_token_required
 def enable_ui():
     """
-    disable particular user ADIMN
+    Enable UI
+    ---
+    tags:
+      - Enable UI
+    security:
+        - Bearer: []
+    responses:
+      200:
+        description: UI Disabled successful
+      302:
+        description: Unable to disable UI
     """
 
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
     if rest_api_condition:
-        setup_session(request.headers['Authorization'].split()[1])
+        setup_session(request.headers['Authorization'].split()[-1])
         json_obj, status_code = api_util.switch_ui("enabled")
         return jsonify(json_obj), status_code
     else:
@@ -465,13 +960,23 @@ def enable_ui():
 @roles.admin_token_required
 def disable_ui():
     """
-    disable particular user ADIMN
+    Disable UI
+    ---
+    tags:
+      - Disable UI
+    security:
+        - Bearer: []
+    responses:
+      200:
+        description: UI Disabled successful
+      302:
+        description: Unable to disable UI
     """
 
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
     if rest_api_condition:
-        setup_session(request.headers['Authorization'].split()[1])
+        setup_session(request.headers['Authorization'].split()[-1])
         json_obj, status_code = api_util.switch_ui("disabled")
         return jsonify(json_obj), status_code
     else:
@@ -488,13 +993,23 @@ def disable_ui():
 @roles.admin_token_required
 def enable_api():
     """
-    disable particular user ADIMN
+    ENable API
+    ---
+    tags:
+      - Enable API
+    security:
+        - Bearer: []
+    responses:
+      200:
+        description: API Enable successful
+      302:
+        description: Unable to Enable API
     """
 
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
     if rest_api_condition:
-        setup_session(request.headers['Authorization'].split()[1])
+        setup_session(request.headers['Authorization'].split()[-1])
         json_obj, status_code = api_util.switch_api("enabled")
         return jsonify(json_obj), status_code
     else:
@@ -511,13 +1026,23 @@ def enable_api():
 @roles.admin_token_required
 def disable_api():
     """
-    disable particular user ADIMN
+    Disable API
+    ---
+    tags:
+      - Disable API
+    security:
+        - Bearer: []
+    responses:
+      200:
+        description: API Disabled successful
+      302:
+        description: Unable to disable API
     """
 
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
     if rest_api_condition:
-        setup_session(request.headers['Authorization'].split()[1])
+        setup_session(request.headers['Authorization'].split()[-1])
         json_obj, status_code = api_util.switch_api("disabled")
         return jsonify(json_obj), status_code
     else:
@@ -534,12 +1059,22 @@ def disable_api():
 @roles.admin_token_required
 def site_control():
     """
-    view all status of applications
+    Site Control of the application.
+    ---
+    tags:
+      - Site Control
+    security:
+        - Bearer: []
+    responses:
+      200:
+        description: Getting Logs successful
+      302:
+        description: Unable to get Logs
     """
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
     if rest_api_condition:
-        setup_session(request.headers['Authorization'].split()[1])
+        setup_session(request.headers['Authorization'].split()[-1])
         return jsonify(auth_obj.get_site_controls_data()),200
         
     else:

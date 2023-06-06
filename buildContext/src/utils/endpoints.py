@@ -68,7 +68,7 @@ class Util:
             response = self.auth_obj.create_user(email, pswd, prv_level)
             if response:
                 logging.info(f"User Created with email {email}")
-                return {"flash_message": True, "message_toast":"User Created", "message_flag":"error"},200
+                return {"flash_message": True, "message_toast":"User Created", "message_flag":"success"},200
             
             else:
                 logging.error(f"Unable to Creat User with email {email}")
@@ -77,14 +77,14 @@ class Util:
             logging.error(f"Unable to Creat User with email {email}")
             return {"flash_message": True, "message_toast":"Unable to create user", "message_flag":"error"},400
 
-    def login(self):
+    def login(self, email, pswd):
         """
         login to the application
         """
         
         # if request.method == 'POST':
-        email = request.form.get('email')
-        pswd = request.form.get('password')
+        
+        
 
         auth_flag, prv_level = self.auth_obj.authenticate_user(email, pswd)
         if auth_flag:
@@ -179,7 +179,7 @@ class Util:
             response = self.auth_obj.create_user(email, pswd, prv_level)
             if response:
                 logging.info(f"{session['user']}: User Created with email {email}")
-                return {"flash_message": True, "message_toast":"User Created", "message_flag":"error"},200
+                return {"flash_message": True, "message_toast":"User Created", "message_flag":"success"},200
             
             else:
                 logging.error(f"{session['user']}: Unable to Creat User with email {email}")
@@ -210,41 +210,75 @@ class Util:
         flag = self.auth_obj.enable_disable_user(user_id, status)
         if flag:
             logging.info(f"{session['user']}: user {status} with User id {user_id}")
-            return {"flash_message": True, "message_toast":f"User {status}", "message_flag":"error"},200
+            return {"flash_message": True, "message_toast":f"User {status}", "message_flag":"success"},200
         else:
             logging.error(f"{session['user']}: user not {status} with User id {user_id}")
             return {"flash_message": True, "message_toast": f"user not {status}", "message_flag":"error"},400
         
     def enable_disable_user_from_api(self, user_email, status):
         """
-        update the user privileged level 
+        enable diable user
         """
 
         flag = self.auth_obj.enable_disable_user_using_email(user_email, status)
         if flag:
             logging.info(f"{session['user']}: user {status} with User email {user_email}")
-            return {"flash_message": True, "message_toast": f"user {status}", "message_flag":"error"},200
+            return {"flash_message": True, "message_toast": f"user {status}", "message_flag":"success"},200
         else:
             logging.error(f"{session['user']}: user not {status} with User id {user_email}")
             return {"flash_message": True, "message_toast": f"user not {status}", "message_flag":"error"},400
         
 
+    def reset_password(self, user_id):
+        """
+        reset user's password of applications
+        """
+        email = self.auth_obj.get_user_email(user_id)
+        if email:
+            flag = self.auth_obj.reset_user_password(user_id, email)
+        else:
+            logging.error(f"{session['user']}: Unable to Reset password for user {user_id}")
+            return {"flash_message": True, "message_toast": f"Unable to Reset Password", "message_flag":"error"},400
 
-    def update_user(self, user_id):
+        if flag:
+            logging.info(f"{session['user']}: Password Reset for user {email}")
+            return {"flash_message": True, "message_toast":f"Password Reset", "message_flag":"success"},200
+        else:
+            logging.error(f"{session['user']}: Unable to Reset password for user {email}")
+            return {"flash_message": True, "message_toast": f"Unable to Reset Password", "message_flag":"error"},400
+        
+
+    def reset_password_from_api(self, email):
+        """
+        reset user's password from api
+        """
+
+        flag = self.auth_obj.reset_user_password_for_api(email)
+
+        if flag:
+            logging.info(f"{session['user']}: Password Reset for user {email}")
+            return {"flash_message": True, "message_toast":f"Password Reset", "message_flag":"success"},200
+        else:
+            logging.error(f"{session['user']}: Unable to Reset password for user {email}")
+            return {"flash_message": True, "message_toast": f"Unable to Reset Password", "message_flag":"error"},400
+        
+
+
+    def update_user(self, user_id, prv_level):
         """
         update user of applications
         """
 
-        prv_level= request.form.get('prv_level')            
+                   
         flag = self.auth_obj.update_user(user_id, prv_level)
         records = self.auth_obj.get_all_users()
 
         if flag:
             logging.info(f"{session['user']}: User's privileged level updated successfully with user id {user_id}")
-            return {"flash_message": True, "message_toast":"User update", "message_flag":"error", "data" : records},200
+            return {"flash_message": True, "message_toast":f"User Updated", "message_flag":"success"},200
         else:
             logging.error(f"{session['user']}: Unable to Update User's privileged level with user id {user_id}")
-            return {"flash_message": True, "message_toast":"Unable to update user", "message_flag":"error", "data" : records},400
+            return {"flash_message": True, "message_toast": f"Unable to Update User", "message_flag":"error"},400
         
 
     def update_user_from_api(self):
@@ -252,12 +286,15 @@ class Util:
         update user of applications
         """
         levels = ['read_only_user', 'admin', 'read_write_user']
+        if not (request.args.get("email") and request.args.get("prv_level")):
+            return {"error": "Incorrect Params"}, 400
+        
         email, prv_level = request.args.get('email'), request.args.get('prv_level')
         if prv_level in levels:
             flag = self.auth_obj.update_user_using_email(email, prv_level)
             if flag:
                 logging.info(f"{session['user']}: User's privileged level updated successfully with user email {email}")
-                return {"flash_message": True, "message_toast":"User update", "message_flag":"error"},200
+                return {"flash_message": True, "message_toast":"User updated", "message_flag":"success"},200
             else:
                 logging.error(f"{session['user']}: Unable to Update User's privileged level with user email {email}")
                 return {"flash_message": True, "message_toast":"Unable to update user", "message_flag":"error"},400
@@ -274,7 +311,7 @@ class Util:
 
         if flag:
             logging.info(f"{session['user']}: User Updated his password successfully")
-            return {"flash_message": True, "message_toast":"password updated", "message_flag":"error"},200
+            return {"flash_message": True, "message_toast":"password updated", "message_flag":"success"},200
         else:
             logging.error(f"{session['user']}: User Unable Updated his password")
             return {"flash_message": True, "message_toast":"unable to update password", "message_flag":"error"},400
@@ -471,7 +508,7 @@ class Util:
         flag = self.auth_obj.switch_api(status)
         if flag:
             logging.info(f"{session['user']}: api is {status}")
-            return {"flash_message": True, "message_toast":f"api is {status}", "message_flag":"error"},200
+            return {"flash_message": True, "message_toast":f"api is {status}", "message_flag":"success"},200
         else:
             logging.error(f"{session['user']}: api is not{status}")
             return {"flash_message": True, "message_toast": f"api is not{status}", "message_flag":"error"},400
@@ -483,7 +520,7 @@ class Util:
         flag = self.auth_obj.switch_ui(status)
         if flag:
             logging.info(f"{session['user']}: ui is {status}")
-            return {"flash_message": True, "message_toast":f"ui is {status}", "message_flag":"error"},200
+            return {"flash_message": True, "message_toast":f"ui is {status}", "message_flag":"success"},200
         else:
             logging.error(f"{session['user']}: ui is not{status}")
             return {"flash_message": True, "message_toast": f"ui is not{status}", "message_flag":"error"},400
