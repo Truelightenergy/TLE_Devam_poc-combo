@@ -247,7 +247,7 @@ def view_user():
         - Bearer: []
     responses:
       200:
-        description: All user
+        description: View All user
       302:
         description: Redirect to login page
     
@@ -798,11 +798,11 @@ def get_data():
       
     responses:
       200:
-        description: password updated successfully
+        description: data downloaded successfully
       400:
         description: Incorrect parameters provided
       403:
-        description: Unable to update password
+        description: Unable to download data
     """
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     if rest_api_condition:
@@ -1062,9 +1062,9 @@ def site_control():
         - Bearer: []
     responses:
       200:
-        description: Getting Logs successful
+        description: Getting site controls successful
       302:
-        description: Unable to get Logs
+        description: Unable to get site controls
     """
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
@@ -1206,13 +1206,111 @@ def delete_column_filter_ui():
 @roles.admin_token_required
 def add_filter():
     """
-    handles data downloads
+    handles column Filtering
+    ---
+    tags:
+        - Data - Data Filtering
+    security:
+        - Bearer: []
+    parameters:
+      - name: user
+        in: query
+        type: string
+        required: true
+        description: User's Email
+    
+      - name: control_table
+        in: query
+        type: string
+        required: true
+        description: Control Table Name
+
+      - name: control_area
+        in: query
+        type: string
+        required: true
+        description: Control Area
+
+      - name: state
+        in: query
+        type: string
+        required: true
+        description: State
+
+      - name: load_zone
+        in: query
+        type: string
+        required: true
+        description: Load Zone
+
+
+      - name: capacity_zone
+        in: query
+        type:  string
+        required: true
+        description: Capacity Zone
+
+      - name: utility
+        in: query
+        type: string
+        required: true
+        description: Utility
+
+      - name: strip
+        in: query
+        type: string
+        required: true
+        description: Strip
+
+      - name: cost_group
+        in: query
+        type: string
+        required: true
+        description: Cost Group
+
+
+      - name: cost_component
+        in: query
+        type:  string
+        required: true
+        description: Cost Component
+
+      - name: sub_cost_component
+        in: query
+        type: string
+        required: true
+        description: Sub Cost Component
+
+      - name: start
+        in: query
+        format: date
+        type:  string
+        required: true
+        description: Start Range Date
+
+      - name: end
+        in: query
+        format: date
+        type: string
+        required: true
+        description: End Range Date
+
+
+    responses:
+      200:
+        description: add Filters successfully
+      400:
+        description: Incorrect parameters provided
+      403:
+        description: Unable to add data filter
+
     """
 
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     if rest_api_condition:
         setup_session(request.headers['Authorization'].split()[-1])
-        response, status = api_util.download_data()
+        response, status = api_util.add_filter_api()
+        return response, status
     else:
         if request.method == 'POST':
             response, status_code = api_util.add_filter_ui()

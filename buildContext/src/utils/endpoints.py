@@ -596,5 +596,39 @@ class Util:
             logging.error(f"{session['user']}: Unable to Add Filter Rule")
             return {"flash_message": True, "message_toast": f"Unable to Add Filter Rule", "message_flag":"error"},400
         
+    def add_filter_api(self):
+        """
+        add new filter to the columns for each user
+        """
+
+        query_strings = dict()
+        query_strings['user'] = request.args.get('user')
+        query_strings["control_table"] = request.args.get('control_table')
+        query_strings["control_area"] = request.args.get('control_area')
+        query_strings["state"] = request.args.get('state')
+        query_strings['load_zone'] = request.args.get('load_zone')
+        query_strings["capacity_zone"] = request.args.get('capacity_zone')
+        query_strings["utility"] = request.args.get('utility')
+        query_strings["strip"] = request.args.get('strip')
+        query_strings['cost_group'] = request.args.get('cost_group')
+        query_strings["cost_component"] = request.args.get('cost_component')
+        query_strings["sub_cost_component"] = request.args.get('sub_cost_component')
+        query_strings["start"] = request.args.get('start')
+        query_strings["end"] = request.args.get('end')
+
+        print(query_strings, "=----------------")
+        
+        
+        flag = self.db_obj.check_filter_rule(query_strings)
+        if flag:
+            flag = self.db_obj.ingest_filter_rule(query_strings)
+        
+        if flag:
+            logging.info(f"{session['user']}: Filter Rule Added Successfully")
+            return {"flash_message": True, "message_toast":f"Filter Rule Added Successfully"},200
+        else:
+            logging.error(f"{session['user']}: Unable to Add Filter Rule")
+            return {"flash_message": True, "message_toast": f"Unable to Add Filter Rule", "message_flag":"error"},400
+        
             
         

@@ -35,7 +35,7 @@ class RolesDecorator:
             if rest_api_condition:
                 if 'Authorization' in request.headers:
                     token = request.headers.get('Authorization', '').split()[-1]
-                if token is None and (request.content_type=='application/json'):
+                if token is None and ((request.content_type=='application/json') or ("multipart/form-data" in request.content_type)):
                     token = session.get('jwt_token')
             else:
                 token = session.get('jwt_token')
@@ -97,7 +97,7 @@ class RolesDecorator:
             if rest_api_condition:
                 if 'Authorization' in request.headers:
                     token = request.headers.get('Authorization', '').split()[-1]
-                if token is None and (request.content_type=='application/json'):
+                if token is None and ((request.content_type=='application/json') or ("multipart/form-data" in request.content_type)):
                     token = session.get('jwt_token')
             else:
                 token = session.get('jwt_token')
@@ -153,7 +153,7 @@ class RolesDecorator:
             if rest_api_condition:
                 if 'Authorization' in request.headers:
                     token = request.headers.get('Authorization', '').split()[-1]
-                if token is None and (request.content_type == 'application/json'):
+                if token is None and ((request.content_type=='application/json') or ("multipart/form-data" in request.content_type)):
                     token = session.get('jwt_token')
             else:
                 token = session.get('jwt_token')
