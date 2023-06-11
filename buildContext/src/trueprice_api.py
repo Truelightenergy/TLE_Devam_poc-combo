@@ -3,7 +3,7 @@ from utils.endpoints import Util
 from flask import Flask, request, session, jsonify, redirect, url_for, render_template, make_response
 from utils.roles import RolesDecorator
 from functools import wraps
-from utils.auths import Auths
+from utils.db_utils import DataBaseUtils
 from utils.revoke_tokens import RevokedTokens
 from flasgger import Swagger
 
@@ -12,10 +12,10 @@ from flasgger import Swagger
 
 secret_key = "super-scret-key" #env variable
 secret_salt = "secret-salt" #env variable
-auth_obj = Auths(secret_key, secret_salt)
-api_util = Util(auth_obj)
+db_obj = DataBaseUtils(secret_key, secret_salt)
+api_util = Util(db_obj)
 revoked_jwt = RevokedTokens()
-roles = RolesDecorator(auth_obj, revoked_jwt)
+roles = RolesDecorator(db_obj, revoked_jwt)
 
 
 app = Flask(__name__)
@@ -45,7 +45,7 @@ def setup_session(auth_token):
     setup the session for the api requests
     """
 
-    payload = auth_obj.decode_auth_token(auth_token)[1]
+    payload = db_obj.decode_auth_token(auth_token)[1]
     session["jwt_token"] = auth_token
     session["user"] = payload["client_email"]
     session["level"] = payload["role"]
@@ -256,7 +256,7 @@ def view_user():
     
     if rest_api_condition:
         setup_session(request.headers['Authorization'].split()[-1])
-        return jsonify(auth_obj.get_all_users_data()),200
+        return jsonify(db_obj.get_all_users_data()),200
         
     else:
         json_obj, status_code  = api_util.view_user()
@@ -293,7 +293,7 @@ def disable_user_ui():
 
     user_id = request.args.get('user_id')
     if not user_id:
-        record = auth_obj.get_all_users()
+        record = db_obj.get_all_users()
         return render_template('view_user.html', data=record)
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
@@ -306,7 +306,7 @@ def disable_user_ui():
     else:
         
         json_obj, status_code = api_util.enable_disable_user(user_id, "disabled")
-        record = auth_obj.get_all_users()
+        record = db_obj.get_all_users()
         if status_code==200:
             return render_template('view_user.html', flash_message=True, message_toast = "User Disabled", message_flag = "success", data = record)                
         else:
@@ -375,7 +375,7 @@ def enable_user_ui():
     """
     user_id = request.args.get('user_id')
     if not user_id:
-        record = auth_obj.get_all_users()
+        record = db_obj.get_all_users()
         return render_template('view_user.html', data=record)
     
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
@@ -389,7 +389,7 @@ def enable_user_ui():
     else:
         
         json_obj, status_code = api_util.enable_disable_user(user_id, "enabled")
-        record = auth_obj.get_all_users()
+        record = db_obj.get_all_users()
         if status_code==200:
             return render_template('view_user.html', flash_message=True, message_toast = "User Disabled", message_flag = "success", data = record)                
         else:
@@ -459,7 +459,7 @@ def update_user_ui():
     """
     user_id = request.args.get('user_id')
     if not user_id:
-        record = auth_obj.get_all_users()
+        record = db_obj.get_all_users()
         return render_template('view_user.html', data=record)
     
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
@@ -475,13 +475,13 @@ def update_user_ui():
         if request.method == 'POST':
             prv_level= request.form.get('prv_level') 
             json_obj, status_code = api_util.update_user(user_id, prv_level)
-            record = auth_obj.get_all_users()
+            record = db_obj.get_all_users()
             if status_code==200:
                 return render_template('view_user.html', flash_message=True, message_toast = "User Updated", message_flag = "success", data = record)                
             else:
                 return render_template('view_user.html', flash_message=True, message_toast = "Unable to update user", message_flag = "error", data = record)
         else:
-            record = auth_obj.get_user(user_id)
+            record = db_obj.get_user(user_id)
             return render_template("update_user.html", data = record)
    
 # api endpoint
@@ -551,7 +551,7 @@ def reset_password_ui():
 
     user_id = request.args.get('user_id')
     if not user_id:
-        record = auth_obj.get_all_users()
+        record = db_obj.get_all_users()
         return render_template('view_user.html', data=record)
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
@@ -564,7 +564,7 @@ def reset_password_ui():
     else:
         
         json_obj, status_code = api_util.reset_password(user_id)
-        record = auth_obj.get_all_users()
+        record = db_obj.get_all_users()
         if status_code==200:
             return render_template('view_user.html', flash_message=True, message_toast = "Reset Password", message_flag = "success", data = record)                
         else:
@@ -717,7 +717,7 @@ def upload_csv():
         setup_session(request.headers['Authorization'].split()[-1])
         json_obj, status_code = api_util.upload_csv()
         return jsonify(json_obj), status_code
-        pass
+        
     else:
         
         if request.method=="POST":
@@ -836,13 +836,12 @@ def download_data():
             response, status = api_util.download_data()
             if status != "success":
                 return render_template('download_data.html',  flash_message=True, message_toast = status, message_flag = "error")
-            else:
-                return response
+            return response
         else:
             return render_template('download_data.html')
         
 
-@app.route('/get_options', methods=['POST'])
+@app.route('/get_options', methods=['GET', 'POST'])
 @roles.readonly_token_required
 def get_options():
 
@@ -908,7 +907,7 @@ def upload_status():
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     if rest_api_condition:
         setup_session(request.headers['Authorization'].split()[-1])
-        return jsonify(auth_obj.get_all_uploads_data()),200
+        return jsonify(db_obj.get_all_uploads_data()),200
     else:
         json_obj, status_code  = api_util.view_uploads()
         return render_template("upload_status.html", data = json_obj["data"])   
@@ -949,11 +948,10 @@ def enable_ui():
     else:
         
         json_obj, status_code = api_util.switch_ui("enabled")
-        record = auth_obj.get_site_controls()
+        record = db_obj.get_site_controls()
         if status_code==200:
             return render_template('site_control.html', flash_message=True, message_toast = "UI enabled", message_flag = "success", data=record)
-        else:
-            return render_template('site_control.html', flash_message=True, message_toast = "Unable to enable UI", message_flag = "error", data=record)
+        return render_template('site_control.html', flash_message=True, message_toast = "Unable to enable UI", message_flag = "error", data=record)
 
 
 @app.route('/disable_ui', methods=['GET', 'POST'])
@@ -982,11 +980,10 @@ def disable_ui():
     else:
         
         json_obj, status_code = api_util.switch_ui("disabled")
-        record = auth_obj.get_site_controls()
+        record = db_obj.get_site_controls()
         if status_code==200:
             return render_template('site_control.html', flash_message=True, message_toast = "UI disabled", message_flag = "success",data=record)
-        else:
-            return render_template('site_control.html', flash_message=True, message_toast = "Unable to disable UI", message_flag = "error", data=record)
+        return render_template('site_control.html', flash_message=True, message_toast = "Unable to disable UI", message_flag = "error", data=record)
 
 # application endpoint
 @app.route('/enable_api', methods=['GET', 'POST'])
@@ -1015,11 +1012,10 @@ def enable_api():
     else:
         
         json_obj, status_code = api_util.switch_api("enabled")
-        record = auth_obj.get_site_controls()
+        record = db_obj.get_site_controls()
         if status_code==200:
-            return render_template('site_control.html', flash_message=True, message_toast = "API Enabled", message_flag = "success", data=record)
-        else:
-            return render_template('site_control.html', flash_message=True, message_toast = "Unable to enable API", message_flag = "error", data=record)
+          return render_template('site_control.html', flash_message=True, message_toast = "API Enabled", message_flag = "success", data=record)
+        return render_template('site_control.html', flash_message=True, message_toast = "Unable to enable API", message_flag = "error", data=record)
 
 
 @app.route('/disable_api', methods=['GET', 'POST'])
@@ -1048,11 +1044,10 @@ def disable_api():
     else:
         
         json_obj, status_code = api_util.switch_api("disabled")
-        record = auth_obj.get_site_controls()
+        record = db_obj.get_site_controls()
         if status_code==200:
-            return render_template('site_control.html', flash_message=True, message_toast = "API disable", message_flag = "success",data=record)
-        else:
-            return render_template('site_control.html', flash_message=True, message_toast = "Unable to disable API", message_flag = "error", data=record)
+          return render_template('site_control.html', flash_message=True, message_toast = "API disable", message_flag = "success",data=record)
+        return render_template('site_control.html', flash_message=True, message_toast = "Unable to disable API", message_flag = "error", data=record)
 
 
 @app.route('/site_control', methods=['GET', 'POST'])
@@ -1075,13 +1070,335 @@ def site_control():
     
     if rest_api_condition:
         setup_session(request.headers['Authorization'].split()[-1])
-        return jsonify(auth_obj.get_site_controls_data()),200
+        return jsonify(db_obj.get_site_controls_data()),200
         
     else:
-        record = auth_obj.get_site_controls()
+        record = db_obj.get_site_controls()
         return render_template("site_control.html", data = record)
     
+
+# application endpoint
+@app.route('/view_authorized_columns_ui', methods=['GET', 'POST'])
+@roles.admin_token_required
+def view_authorized_columns_ui():
+    """
+    View Column Filter for a user
+     
+    ---
+    tags:
+      - Users - Column Filter
+    security:
+        - Bearer: []
+    parameters:
+      - name: user_id
+        in: query
+        type: string
+        required: true
+        description: User Id to reset its password
+    responses:
+      200:
+        description: authorized columns view
+      400:
+        description: authorized columns not view
+      403:
+        description: Something went wrong
+    """
+
+    user_id = request.args.get('user_id')
+    if not user_id:
+        record = db_obj.get_all_users()
+        return render_template('view_user.html', data=record)
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
+    if rest_api_condition:
+        if not (request.args.get("user_id")):
+            return jsonify({"error": "Incorrect Params"}), 400
+        setup_session(request.headers['Authorization'].split()[-1])
+        json_obj, status_code = api_util.get_column_filter_for_user(user_id)
+        return jsonify(json_obj), status_code
+    else:
+        
+        record = db_obj.get_user_authorized_columns(user_id)
+        return render_template('view_filtered_columns.html', data = record)                
+                    
+
+# api endpoint
+@app.route('/view_authorized_columns', methods=['GET', 'POST'])
+@roles.admin_token_required
+def view_authorized_columns():
+    """
+    View Column Filter for a user
+     
+    ---
+    tags:
+      - Users - Column filtering API
+    security:
+        - Bearer: []
+    parameters:
+      - name: email
+        in: query
+        type: string
+        required: true
+        description: User Id to reset its password
+    responses:
+      200:
+        description: authorized columns view
+      400:
+        description: authorized columns not view
+      403:
+        description: Something went wrong
+    """
+    if not (request.args.get("email")):
+            return jsonify({"error": "Incorrect Params"}), 400
+    email = request.args.get("email")
+    setup_session(request.headers['Authorization'].split()[-1])
+    json_obj, status_code = api_util.get_column_filter_for_user_from_api(email)
+    return jsonify(json_obj), status_code
+    
+# application endpoint
+@app.route('/delete_column_filter_ui', methods=['GET', 'POST'])
+@roles.admin_token_required
+def delete_column_filter_ui():
+    """
+    Delete filters of columns auth
+    ---
+    tags:
+      - Users - Delete Filter
+    security:
+        - Bearer: []
+    parameters:
+      - name: filter_id
+        in: query
+        type: string
+        required: true
+        description: Filter ID to disable 
+    responses:
+      200:
+        description: delete filter
+      400:
+        description: unable to delete filter
+      403:
+        description: something went wrong
+    """
+
+    filter_id = request.args.get('filter_id')
+    if not filter_id:
+        record = db_obj.get_all_users()
+        return render_template('view_user.html', data=record)
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    
+    if rest_api_condition:
+        if not (request.args.get("filter_id")):
+            return jsonify({"error": "Incorrect Params"}), 400
+        setup_session(request.headers['Authorization'].split()[-1])
+        json_obj, status_code = api_util.remove_column_auth_filter(filter_id)
+        return jsonify(json_obj), status_code
+    else:
+        
+        user_id = db_obj.get_userid_from_filter_auth_id(filter_id)
+        json_obj, status_code = api_util.remove_column_auth_filter(filter_id)
+        record = db_obj.get_user_authorized_columns(user_id)
+        if status_code==200:
+          return render_template('view_filtered_columns.html', flash_message=True, message_toast = "Filter Removed", message_flag = "success", data = record),200                
+        return render_template('view_filtered_columns.html', flash_message=True, message_toast = "Unable to Remove the Filter", message_flag = "error", data = record),400
+
+@app.route('/add_filter', methods=['GET','POST'])
+@roles.admin_token_required
+def add_filter():
+    """
+    handles data downloads
+    """
+
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    if rest_api_condition:
+        setup_session(request.headers['Authorization'].split()[-1])
+        response, status = api_util.download_data()
+    else:
+        if request.method == 'POST':
+            response, status_code = api_util.add_filter_ui()
+            if status_code == 200:
+              return render_template('add_filter.html', flash_message=True, message_toast = response['message_toast'], message_flag = "success")
+            return render_template('add_filter.html', flash_message=True, message_toast = response['message_toast'], message_flag = "error")
+        else:
+            return render_template('add_filter.html')
+
+
+@app.route('/get_users', methods=['GET', 'POST'])
+@roles.admin_token_required
+def get_users():
+
+    """
+    makes the current drop down dynamic
+    """
+    users = db_obj.get_all_users_for_dropdown()
+
+    return jsonify(users)
+
+@app.route('/get_control_area', methods=['GET', 'POST'])
+@roles.admin_token_required
+def get_control_area():
+
+    """
+    makes the current drop down dynamic
+    """
+    try:
+      table = request.json['control_table']
+      control_areas = db_obj.get_control_area_for_dropdown(table)
+      return jsonify(control_areas)
+    except:
+        return list()
+    
+@app.route('/get_state', methods=['GET', 'POST'])
+@roles.admin_token_required
+def get_state():
+
+    """
+    makes the current drop down dynamic
+    """
+    try:
+      table = request.json['control_table']
+      control_area = request.json['control_area']
+      states = db_obj.get_state_for_dropdown(table, control_area)
+      return jsonify(states)
+    except:
+        return list()
+    
+@app.route('/get_loadzone', methods=['GET', 'POST'])
+@roles.admin_token_required
+def get_loadzone():
+
+    """
+    makes the current drop down dynamic
+    """
+    try:
+      table = request.json['control_table']
+      control_area = request.json['control_area']
+      state = request.json['state']
+      lzones = db_obj.get_load_zone_for_dropdown(table, control_area, state)
+      return jsonify(lzones)
+    except:
+        return list()
+
+
+@app.route('/get_capacityzone', methods=['GET', 'POST'])
+@roles.admin_token_required
+def get_capacityzone():
+
+    """
+    makes the current drop down dynamic
+    """
+    try:
+      table = request.json['control_table']
+      control_area = request.json['control_area']
+      loadzone = request.json['load_zone']
+      state = request.json['state']
+      czones = db_obj.get_capacity_zone_for_dropdown(table, control_area, state, loadzone)
+      return jsonify(czones)
+    except:
+        return list()
+
+@app.route('/get_utility', methods=['GET', 'POST'])
+@roles.admin_token_required
+def get_utility():
+
+    """
+    makes the current drop down dynamic
+    """
+    try:
+        
+      table = request.json['control_table']
+      control_area = request.json['control_area']
+      loadzone = request.json['load_zone']
+      capacityzone = request.json['capacity_zone']
+      state = request.json['state']
+      utilities = db_obj.get_utility_for_dropdown(table, control_area, state, loadzone, capacityzone)
+      return jsonify(utilities)
+    except:
+        return list()
+
+
+@app.route('/get_blocktype', methods=['GET', 'POST'])
+@roles.admin_token_required
+def get_blocktype():
+
+    """
+    makes the current drop down dynamic
+    """
+    try:
+      table = request.json['control_table']
+      control_area = request.json['control_area']
+      loadzone = request.json['load_zone']
+      capacityzone = request.json['capacity_zone']
+      utility = request.json['utility']
+      state = request.json['state']
+      blocktypes = db_obj.get_block_type_for_dropdown(table, control_area, state, loadzone, capacityzone, utility)
+      return jsonify(blocktypes)
+    except:
+        return list()
+
+
+@app.route('/get_costgroup', methods=['GET', 'POST'])
+@roles.admin_token_required
+def get_costgroup():
+
+    """
+    makes the current drop down dynamic
+    """
+    try:
+      table = request.json['control_table']
+      control_area = request.json['control_area']
+      loadzone = request.json['load_zone']
+      capacityzone = request.json['capacity_zone']
+      utility = request.json['utility']
+      blocktype =  request.json['strip']
+      state = request.json['state']
+      costgroups = db_obj.get_cost_group_for_dropdown(table, control_area, state, loadzone, capacityzone, utility, blocktype)
+      return jsonify(costgroups)
+    except:
+        return list()
+
+@app.route('/get_costcomponent', methods=['GET', 'POST'])
+@roles.admin_token_required
+def get_costcomponent():
+
+    """
+    makes the current drop down dynamic
+    """
+    try:
+      table = request.json['control_table']
+      control_area = request.json['control_area']
+      loadzone = request.json['load_zone']
+      capacityzone = request.json['capacity_zone']
+      utility = request.json['utility']
+      blocktype =  request.json['strip']
+      costgroup = request.json['cost_group']
+      state = request.json['state']
+      costcomponents = db_obj.get_cost_components_for_dropdown(table, control_area, state, loadzone, capacityzone, utility, blocktype, costgroup)
+      return jsonify(costcomponents)
+    except:
+        return list()
+
+@app.route('/get_subcostcomponent', methods=['GET', 'POST'])
+@roles.admin_token_required
+def get_subcostcomponent():
+
+    """
+    makes the current drop down dynamic
+    """
+    try:
+      table = request.json['control_table']
+      control_area = request.json['control_area']
+      loadzone = request.json['load_zone']
+      capacityzone = request.json['capacity_zone']
+      utility = request.json['utility']
+      blocktype =  request.json['strip']
+      costgroup = request.json['cost_group']
+      costcomponent = request.json['cost_component']
+      state = request.json['state']
+      subcostcomponents = db_obj.get_sub_cost_components_for_dropdown(table, control_area, state, loadzone, capacityzone, utility, blocktype, costgroup, costcomponent)
+      return jsonify(subcostcomponents)
+    except:
+        return list()
 
 
 if __name__ == "__main__":

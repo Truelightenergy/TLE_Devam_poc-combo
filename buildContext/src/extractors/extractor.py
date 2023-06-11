@@ -3,10 +3,13 @@ makes query to the database and returns to the database
 """
 
 import pandas as pd
+from flask import session
+from .extraction_rules import Rules
 from database_connection import ConnectDatabase
 from .nonenergy import NonEnergy
 from .energy import Energy
 from .rec import Rec
+
 
 class Extractor:
     """
@@ -23,6 +26,7 @@ class Extractor:
         self.non_energy = NonEnergy()
         self.energy = Energy()
         self.rec= Rec()
+        self.filter = Rules()
 
     def post_processing_csv(self, df, type):
         """
@@ -91,6 +95,15 @@ class Extractor:
 
             if not isinstance(dataframe, pd.DataFrame):
                     return dataframe, status
+            
+            control_table = f"{query_strings['iso']}_{query_strings['curve_type']}"
+            email = session["user"]
+            if session["level"]!= 'admin':
+                rules = self.filter.filter_data(control_table, email)
+                dataframe, status = self.dataframe_filtering(dataframe, rules)
+            
+                if status != "success":
+                    return None, "No Subscription available"
 
             if download_type=="csv":
                 dataframe = self.post_processing_csv(dataframe, query_strings["curve_type"]) 
@@ -101,7 +114,19 @@ class Extractor:
         except:
             return None, "Unable to Fetch Data"
 
-            # http://127.0.0.1:5555/get_data?start=20230101&end=20230102&iso=isone&strip=24x7&curve_type=ancillarydata&type=csv
-            # http://127.0.0.1:5555/get_data?start=20230101&end=20230109&iso=isone&strip=7x8&curve_type=forwardcurve&type=csv
+    def dataframe_filtering(self, dataframe, rules):
+        """
+        filter the data based on the user subscription rules
+        """
+        dataframes = []
+        for row in rules:
+            query = f"control_area == '{row['control_area']}' & state == '{row['state']}' & load_zone == '{row['load_zone']}' & capacity_zone == '{row['capacity_zone']}' & utility == '{row['utility']}' & strip == '{row['strip']}' & cost_group == '{row['cost_group']}' & cost_component == '{row['cost_component']}' & sub_cost_component == '{row['sub_cost_component']}'"
+            df = dataframe.query(query)
+            df = df.loc[(df['month'] >= row['startmonth']) & (df['month'] <= row['endmonth'])]
+            dataframes.append(df)
+        if len(dataframes)>=1:    
+            return pd.concat(dataframes, axis=0), "success"
+        return None, "error"
         
+
 

@@ -21,6 +21,7 @@
 
         <a href="{{ url_for('upload_status')}}" class="nav-item nav-link {% if request.path == '/upload_status' %}active{% endif %}"><i class="fa fa-clipboard me-2"></i>Recent Uploads</a>
         <a href="{{ url_for('download_data')}}" class="nav-item nav-link {% if request.path == '/download_data' %}active{% endif %}"><i class="fa fa-download me-2"></i>Downloads</a>
+        <a href="{{ url_for('add_filter')}}" class="nav-item nav-link {% if request.path == '/add_filter' %}active{% endif %}"><i class="fa fa-columns me-2"></i>Columns</a>
         {%if session["level"]=="admin"%} 
             <a href="{{ url_for('get_logs')}}" class="nav-item nav-link {% if request.path == '/get_logs' %}active{% endif %} "><i class="fa fa-clock me-2"></i>Logs</a>
             <a href="{{ url_for('site_control')}}" class="nav-item nav-link {% if request.path == '/site_control' %}active{% endif %}"><i class="fa fa-cog me-2"></i>Site</a>
