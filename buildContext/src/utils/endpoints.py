@@ -9,15 +9,17 @@ import shutil
 import time
 import zipfile
 from datetime import datetime
-from ingestors.ingestor import Ingestion
-from extractors.extractor import Extractor
-import trueprice_database as tpdb
+from blueprints.ingestors.ingestor import Ingestion
+from blueprints.extractors.extractor import Extractor
+import utils.trueprice_database as tpdb
 from werkzeug.utils import secure_filename
 from flask import Flask, flash, request, redirect, url_for, flash, render_template, Response, session, jsonify, make_response
 from flask import render_template
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 import logging
-from utils.auths import Auths
+from utils.db_utils import DataBaseUtils
+from blueprints.admins.admin_model import AdminUtil
+from blueprints.auths.auth_model import AuthUtil
 
 logging.basicConfig(level=logging.INFO)
 
@@ -46,7 +48,7 @@ class Util:
     Handles all the api calls 
     """
 
-    def __init__(self, auths):
+    def __init__(self, secret_key, secret_salt):
         """
         all the intializers will be handled here
         """
@@ -57,7 +59,10 @@ class Util:
         self.create_storage_folder()
         self.ingestor = Ingestion()
         self.extractor = Extractor()
-        self.auth_obj = auths
+        self.admin_util = AdminUtil(secret_key, secret_salt)
+        self.auth_util = AuthUtil(secret_key, secret_salt)
+
+        
 
     def signup(self, email, pswd, prv_level="read_only_user"):
         """
@@ -65,7 +70,7 @@ class Util:
         """           
         
         if self.validate_input(email, pswd, prv_level):
-            response = self.auth_obj.create_user(email, pswd, prv_level)
+            response = self.auth_util.create_user(email, pswd, prv_level)
             if response:
                 logging.info(f"User Created with email {email}")
                 return {"flash_message": True, "message_toast":"User Created", "message_flag":"success"},200
@@ -86,9 +91,9 @@ class Util:
         
         
 
-        auth_flag, prv_level = self.auth_obj.authenticate_user(email, pswd)
+        auth_flag, prv_level = self.auth_util.authenticate_user(email, pswd)
         if auth_flag:
-            _, jwt_token = self.auth_obj.encode_auth_token(email, pswd, prv_level)
+            _, jwt_token = self.auth_util.encode_auth_token(email, pswd, prv_level)
             session["jwt_token"] = jwt_token
             session["user"] = email
             session["level"] = prv_level
@@ -144,14 +149,17 @@ class Util:
         """
         starts the application
         """
-        return redirect(url_for('home'))
+        return redirect(url_for('auths.home'))
     
     def is_valid_email(self, email):
         """
         Returns True if the given string is a valid email address, otherwise False.
         """
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        return re.match(pattern, email) is not None
+        pattern = r"\"?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)\"?" 
+        pattern = re.compile(pattern)
+        if re.match(pattern, email):
+            return True
+        return False
 
 
     def validate_input(self, email, pswd, prv_level):
@@ -176,7 +184,7 @@ class Util:
         """           
         
         if self.validate_input(email, pswd, prv_level):
-            response = self.auth_obj.create_user(email, pswd, prv_level)
+            response = self.auth_util.create_user(email, pswd, prv_level)
             if response:
                 logging.info(f"{session['user']}: User Created with email {email}")
                 return {"flash_message": True, "message_toast":"User Created", "message_flag":"success"},200
@@ -193,21 +201,21 @@ class Util:
         """
         view user of applications
         """
-        records = self.auth_obj.get_all_users()
+        records = self.admin_util.get_all_users()
         return {"data":records},200
     
     def view_uploads(self):
         """
         get all the records for all file uploads
         """
-        records = self.auth_obj.get_all_uploads()
+        records = self.admin_util.get_all_uploads()
         return {"data":records},200
     
     def enable_disable_user(self, user_id, status):
         """
         delete user of applications
         """
-        flag = self.auth_obj.enable_disable_user(user_id, status)
+        flag = self.auth_util.enable_disable_user(user_id, status)
         if flag:
             logging.info(f"{session['user']}: user {status} with User id {user_id}")
             return {"flash_message": True, "message_toast":f"User {status}", "message_flag":"success"},200
@@ -220,7 +228,7 @@ class Util:
         enable diable user
         """
 
-        flag = self.auth_obj.enable_disable_user_using_email(user_email, status)
+        flag = self.auth_util.enable_disable_user_using_email(user_email, status)
         if flag:
             logging.info(f"{session['user']}: user {status} with User email {user_email}")
             return {"flash_message": True, "message_toast": f"user {status}", "message_flag":"success"},200
@@ -233,9 +241,9 @@ class Util:
         """
         reset user's password of applications
         """
-        email = self.auth_obj.get_user_email(user_id)
+        email = self.auth_util.get_user_email(user_id)
         if email:
-            flag = self.auth_obj.reset_user_password(user_id, email)
+            flag = self.auth_util.reset_user_password(user_id, email)
         else:
             logging.error(f"{session['user']}: Unable to Reset password for user {user_id}")
             return {"flash_message": True, "message_toast": f"Unable to Reset Password", "message_flag":"error"},400
@@ -253,7 +261,7 @@ class Util:
         reset user's password from api
         """
 
-        flag = self.auth_obj.reset_user_password_for_api(email)
+        flag = self.auth_util.reset_user_password_for_api(email)
 
         if flag:
             logging.info(f"{session['user']}: Password Reset for user {email}")
@@ -270,8 +278,8 @@ class Util:
         """
 
                    
-        flag = self.auth_obj.update_user(user_id, prv_level)
-        records = self.auth_obj.get_all_users()
+        flag = self.admin_util.update_user(user_id, prv_level)
+        records = self.admin_util.get_all_users()
 
         if flag:
             logging.info(f"{session['user']}: User's privileged level updated successfully with user id {user_id}")
@@ -291,7 +299,7 @@ class Util:
         
         email, prv_level = request.args.get('email'), request.args.get('prv_level')
         if prv_level in levels:
-            flag = self.auth_obj.update_user_using_email(email, prv_level)
+            flag = self.admin_util.update_user_using_email(email, prv_level)
             if flag:
                 logging.info(f"{session['user']}: User's privileged level updated successfully with user email {email}")
                 return {"flash_message": True, "message_toast":"User updated", "message_flag":"success"},200
@@ -307,7 +315,7 @@ class Util:
         update your password
         """
         
-        flag = self.auth_obj.update_password(old_pswd, new_pswd, email)
+        flag = self.auth_util.update_password(old_pswd, new_pswd, email)
 
         if flag:
             logging.info(f"{session['user']}: User Updated his password successfully")
@@ -344,7 +352,7 @@ class Util:
         now = datetime.now() 
         time_stamp = now.strftime("%m/%d/%Y %H:%M:%S")
 
-        self.auth_obj.save_log(time_stamp, session["user"], filename)
+        self.admin_util.save_log(time_stamp, session["user"], filename)
 
     def upload_csv(self):
         """
@@ -412,7 +420,7 @@ class Util:
                 zip_ref.extractall(self.UPLOAD_FOLDER + "/unzipped/")
                 zip_ref.close()
                 # todo - ingestion
-                return redirect(url_for('upload_zip'))
+                return redirect(url_for('admins.upload_zip'))
         return render_template('index.html')
     
     def download_data(self):
@@ -466,7 +474,7 @@ class Util:
                 logging.info(f"{session['user']}: Data Extracted Successfully")
             else:
             
-                resp = None, 'Unable to Fetch Data'
+                resp = None, status
                 logging.error(f"{session['user']}: Data Extraction Failed")
                     
             return resp
@@ -505,7 +513,7 @@ class Util:
         """
         enable and disable the api side
         """
-        flag = self.auth_obj.switch_api(status)
+        flag = self.auth_util.switch_api(status)
         if flag:
             logging.info(f"{session['user']}: api is {status}")
             return {"flash_message": True, "message_toast":f"api is {status}", "message_flag":"success"},200
@@ -517,11 +525,115 @@ class Util:
         """
         enable and disable the api side
         """
-        flag = self.auth_obj.switch_ui(status)
+        flag = self.auth_util.switch_ui(status)
         if flag:
             logging.info(f"{session['user']}: ui is {status}")
             return {"flash_message": True, "message_toast":f"ui is {status}", "message_flag":"success"},200
         else:
             logging.error(f"{session['user']}: ui is not{status}")
             return {"flash_message": True, "message_toast": f"ui is not{status}", "message_flag":"error"},400
+        
+    def remove_column_auth_filter(self, filter_id):
+        """
+        enable and disable the api side
+        """
+        flag = self.admin_util.delete_auth_column_filter(filter_id)
+        if flag:
+            logging.info(f"{session['user']}: Authentication Removed on columns")
+            return {"flash_message": True, "message_toast":f" Authentication Removed on columns", "message_flag":"success"},200
+        else:
+            logging.error(f"{session['user']}: Unable to Remove column Authentication")
+            return {"flash_message": True, "message_toast": f"Unable to Remove column Authentication", "message_flag":"error"},400
+        
+    def get_column_filter_for_user_from_api(self, email):
+        """
+        get all filters of columns for every user
+        """
+        try:
+            response = self.admin_util.view_authorized_columns_from_api(email)
+            status_code = 200
+        except:
+                response = None
+                status_code =400
+        return response, status_code
+        
 
+    def get_column_filter_for_user(self, user_id):
+        """
+        get all filters of columns for every user
+        """
+        try:
+            response = self.admin_util.view_authorized_columns_from_ui(user_id)
+            status_code = 200
+        except:
+                response = None
+                status_code =400
+        return response, status_code
+        
+    
+
+    def add_filter_ui(self):
+        """
+        add new filter to the columns for each user
+        """
+
+        query_strings = dict()
+        query_strings['user'] = request.form.get('user')
+        query_strings["control_table"] = request.form.get('control_table')
+        query_strings["control_area"] = request.form.get('control_area')
+        query_strings["state"] = request.form.get('state')
+        query_strings['load_zone'] = request.form.get('load_zone')
+        query_strings["capacity_zone"] = request.form.get('capacity_zone')
+        query_strings["utility"] = request.form.get('utility')
+        query_strings["strip"] = request.form.get('strip')
+        query_strings['cost_group'] = request.form.get('cost_group')
+        query_strings["cost_component"] = request.form.get('cost_component')
+        query_strings["sub_cost_component"] = request.form.get('sub_cost_component')
+        query_strings["start"] = request.form.get('start')
+        query_strings["end"] = request.form.get('end')
+        
+        
+        flag = self.admin_util.check_filter_rule(query_strings)
+        if flag:
+            flag = self.admin_util.ingest_filter_rule(query_strings)
+        
+        if flag:
+            logging.info(f"{session['user']}: Filter Rule Added Successfully")
+            return {"flash_message": True, "message_toast":f"Filter Rule Added Successfully"},200
+        else:
+            logging.error(f"{session['user']}: Unable to Add Filter Rule")
+            return {"flash_message": True, "message_toast": f"Unable to Add Filter Rule", "message_flag":"error"},400
+        
+    def add_filter_api(self):
+        """
+        add new filter to the columns for each user
+        """
+
+        query_strings = dict()
+        query_strings['user'] = request.args.get('user')
+        query_strings["control_table"] = request.args.get('control_table')
+        query_strings["control_area"] = request.args.get('control_area')
+        query_strings["state"] = request.args.get('state')
+        query_strings['load_zone'] = request.args.get('load_zone')
+        query_strings["capacity_zone"] = request.args.get('capacity_zone')
+        query_strings["utility"] = request.args.get('utility')
+        query_strings["strip"] = request.args.get('strip')
+        query_strings['cost_group'] = request.args.get('cost_group')
+        query_strings["cost_component"] = request.args.get('cost_component')
+        query_strings["sub_cost_component"] = request.args.get('sub_cost_component')
+        query_strings["start"] = request.args.get('start')
+        query_strings["end"] = request.args.get('end')      
+        
+        flag = self.admin_util.check_filter_rule(query_strings)
+        if flag:
+            flag = self.admin_util.ingest_filter_rule(query_strings)
+        
+        if flag:
+            logging.info(f"{session['user']}: Filter Rule Added Successfully")
+            return {"flash_message": True, "message_toast":f"Filter Rule Added Successfully"},200
+        else:
+            logging.error(f"{session['user']}: Unable to Add Filter Rule")
+            return {"flash_message": True, "message_toast": f"Unable to Add Filter Rule", "message_flag":"error"},400
+        
+            
+        

@@ -597,6 +597,25 @@ services:
       -- insert to the sit table
       Insert into trueprice.site(admin, ui_status, api_status) VALUES ('tle_admin', 'enabled', 'enabled');
 
+      -- column filtering
+        CREATE TABLE trueprice.column_authorization(
+          id serial PRIMARY KEY,
+          control_table VARCHAR(255) NOT NULL,
+          email VARCHAR(255) NOT NULL,
+          startMonth TIMESTAMPTZ, -- per file name (sans tz)
+          endMonth TIMESTAMPTZ, -- per file name (sans tz)
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100)
+        );
+
+
       EOSQL
   # adminer: # for postgres, php admin interface
   #   image: adminer

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Add Filter</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Favicon -->
+    <link href="static/img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="/static/external_cdns/css/css2.css" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+
+    <link href="/static/external_cdns/css/all.min.css" rel="stylesheet">
+    <link href="/static/external_cdns/css/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="static/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="static/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="static/css/style.css" rel="stylesheet">
+
+    <!-- scroll_bar -->
+    <script src="static/js/multiselect.js" ></script>
+    
+    
+
+</head>
+
+<body>
+   
+    <div class="container-fluid position-relative d-flex p-0">
+        <!-- Spinner Start -->
+        <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <!-- Spinner End -->
+
+
+        <!-- Sidebar Start -->
+        <div class="sidebar pe-4 pb-3">
+            {% include 'navbar.html'%}
+        </div>
+        <!-- Sidebar End -->
+
+
+         <!-- Content Start -->
+         <div class="content">
+            <!-- Navbar Start -->
+            {% include 'upper_navbar.html'%}
+            <!-- Navbar End -->
+
+            {% include 'notification.html'%}
+
+            <!-- Blank Start -->
+            <div class="container-fluid pt-4 px-4">
+                <div class="row g-4 align-items-center justify-content-center mx-0  mt-5">
+                    <div class="col-sm-12 col-xl-6">
+                        <div class="bg-secondary rounded h-100 p-4">
+                            <h6 class="mb-4">Column Subscription</h6>
+                            <form id="download_forms" enctype="multipart/form-data" method="post">
+                                
+                                <div class="mb-3">
+                                    <label for="user" class="form-label">User</label>
+                                    <select name="user" id ="user" class="form-control mt-2 bg-dark text-white" >
+                                        
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="control_table" class="form-label">Curve</label>
+                                    <select name="control_table" id ="control_table" class="form-control mt-2 bg-dark text-white" >
+                                        <option value="ercot_energy">ercot_energy</option>
+                                        <option value="nyiso_energy">nyiso_energy</option>
+                                        <option value="miso_energy">miso_energy</option>
+                                        <option value="isone_energy">isone_energy</option>
+                                        <option value="pjm_energy">pjm_energy</option>
+
+                                        <option value="ercot_nonenergy">ercot_nonenergy</option>
+                                        <option value="nyiso_nonenergy">nyiso_nonenergy</option>
+                                        <option value="miso_nonenergy">miso_nonenergy</option>
+                                        <option value="isone_nonenergy">isone_nonenergy</option>
+                                        <option value="pjm_nonenergy">pjm_nonenergy</option>
+
+                                        <option value="ercot_rec">ercot_rec</option>
+                                        <option value="nyiso_rec">nyiso_rec</option>
+                                        <option value="isone_rec">isone_rec</option>
+                                        <option value="pjm_rec">pjm_rec</option>
+                                        
+                                        
+                                    </select>
+                                </div>
+                                
+
+                                <div class="mb-3">
+                                    <label for="control_area" class="form-label">Control Area</label>
+                                    <select name="control_area" id="control_area" required class="form-control mt-2 bg-dark text-white" >
+                                        
+                                    </select>
+                                    
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="state" class="form-label">State</label>
+                                    <select name="state" id="state" required class="form-control mt-2 bg-dark text-white" >
+                                        
+                                    </select>
+                                    
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="load_zone" class="form-label">Load Zone</label>
+                                    <select name="load_zone" id="load_zone" required class="form-control mt-2 bg-dark text-white" >
+                                        
+                                    </select>
+                                    
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="capacity_zone" class="form-label">Capacity Zone</label>
+                                    <select name="capacity_zone" id="capacity_zone" class="form-control mt-2 bg-dark text-white" >
+                                        
+                                    </select>
+                                    
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="utility" class="form-label">Utility</label>
+                                    <select name="utility" id="utility"  required class="form-control mt-2 bg-dark text-white" >
+                                        
+                                    </select>
+                                    
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="strip" class="form-label">Block Type</label>
+                                    <select name="strip" id="strip"  required class="form-control mt-2 bg-dark text-white" >
+                                        
+                                    </select>
+                                    
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="cost_group" class="form-label">Cost Group</label>
+                                    <select name="cost_group" id="cost_group"  required class="form-control mt-2 bg-dark text-white" >
+                                        
+                                    </select>
+                                    
+                                </div>
+
+
+                                <div class="mb-3">
+                                    <label for="cost_component" class="form-label">Cost Component</label>
+                                    <select name="cost_component" id="cost_component"  required class="form-control mt-2 bg-dark text-white" >
+                                        
+                                    </select>
+                                    
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="sub_cost_component" class="form-label">Sub Cost Component</label>
+                                    <select name="sub_cost_component" id="sub_cost_component"  required class="form-control mt-2 bg-dark text-white" >
+                                        
+                                    </select>
+                                    
+                                </div>
+
+
+                                
+
+                                <div class="mb-3">
+
+                                    <label for="start" class="form-label">Start</label>
+                                    <input type="date" class="form-control mt-2 text-white" required id="start" name="start" style="background-color: gray;" >
+                                    
+                                </div>
+
+                                
+
+                                <div class="mb-3">
+                                    <label for="end" class="form-label">End</label>
+                                    
+                                    <input type="date" class="form-control mt-2  text-white" required id="end" name="end" style="background-color: gray;" >
+                                   
+                                </div>
+
+                                
+                                <div class="mb-3">
+                                    <input type="submit" value="Add Filter" id="save" class="btn btn-outline-primary w-100 m-2">
+                                </div>
+                            </form>
+                        </div>
+                    </div>                
+            </div>
+
+            
+            </div>
+            <!-- Blank End -->
+
+
+            <!-- Footer Start -->
+            {% include 'footer.html'%}
+            <!-- Footer End -->
+        </div>
+        <!-- Content End -->
+
+
+        <!-- Back to Top -->
+         
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="/static/external_cdns/js/jquery-3.4.1.min.js"></script>
+    <script src="/static/external_cdns/js/bootstrap.bundle.min.js"></script>
+    <script src="static/lib/chart/chart.min.js"></script>
+    <script src="static/lib/easing/easing.min.js"></script>
+    <script src="static/lib/waypoints/waypoints.min.js"></script>
+    <script src="static/lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="static/lib/tempusdominus/js/moment.min.js"></script>
+    <script src="static/lib/tempusdominus/js/moment-timezone.min.js"></script>
+    <script src="static/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="static/js/main.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="static/js/data_loader.js"></script>
+    
+</body>
+
+</html>
