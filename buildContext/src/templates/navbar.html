@@ -1,40 +1,41 @@
 
 
 <nav class="navbar bg-secondary navbar-dark">
-    <a href="{{ url_for('index') }}" class="navbar-brand mx-4 mb-3">
+    <a href="{{ url_for('auths.index') }}" class="navbar-brand mx-4 mb-3">
         <h3 class="text-primary"><i class="fa fa-bolt me-2"></i>TRUEPrice</h3>
     </a>
     
     <div class="navbar-nav w-100">
-        <a href="{{ url_for('index') }}" class="nav-item nav-link {% if request.path == '/home' %}active{% endif %}"><i class="fa fa-home me-2"></i>Home</a>
-        <a href="{{ url_for('update_password')}}" class="nav-item nav-link {% if request.path == '/update_password' %}active{% endif %} "><i class="fa fa-key me-2"></i>Password</a>
+        <a href="{{ url_for('auths.index') }}" class="nav-item nav-link {% if request.path == '/home' %}active{% endif %}"><i class="fa fa-home me-2"></i>Home</a>
+        <a href="{{ url_for('auths.update_password')}}" class="nav-item nav-link {% if request.path == '/update_password' %}active{% endif %} "><i class="fa fa-key me-2"></i>Password</a>
         {%if session["level"]=="admin" or session["level"]=="read_write_user"%} 
             <div class="nav-item dropdown">
                 <a href="#" class="nav-link dropdown-toggle {% if request.path == '/upload_csv' %}active{% endif %}" data-bs-toggle="dropdown"><i class="fa fa-upload me-2"></i>Uploads</a>
                 <div class="dropdown-menu bg-transparent border-0">
-                    <a href="{{ url_for('upload_csv')}}" class="dropdown-item"><i class="fa fa-file me-2"></i>CSV</a>
+                    <a href="{{ url_for('ingestors.upload_csv')}}" class="dropdown-item"><i class="fa fa-file me-2"></i>CSV</a>
                     <a href="#" class="dropdown-item disabled"><i class="fa fa-archive me-2"></i>ZIP</a>
                 </div>
             </div>
         {%endif%}
 
 
-        <a href="{{ url_for('upload_status')}}" class="nav-item nav-link {% if request.path == '/upload_status' %}active{% endif %}"><i class="fa fa-clipboard me-2"></i>Recent Uploads</a>
-        <a href="{{ url_for('download_data')}}" class="nav-item nav-link {% if request.path == '/download_data' %}active{% endif %}"><i class="fa fa-download me-2"></i>Downloads</a>
-        <a href="{{ url_for('add_filter')}}" class="nav-item nav-link {% if request.path == '/add_filter' %}active{% endif %}"><i class="fa fa-columns me-2"></i>Columns</a>
+        <a href="{{ url_for('admins.upload_status')}}" class="nav-item nav-link {% if request.path == '/upload_status' %}active{% endif %}"><i class="fa fa-clipboard me-2"></i>Recent Uploads</a>
+        <a href="{{ url_for('extractors.download_data')}}" class="nav-item nav-link {% if request.path == '/download_data' %}active{% endif %}"><i class="fa fa-download me-2"></i>Downloads</a>
         {%if session["level"]=="admin"%} 
-            <a href="{{ url_for('get_logs')}}" class="nav-item nav-link {% if request.path == '/get_logs' %}active{% endif %} "><i class="fa fa-clock me-2"></i>Logs</a>
-            <a href="{{ url_for('site_control')}}" class="nav-item nav-link {% if request.path == '/site_control' %}active{% endif %}"><i class="fa fa-cog me-2"></i>Site</a>
+            <a href="{{ url_for('admins.add_filter')}}" class="nav-item nav-link {% if request.path == '/add_filter' %}active{% endif %}"><i class="fa fa-columns me-2"></i>Columns</a>
+        
+            <a href="{{ url_for('admins.get_logs')}}" class="nav-item nav-link {% if request.path == '/get_logs' %}active{% endif %} "><i class="fa fa-clock me-2"></i>Logs</a>
+            <a href="{{ url_for('admins.site_control')}}" class="nav-item nav-link {% if request.path == '/site_control' %}active{% endif %}"><i class="fa fa-cog me-2"></i>Site</a>
             <div class="nav-item dropdown">
                 <a href="#" class="nav-link dropdown-toggle {% if request.path == '/create_user' or request.path == '/view_user' %}active{% endif %}" data-bs-toggle="dropdown"><i class="far fa-user me-2"></i>User</a>
                 <div class="dropdown-menu bg-transparent border-0">
-                    <a href="{{ url_for('create_user')}}" class="dropdown-item"><i class="fa fa-plus me-2"></i>Create</a>
-                    <a href="{{ url_for('view_user')}}" class="dropdown-item"><i class="fa fa-eye me-2"></i>View</a>
+                    <a href="{{ url_for('auths.create_user')}}" class="dropdown-item"><i class="fa fa-plus me-2"></i>Create</a>
+                    <a href="{{ url_for('auths.view_user')}}" class="dropdown-item"><i class="fa fa-eye me-2"></i>View</a>
                     
                     
                 </div>
             </div>
         {%endif%}
-        <a href="{{ url_for('logout')}}" class="nav-item nav-link"><i class="fa fa-power-off me-2"></i>Log Out</a>
+        <a href="{{ url_for('auths.logout')}}" class="nav-item nav-link"><i class="fa fa-power-off me-2"></i>Log Out</a>
     </div>
 </nav>

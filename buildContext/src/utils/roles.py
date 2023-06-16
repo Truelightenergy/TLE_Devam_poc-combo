@@ -1,11 +1,12 @@
 from functools import wraps
 from flask import session, request, jsonify, url_for, redirect, make_response
 from utils.db_utils import DataBaseUtils
+from utils.keys import secret_key, secret_salt
 
 
 class RolesDecorator:
-    def __init__(self, db_obj, revoked_jwt):
-        self.db_obj = db_obj
+    def __init__(self, revoked_jwt):
+        self.db_obj = DataBaseUtils(secret_key, secret_salt)
         self.revoked_jwt = revoked_jwt
 
     def login(self):
@@ -30,18 +31,7 @@ class RolesDecorator:
         @wraps(f)
         def decorated_function(*args, **kwargs):
 
-            rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
-            token = None
-            if rest_api_condition:
-                if 'Authorization' in request.headers:
-                    token = request.headers.get('Authorization', '').split()[-1]
-                if token is None and ((request.content_type=='application/json') or ("multipart/form-data" in request.content_type)):
-                    token = session.get('jwt_token')
-            else:
-                token = session.get('jwt_token')
-                
-                
-
+            token = request.headers.get('Authorization', '').split()[1] if 'Authorization' in request.headers else session.get('jwt_token')
 
             # if token does not exist
             if not token:
@@ -92,16 +82,8 @@ class RolesDecorator:
         def decorated_function(*args, **kwargs):
 
             
-            rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
-            token = None
-            if rest_api_condition:
-                if 'Authorization' in request.headers:
-                    token = request.headers.get('Authorization', '').split()[-1]
-                if token is None and ((request.content_type=='application/json') or ("multipart/form-data" in request.content_type)):
-                    token = session.get('jwt_token')
-            else:
-                token = session.get('jwt_token')
 
+            token = request.headers.get('Authorization', '').split()[1] if 'Authorization' in request.headers else session.get('jwt_token')
             # if token does not exist
             if not token:
                 return jsonify({'message': 'Token is missing'}) if 'Authorization' in request.headers else self.login()
@@ -148,16 +130,7 @@ class RolesDecorator:
         @wraps(f)
         def decorated_function(*args, **kwargs):
             
-            rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
-            token = None
-            if rest_api_condition:
-                if 'Authorization' in request.headers:
-                    token = request.headers.get('Authorization', '').split()[-1]
-                if token is None and ((request.content_type=='application/json') or ("multipart/form-data" in request.content_type)):
-                    token = session.get('jwt_token')
-            else:
-                token = session.get('jwt_token')
-
+            token = request.headers.get('Authorization', '').split()[1] if 'Authorization' in request.headers else session.get('jwt_token')
              # if token does not exist
             if not token:
                 return jsonify({'message': 'Token is missing'}) if 'Authorization' in request.headers else self.login()

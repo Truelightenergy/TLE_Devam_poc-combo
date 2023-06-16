@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top px-4 py-0">
-    <a href="{{ url_for('index') }}" class="navbar-brand d-flex d-lg-none me-4">
+    <a href="{{ url_for('auths.index') }}" class="navbar-brand d-flex d-lg-none me-4">
         <h2 class="text-primary mb-0"><i class="fa fa-bolt-edit"></i></h2>
     </a>
     <a href="#" class="sidebar-toggler flex-shrink-0">
@@ -15,8 +15,8 @@
                 <span class="d-none d-lg-inline-flex">{{session['user']}}</span>
             </a>
             <div class="dropdown-menu dropdown-menu-end bg-secondary border-0 rounded-0 rounded-bottom m-0">
-                <a href="{{ url_for('update_password')}}" class="dropdown-item">Settings</a>
-                <a href="{{ url_for('logout')}}" class="dropdown-item">Log Out</a>
+                <a href="{{ url_for('auths.update_password')}}" class="dropdown-item">Settings</a>
+                <a href="{{ url_for('auths.logout')}}" class="dropdown-item">Log Out</a>
             </div>
         </div>
     </div>
