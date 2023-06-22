@@ -8,6 +8,7 @@ import re
 import shutil
 import time
 import zipfile
+import json
 from datetime import datetime
 import utils.trueprice_database as tpdb
 from werkzeug.utils import secure_filename
@@ -76,7 +77,10 @@ class Util:
                         "attachment; filename="+file_name+".csv"}), status
                 
                 elif query_strings["type"]=="json":
-                    resp = Response(data_frame.to_json(orient='records'), 
+                    
+                    json_output = data_frame.to_json(orient="records", indent=4)
+
+                    resp = Response(json_output, 
                         mimetype='application/json',
                         headers={'Content-Disposition':'attachment;filename='+file_name+'.json'}), status
                 
@@ -84,7 +88,7 @@ class Util:
             else:
             
                 resp = None, status
-                logging.error(f"{session['user']}: Data Extraction Failed")
+                logging.error(f"{session['user']}: Data Extraction Failed from file part : "+ file_name)
                     
             return resp
         except:

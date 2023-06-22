@@ -4,21 +4,31 @@ $(document).ready(function() {
 
     // Define the change event handler for curve type dropdown
     $('#user').change(function() {
+        var selectedUser = $(this).val();
         $.ajax({
             url: '/get_users',
             type: 'POST',
             contentType: 'application/json',
+            headers: {
+                'Authorization': "Bearer "+token
+            },
             success: function(response) {
                 $('#user').empty();
                 $.each(response, function(index, value) {
                     var html = '<option value="' + value + '">' + value + '</option>';
                     $('#user').append(html);
                 });
-            }
+                if (selectedUser){
+                    $('#user').val(selectedUser);
+                }
+            }   
         });
     });
 
     $('#user').trigger('change');
+
+
+    
     
 
 
@@ -34,6 +44,9 @@ $(document).ready(function() {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ 'control_table': selectedcontrol_table }),
+            headers: {
+                        'Authorization': "Bearer "+token
+                    },
             success: function(response) {
                 $('#control_area').empty();
                 $.each(response, function(index, value) {
@@ -62,6 +75,9 @@ $(document).ready(function() {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ 'control_table': selectedcontrol_table, 'control_area': selectedcontrol_area }),
+            headers: {
+                'Authorization': "Bearer "+token
+            },
             success: function(response) {
                 $('#state').empty();
                 $.each(response, function(index, value) {
@@ -86,6 +102,9 @@ $(document).ready(function() {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ 'control_table': selectedcontrol_table, 'control_area': selectedcontrol_area, 'state': selectedstate }),
+            headers: {
+                'Authorization': "Bearer "+token
+            },
             success: function(response) {
                 $('#load_zone').empty();
                 $.each(response, function(index, value) {
@@ -112,6 +131,9 @@ $(document).ready(function() {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ 'control_table': selectedcontrol_table, 'control_area': selectedcontrol_area, 'state': selectedstate, 'load_zone': selectedload_zone }),
+            headers: {
+                'Authorization': "Bearer "+token
+            },
             success: function(response) {
                 $('#capacity_zone').empty();
                 $.each(response, function(index, value) {
@@ -140,6 +162,9 @@ $(document).ready(function() {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ 'control_table': selectedcontrol_table, 'control_area': selectedcontrol_area, 'state': selectedstate, 'load_zone': selectedload_zone, 'capacity_zone': selected_capacity_zone }),
+            headers: {
+                'Authorization': "Bearer "+token
+            },
             success: function(response) {
                 $('#utility').empty();
                 $.each(response, function(index, value) {
@@ -162,7 +187,6 @@ $(document).ready(function() {
         var selectedstate = $('#state').val();
         var selectedload_zone = $('#load_zone').val();  
         var selected_capacity_zone = $('#capacity_zone').val();  
-
         var selected_utility = $(this).val();
 
         $.ajax({
@@ -170,6 +194,9 @@ $(document).ready(function() {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ 'control_table': selectedcontrol_table, 'control_area': selectedcontrol_area, 'state': selectedstate, 'load_zone': selectedload_zone, 'capacity_zone': selected_capacity_zone, 'utility': selected_utility }),
+            headers: {
+                'Authorization': "Bearer "+token
+            },
             success: function(response) {
                 $('#strip').empty();
                 $.each(response, function(index, value) {
@@ -200,6 +227,9 @@ $(document).ready(function() {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ 'control_table': selectedcontrol_table, 'control_area': selectedcontrol_area, 'state': selectedstate, 'load_zone': selectedload_zone, 'capacity_zone': selected_capacity_zone, 'utility': selected_utility, 'strip': selected_strip }),
+            headers: {
+                'Authorization': "Bearer "+token
+            },
             success: function(response) {
                 $('#cost_group').empty();
                 $.each(response, function(index, value) {
@@ -231,6 +261,9 @@ $(document).ready(function() {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ 'control_table': selectedcontrol_table, 'control_area': selectedcontrol_area, 'state': selectedstate, 'load_zone': selectedload_zone, 'capacity_zone': selected_capacity_zone, 'utility': selected_utility, 'strip': selected_strip, 'cost_group': selected_costgroup }),
+            headers: {
+                'Authorization': "Bearer "+token
+            },
             success: function(response) {
                 $('#cost_component').empty();
                 $.each(response, function(index, value) {
@@ -261,6 +294,9 @@ $(document).ready(function() {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ 'control_table': selectedcontrol_table, 'control_area': selectedcontrol_area, 'state': selectedstate, 'load_zone': selectedload_zone, 'capacity_zone': selected_capacity_zone, 'utility': selected_utility, 'strip': selected_strip, 'cost_group': selected_costgroup, 'cost_component': selected_costcomponent }),
+            headers: {
+                'Authorization': "Bearer "+token
+            },
             success: function(response) {
                 $('#sub_cost_component').empty();
                 $.each(response, function(index, value) {

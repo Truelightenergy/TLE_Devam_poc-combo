@@ -3,6 +3,7 @@ makes query to the database and returns to the database
 """
 
 import pandas as pd
+from datetime import datetime
 from flask import session
 from .helper.extraction_rules import Rules
 from utils.database_connection import ConnectDatabase
@@ -72,9 +73,16 @@ class Extractor:
         """
         post process the dataframe
         """
-        columns=["month",'curvestart', 'curveend', "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'sub_cost_component']
+        columns=["month", 'data', 'curvestart', 'curveend', "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'sub_cost_component']
         df= df[columns]
-        df.columns = ["Month",'Curve Start', 'Curve End', "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", 'Sub Cost Component']
+        df = df.copy()
+        if not df.empty:
+            df["curvestart"] = df["curvestart"].dt.strftime('%Y-%m-%d %H:%M:%S')
+            df['curveend'] = df['curveend'].apply(lambda x: str(x).replace('-', ' '))
+            df["month"] = df["month"].dt.strftime('%Y-%m-%d %H:%M:%S')
+            
+        
+        df.columns = ["Month",'Data', 'Curve Start', 'Curve End', "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", 'Sub Cost Component']
         return df
 
 
