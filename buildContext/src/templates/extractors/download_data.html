@@ -208,27 +208,30 @@
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script>
             $(document).ready(function() {
-                // Define the change event handler for curve type dropdown
-                $('#curve_type').change(function() {
-                    var selectedcurve = $(this).val();
-                    $.ajax({
-                        url: '/get_options',
-                        type: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify({ 'curve': selectedcurve }),
-                        success: function(response) {
-                            $('#iso').empty();
-                            $.each(response, function(index, value) {
-                                var html = '<option value="' + value.toLowerCase() + '">' + value + '</option>';
-                                $('#iso').append(html);
-                            });
-                        }
-                    });
+            // Define the change event handler for curve type dropdown
+            $('#curve_type').change(function() {
+                var selectedcurve = $(this).val();
+                $.ajax({
+                    url: '/get_options',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ 'curve': selectedcurve }),
+                    headers: {
+                        'Authorization': "Bearer {{session.get('jwt_token')}}"
+                    },
+                    success: function(response) {
+                        $('#iso').empty();
+                        $.each(response, function(index, value) {
+                            var html = '<option value="' + value.toLowerCase() + '">' + value + '</option>';
+                            $('#iso').append(html);
+                        });
+                    }
                 });
-            
-                // Trigger the change event on curve type dropdown to populate ISO dropdown initially
-                $('#curve_type').trigger('change');
             });
+
+            // Trigger the change event on curve type dropdown to populate ISO dropdown initially
+            $('#curve_type').trigger('change');
+        });
         </script>
 </body>
 

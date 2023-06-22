@@ -53,6 +53,7 @@ class PjmNonEnergyHelper:
 
             resultant_df = pd.concat(dataframes, axis=0)
             resultant_df=resultant_df.sort_values("Date")
+            
             resultant_df['Data'].replace(' ', 0, inplace=True)
             resultant_df.reset_index(drop=True, inplace=True)
 

@@ -18,11 +18,7 @@ class ErcotRecHelper:
         df.columns[0]: 'Date', 
         df.columns[1] : 'tx_total_cost_per_mWh',
         df.columns[2] : 'tx_compliance' ,
-        df.columns[3] : 'tx_rec_price',
-        df.columns[4] : 'tx_year',
-        df.columns[5] : 'tx_total_texas_competitive_load_mWh',
-        df.columns[6] : 'tx_rps_mandate_mWh',
-        df.columns[7] : 'tx_prct'} )
+        df.columns[3] : 'tx_rec_price'} )
     
         return df
 

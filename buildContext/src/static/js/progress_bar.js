@@ -36,6 +36,9 @@ $(document).ready(function() {
 			data : formData,
 			processData : false,
 			contentType : false,
+			headers: {
+				'Authorization': "Bearer "+token
+			},
 			success : function(response) {
 				
                 $('#process').css('display', 'none');

@@ -31,7 +31,13 @@ class RolesDecorator:
         @wraps(f)
         def decorated_function(*args, **kwargs):
 
-            token = request.headers.get('Authorization', '').split()[1] if 'Authorization' in request.headers else session.get('jwt_token')
+            rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+            token = None
+            if (rest_api_condition):
+                if ('Authorization' in request.headers):
+                    token = request.headers.get('Authorization', '').split()[-1]
+            else:
+                token = session.get('jwt_token')
 
             # if token does not exist
             if not token:
@@ -83,7 +89,14 @@ class RolesDecorator:
 
             
 
-            token = request.headers.get('Authorization', '').split()[1] if 'Authorization' in request.headers else session.get('jwt_token')
+            rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+            token = None
+            if (rest_api_condition):
+                if ('Authorization' in request.headers):
+                    token = request.headers.get('Authorization', '').split()[-1]
+            else:
+                token = session.get('jwt_token')
+
             # if token does not exist
             if not token:
                 return jsonify({'message': 'Token is missing'}) if 'Authorization' in request.headers else self.login()
@@ -130,7 +143,14 @@ class RolesDecorator:
         @wraps(f)
         def decorated_function(*args, **kwargs):
             
-            token = request.headers.get('Authorization', '').split()[1] if 'Authorization' in request.headers else session.get('jwt_token')
+            rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+            token = None
+            if (rest_api_condition):
+                if ('Authorization' in request.headers):
+                    token = request.headers.get('Authorization', '').split()[-1]
+            else:
+                token = session.get('jwt_token')
+
              # if token does not exist
             if not token:
                 return jsonify({'message': 'Token is missing'}) if 'Authorization' in request.headers else self.login()

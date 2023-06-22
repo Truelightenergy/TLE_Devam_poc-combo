@@ -40,16 +40,17 @@
     
     
     <script>
-		$(document).ready(function(){
-		  var output = document.getElementById('output');
-		  var xhr = new XMLHttpRequest();
-		  xhr.open('GET', "{{ url_for('admins.log_stream')}}", true);
-		  xhr.send();
-		  setInterval(function() {
-			output.textContent = xhr.responseText;
-		  }, 500);
-		});
-	  </script>
+      $(document).ready(function(){
+          var output = document.getElementById('output');
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', "{{ url_for('admins.log_stream')}}", true);
+          xhr.setRequestHeader('Authorization', "Bearer {{session.get('jwt_token')}}");
+          xhr.send();
+          setInterval(function() {
+              output.textContent = xhr.responseText;
+          }, 500);
+      });
+  </script>
 
 </head>
 
