@@ -94,11 +94,11 @@ class Extractor:
 
             dataframe = None
             status = "Unable to Fetch Data"
-            if query_strings["curve_type"] == "nonenergy":
+            if str(query_strings["curve_type"]).lower() == "nonenergy":
                 dataframe, status = self.non_energy.extraction(query_strings)
-            elif query_strings["curve_type"] == "energy":
+            elif str(query_strings["curve_type"]).lower() == "energy":
                 dataframe, status = self.energy.extraction(query_strings)
-            elif query_strings["curve_type"] == "rec":
+            elif str(query_strings["curve_type"]).lower() == "rec":
                 dataframe, status = self.rec.extraction(query_strings)
 
             if not isinstance(dataframe, pd.DataFrame):

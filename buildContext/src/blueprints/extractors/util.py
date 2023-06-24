@@ -9,7 +9,7 @@ import shutil
 import time
 import zipfile
 import json
-from datetime import datetime
+import datetime
 import utils.trueprice_database as tpdb
 from werkzeug.utils import secure_filename
 from flask import Flask, flash, request, redirect, url_for, flash, render_template, Response, session, jsonify, make_response
@@ -33,6 +33,20 @@ class Util:
         
         self.extractor = Extractor()
 
+
+    def get_operating_days(self, date, offset):
+        """
+        operating days calculator based on the offset
+        """
+
+        date = datetime.datetime.strptime(date, '%Y-%m-%d')
+        target_date = date - datetime.timedelta(days=int(offset))
+        # Check if the target date is a working day (Monday to Friday)
+        while target_date.weekday() > 5:
+            target_date -= datetime.timedelta(days=1)
+
+        return  target_date.date()
+
     def download_data(self):
         """
         download the data from databasse
@@ -43,15 +57,17 @@ class Util:
         query_strings["curve_type"] = request.form.get('curve_type')
         query_strings["strip"] = request.form.getlist('strip')
         query_strings["type"] = request.form.get('type')
-        start = str(request.form.get('start')).split("-")
-        query_strings["start"] = "".join(start)
+        query_strings["start"] = str(request.form.get('start'))
+        query_strings["end"] = str(request.form.get('end'))
+
         if request.form.get('history'):
             query_strings['history'] = True
         else:
             query_strings['history'] = False
 
-        end = str(request.form.get('end')).split("-")
-        query_strings["end"] = "".join(end)
+        query_strings["offset"] =  request.form.get('offset')
+        query_strings["operating_day"] = request.form.get('operating_day')
+
         
         response, status= self.extract_data(query_strings)
         
@@ -66,6 +82,17 @@ class Util:
         extracts the dataset from the database based on the characteristics
         """
         try:
+            offset= query_strings["offset"]
+            operating_day = query_strings["operating_day"]
+            start = query_strings["start"]
+            end = query_strings["end"]
+            curvestart = self.get_operating_days(operating_day, offset)
+
+            query_strings["curvestart"] = "".join(str(curvestart).split("-"))
+            query_strings["curveend"] = "".join(str(operating_day).split("-"))
+            query_strings["start"] = "".join(str(start).split("-"))
+            query_strings["end"] = "".join(str(end).split("-"))
+            
             data_frame, status = self.extractor.get_custom_data(query_strings, query_strings["type"])
             file_name = f'{query_strings["curve_type"]}_{query_strings["iso"]}_{"_".join(query_strings["strip"])}_{query_strings["start"]}_{query_strings["end"]}'
             if status == "success":
@@ -76,7 +103,7 @@ class Util:
                         headers={"Content-disposition":
                         "attachment; filename="+file_name+".csv"}), status
                 
-                elif query_strings["type"]=="json":
+                else:
                     
                     json_output = data_frame.to_json(orient="records", indent=4)
 
@@ -85,10 +112,7 @@ class Util:
                         headers={'Content-Disposition':'attachment;filename='+file_name+'.json'}), status
                 
                 logging.info(f"{session['user']}: Data Extracted Successfully")
-            else:
             
-                resp = None, status
-                logging.error(f"{session['user']}: Data Extraction Failed from file part : "+ file_name)
                     
             return resp
         except:
