@@ -70,14 +70,28 @@ def get_data():
         type: string
         format: date
         required: true
-        description: Start Date
+        description: yyyy-mm-dd
     
       - name: end
         in: query
         type: string
         format: date
         required: true
-        description: End Date
+        description: yyyy-mm-dd
+
+      - name: operating_day
+        in: query
+        type: string
+        format: date
+        required: true
+        description: yyyy-mm-dd
+    
+      - name: offset
+        in: query
+        type: string
+        format: date
+        required: true
+        description: 0
 
       - name: curve_type
         in: query
@@ -122,11 +136,13 @@ def get_data():
     if rest_api_condition:
         setup_session(request.headers['Authorization'].split()[-1])
     args = request.args.to_dict()
+
     args['strip'] = request.args.getlist('strip')
     if request.args.get('history')=="true":
         args['history'] = True
     else:
         args['history'] = False
+
     response, status = api_util.extract_data(args)
     if status != "success":
         return status

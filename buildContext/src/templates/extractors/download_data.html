@@ -12,8 +12,6 @@
     <link href="static/img/favicon.ico" rel="icon">
 
     <!-- Google Web Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="/static/external_cdns/css/css2.css" rel="stylesheet">
 
     <!-- Icon Font Stylesheet -->
@@ -21,9 +19,6 @@
     <link href="/static/external_cdns/css/all.min.css" rel="stylesheet">
     <link href="/static/external_cdns/css/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- Libraries Stylesheet -->
-    <link href="static/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-    <link href="static/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="static/css/bootstrap.min.css" rel="stylesheet">
@@ -130,6 +125,24 @@
                                    
                                 </div>
 
+
+                                <div class="mb-3">
+
+                                    <label for="operating_day" class="form-label">Operating Day</label>
+                                    <input type="date" class="form-control mt-2 text-white" required id="operating_day" name="operating_day" style="background-color: gray;" >
+                                    
+                                </div>
+
+                                
+
+                                <div class="mb-3">
+                                    <label for="offset" class="form-label">Working Days Offset prior to Operating Day </label>
+                                    
+                                    <input type="number" value="0" class="form-control mt-2  text-white" required id="offset" name="offset" >
+                                   
+                                </div>
+
+
                                 <div class="mb-3 form-check">
                                     <input type="checkbox" class="form-check-input" id="history" name="history">
                                     <label class="form-check-label" for="history">History</label>
@@ -162,13 +175,7 @@
     <!-- JavaScript Libraries -->
     <script src="/static/external_cdns/js/jquery-3.4.1.min.js"></script>
     <script src="/static/external_cdns/js/bootstrap.bundle.min.js"></script>
-    <script src="static/lib/chart/chart.min.js"></script>
-    <script src="static/lib/easing/easing.min.js"></script>
     <script src="static/lib/waypoints/waypoints.min.js"></script>
-    <script src="static/lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="static/lib/tempusdominus/js/moment.min.js"></script>
-    <script src="static/lib/tempusdominus/js/moment-timezone.min.js"></script>
-    <script src="static/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
 
     <!-- Template Javascript -->
     <script src="static/js/main.js"></script>
@@ -198,12 +205,17 @@
             var formattedDate = year + '-' + month + '-' + day;
             return formattedDate;
         }
+
         end = currennt_date();
         start = next_date();
-        console.log(start, end)
+        operating_day = currennt_date();
+
         // Set the value of the input field
         document.getElementById('start').value= start;
         document.getElementById('end').value= end;
+        document.getElementById('operating_day').value = operating_day;
+
+
       </script>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script>
