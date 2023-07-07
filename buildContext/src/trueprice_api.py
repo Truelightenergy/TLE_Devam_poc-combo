@@ -62,8 +62,9 @@ template = {
     }
 }
 
+logging.info(f"Starting {__name__}")
+app = create_app()
+swagger = Swagger(app, template=template)
+
 if __name__ == "__main__":
-    print("Starting")
-    app = create_app()
-    swagger = Swagger(app, template=template)
     app.run(port=5555)
