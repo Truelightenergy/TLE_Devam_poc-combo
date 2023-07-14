@@ -86,10 +86,14 @@ class Util:
             operating_day = query_strings["operating_day"]
             start = query_strings["start"]
             end = query_strings["end"]
-            curvestart = self.get_operating_days(operating_day, offset)
-
-            query_strings["curvestart"] = "".join(str(curvestart).split("-"))
-            query_strings["curveend"] = "".join(str(operating_day).split("-"))
+            if operating_day:
+                curvestart = self.get_operating_days(operating_day, offset)
+                query_strings["curvestart"] = "".join(str(curvestart).split("-"))
+                query_strings["curveend"] = "".join(str(operating_day).split("-"))
+            else:
+                query_strings["curvestart"] = None
+                query_strings["curveend"] = None
+                
             query_strings["start"] = "".join(str(start).split("-"))
             query_strings["end"] = "".join(str(end).split("-"))
             

@@ -54,6 +54,8 @@ class IsoneRecHelper:
             df_info.columns = df_info.iloc[0]
             df_info = df_info.drop(df_info.index[0])
             df_info.reset_index(inplace=True, drop=True)
+            if df_info.isnull().values.any():
+                raise Exception("File Format Not Matched")
             
 
             # formating the dataframe

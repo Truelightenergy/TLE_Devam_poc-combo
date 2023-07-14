@@ -28,7 +28,7 @@ psql_check () {
 
 # $1 == "iso"
 api_check () {
-  curl -sw "%{http_code}" "http://127.0.0.1:5555/get_data?start=20030301&end=20380301&iso=$1&strip=7x24&strip=7x8&strip=5x16&strip=2x16&curve_type=nonenergy&type=csv&history=false" > api_results.txt -H "Authorization: Bearer $token"
+  curl -sw "%{http_code}" "http://127.0.0.1:5555/get_data?start=2022-09-01&end=2029-12-31&operating_day=2023-04-20&offset=1&curve_type=nonenergy&iso=$1&strip=7x24&history=false&type=csv" > api_results.txt -H "Authorization: Bearer $token"
   if [[ $(wc -l api_results.txt | awk '{print $1}') -eq "62" ]]; then
     return 0
   fi
@@ -66,7 +66,7 @@ if ! api_check "ercot"; then
   printf "error api_check"
 fi
 
-if ! upload_check "/home/alee/Documents/truelight/poc-combo/buildContext/good_test_data/nonenergy/NonEnergy_ERCOT_20230419_101011.csv"; then
+if ! upload_check "/home/alee/Documents/truelight/poc-combo/buildContext/good_test_data/nonenergy/NonEnergy_ERCOT_20230420_101010.csv"; then
   printf "error upload_check, intraday update"
 fi
 

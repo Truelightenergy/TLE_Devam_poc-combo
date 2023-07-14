@@ -129,7 +129,7 @@
                                 <div class="mb-3">
 
                                     <label for="operating_day" class="form-label">Operating Day</label>
-                                    <input type="date" class="form-control mt-2 text-white" required id="operating_day" name="operating_day" style="background-color: gray;" >
+                                    <input type="date" class="form-control mt-2 text-white" id="operating_day" name="operating_day" style="background-color: gray;" >
                                     
                                 </div>
 
@@ -138,7 +138,7 @@
                                 <div class="mb-3">
                                     <label for="offset" class="form-label">Working Days Offset prior to Operating Day </label>
                                     
-                                    <input type="number" value="0" class="form-control mt-2  text-white" required id="offset" name="offset" >
+                                    <input type="number" value="0" class="form-control mt-2  text-white" id="offset" name="offset" >
                                    
                                 </div>
 
@@ -208,12 +208,10 @@
 
         end = currennt_date();
         start = next_date();
-        operating_day = currennt_date();
 
         // Set the value of the input field
         document.getElementById('start').value= start;
         document.getElementById('end').value= end;
-        document.getElementById('operating_day').value = operating_day;
 
 
       </script>
