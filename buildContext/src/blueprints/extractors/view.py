@@ -83,14 +83,14 @@ def get_data():
         in: query
         type: string
         format: date
-        required: true
+        required: false
         description: yyyy-mm-dd
     
       - name: offset
         in: query
         type: string
         format: date
-        required: true
+        required: false
         description: 0
 
       - name: curve_type

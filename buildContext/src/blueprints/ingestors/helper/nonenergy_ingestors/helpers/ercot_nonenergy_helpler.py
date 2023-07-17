@@ -36,6 +36,9 @@ class ErcotNonEnergyHelper:
             df_info = df_info.dropna(how='all', axis=0)
             df_info.reset_index(inplace=True, drop=True)
 
+            if df_info.isnull().values.any():
+                raise Exception("File Format Not Matched")
+
             # formating the dataframe
             dataframes = []
             for index, col in enumerate(df_data.columns[1:]):
