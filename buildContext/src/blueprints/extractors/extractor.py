@@ -78,11 +78,10 @@ class Extractor:
         df = df.copy()
         if not df.empty:
             df["curvestart"] = df["curvestart"].dt.strftime('%Y-%m-%d %H:%M:%S')
-            df['curveend'] = df['curveend'].apply(lambda x: str(x).replace('-', ' '))
             df["month"] = df["month"].dt.strftime('%Y-%m-%d %H:%M:%S')
             
         
-        df.columns = ["Month",'Data', 'Curve Start', 'Curve End', "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", 'Sub Cost Component']
+        df.columns = ["Month",'Data', 'Curve Start', "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", 'Sub Cost Component']
         return df
 
 
@@ -113,7 +112,7 @@ class Extractor:
                 if status != "success":
                     return None, "No Subscription available"
 
-            if download_type=="csv":
+            if download_type.lower()=="csv":
                 dataframe = self.post_processing_csv(dataframe, query_strings["curve_type"]) 
             else:
                 dataframe = self.post_processing_json(dataframe)

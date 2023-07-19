@@ -82,8 +82,14 @@ class Util:
         extracts the dataset from the database based on the characteristics
         """
         try:
-            offset= query_strings["offset"]
-            operating_day = query_strings["operating_day"]
+
+            if not "operating_day" in  query_strings:
+                operating_day = None
+                offset = None
+            else:
+                offset= query_strings["offset"]
+                operating_day = query_strings["operating_day"]
+                
             start = query_strings["start"]
             end = query_strings["end"]
             if operating_day:
