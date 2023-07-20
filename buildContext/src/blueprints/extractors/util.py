@@ -106,7 +106,7 @@ class Util:
             data_frame, status = self.extractor.get_custom_data(query_strings, query_strings["type"])
             file_name = f'{query_strings["curve_type"]}_{query_strings["iso"]}_{"_".join(query_strings["strip"])}_{query_strings["start"]}_{query_strings["end"]}'
             if status == "success":
-                if query_strings["type"]=="csv":
+                if query_strings["type"].lower()=="csv":
                     resp = Response(
                         data_frame.to_csv(),
                         mimetype="text/csv",
