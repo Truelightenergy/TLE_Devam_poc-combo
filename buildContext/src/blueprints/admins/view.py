@@ -506,7 +506,7 @@ def add_filter():
     else:
         if request.method == 'POST':
             response, status_code = api_util.add_filter_ui()
-            if status_code == 200:
+            if response["message_flag"]=="success":
               return render_template('admins/add_filter.html', flash_message=True, message_toast = response['message_toast'], message_flag = "success")
             return render_template('admins/add_filter.html', flash_message=True, message_toast = response['message_toast'], message_flag = "error")
         else:
@@ -689,3 +689,102 @@ def get_subcostcomponent():
       return jsonify(subcostcomponents)
     except:
         return list()
+    
+@admins.route('/get_catalog_data', methods=['GET', 'POST'])
+@roles.admin_token_required
+def get_catalog_data():
+
+    """
+    fatches whole database' catalog data on single go
+    ---
+    tags:
+      - catalog data
+    security:
+        - Bearer: []
+    responses:
+      200:
+        description: extracts all catalog data
+      302:
+        description: Unable to fetch data
+    """
+
+    try:
+      
+      subcostcomponents = db_obj.get_catalog_data_from_db()
+      return jsonify(subcostcomponents)
+    except:
+        return list()
+    
+
+@admins.route('/package_mgmt', methods=['GET','POST'])
+@roles.admin_token_required
+def package_mgmt():
+    """
+    handles multiple column Filters ingestions
+    
+    """
+
+    # rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    # if rest_api_condition:
+    #     setup_session(request.headers['Authorization'].split()[-1])
+    #     response, status = api_util.add_filter_api()
+    #     return response, status
+    # else:
+    if request.method == 'POST':
+        response, status_code = api_util.multiple_filters_ingestion()
+        if response["message_flag"]=="success":
+          return render_template('admins/package_mgmt.html', flash_message=True, message_toast = response['message_toast'], message_flag = "success")
+        return render_template('admins/package_mgmt.html', flash_message=True, message_toast = response['message_toast'], message_flag = "error")
+    else:
+        return render_template('admins/package_mgmt.html')
+    
+
+  # application endpoint
+@admins.route('/reset_subscription', methods=['GET', 'POST'])
+@roles.admin_token_required
+def reset_subscription():
+    """
+    remove Column Filter for a user
+     
+    ---
+    tags:
+      - Users - Column Filter
+    security:
+        - Bearer: []
+    parameters:
+      - name: user_id
+        in: query
+        type: string
+        required: true
+        description: User Id to reset its subscription
+    responses:
+      200:
+        description: removed columns
+      400:
+        description: unable to remove columns
+      403:
+        description: Something went wrong
+    """
+    
+
+    user_id = request.args.get('user_id')
+    if not user_id:
+        record = db_obj.get_all_users()
+        return render_template('auths/view_user.html', data=record)
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    
+    if rest_api_condition:
+        if not (request.args.get("user_id")):
+            return jsonify({"error": "Incorrect Params"}), 400
+        setup_session(request.headers['Authorization'].split()[-1])
+        json_obj, status_code = api_util.remove_all_subscription(user_id)
+        return jsonify(json_obj), status_code
+    else:
+        
+        json_obj, status_code = api_util.remove_all_subscription(user_id)
+        record = db_obj.get_all_users()
+        if json_obj:
+            return render_template('auths/view_user.html', flash_message=True, message_toast = "Subscription Removed", message_flag = "success", data = record)                
+        else:
+            return render_template('auths/view_user.html', flash_message=True, message_toast = "Unable to remove subscription", message_flag = "error", data = record)
+    

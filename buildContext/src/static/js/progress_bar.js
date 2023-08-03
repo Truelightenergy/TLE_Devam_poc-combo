@@ -47,6 +47,7 @@ $(document).ready(function() {
 				// document.write(response);
 				$('#upload_form')[0].reset();
 				$('body').html(response);
+				$('body').html(response);
 
 
 				

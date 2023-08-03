@@ -4,7 +4,10 @@ creates the model of the admin operations
 import jwt
 import hashlib
 import datetime
+from sqlalchemy import text
 from utils.database_connection import ConnectDatabase
+from sqlalchemy.orm import sessionmaker, relationship
+            
 
 class AdminUtil:
 
@@ -21,6 +24,8 @@ class AdminUtil:
         self.secret_salt = secret_salt
         data_base = ConnectDatabase()
         self.engine = data_base.get_engine()
+        Session = sessionmaker(bind=self.engine)
+        self.session = Session()
 
     def get_all_users(self):
         """
@@ -313,17 +318,18 @@ class AdminUtil:
         except :
             return False
         
-    def check_filter_rule(self, query_strings):
+        
+    def remove_previous_filter_rule(self, query_strings):
         """
         insert the new rule into database for data
         """
 
         try:
             
-            query = f"select * from trueprice.column_authorization WHERE email = '{query_strings['user']}' AND control_table = '{query_strings['control_table']}' AND control_area = '{query_strings['control_area']}' AND state = '{query_strings['state']}' AND load_zone = '{query_strings['load_zone']}' AND capacity_zone = '{query_strings['capacity_zone']}' AND utility = '{query_strings['utility']}' AND strip = '{query_strings['strip']}' AND cost_group = '{query_strings['cost_group']}'AND cost_component = '{query_strings['cost_component']}' AND sub_cost_component = '{query_strings['sub_cost_component']}';"
+            query = f"DELETE FROM trueprice.column_authorization WHERE email = '{query_strings['user']}' AND control_table = '{query_strings['control_table']}' AND control_area = '{query_strings['control_area']}' AND state = '{query_strings['state']}' AND load_zone = '{query_strings['load_zone']}' AND capacity_zone = '{query_strings['capacity_zone']}' AND utility = '{query_strings['utility']}' AND strip = '{query_strings['strip']}' AND cost_group = '{query_strings['cost_group']}'AND cost_component = '{query_strings['cost_component']}' AND sub_cost_component = '{query_strings['sub_cost_component']}';"
         
             result = self.engine.execute(query)
-            if result.rowcount == 0:
+            if result.rowcount >=0:
                 return True
             return False
         except :
@@ -558,8 +564,9 @@ class AdminUtil:
         """
         extracts all the sub cost component from the database
         """
+        
         query = f"SELECT DISTINCT(sub_cost_component) FROM trueprice.{table} WHERE control_area = '{control_area}' AND state = '{state}' AND load_zone = '{load_zone}' AND capacity_zone ='{capacity_zone}' AND utility = '{utility}' AND strip = '{strip}' AND cost_group= '{cost_group}' AND cost_component = '{cost_component}';"
-
+        query = text(query)
         try:
             results = self.engine.execute(query).fetchall()
             sub_cost_components = []
@@ -567,6 +574,8 @@ class AdminUtil:
                 sub_cost_components.append(row['sub_cost_component'])
             return sub_cost_components
         except:
+            import traceback, sys
+            print(traceback.format_exc())
             return None
         
     def get_all_users(self):
@@ -600,3 +609,111 @@ class AdminUtil:
             return id
         except:
             return None
+    
+        
+
+    def get_catalog_data_from_db(self):
+        """
+        extracts thw whole catalog data at once
+        """
+       
+
+        tables = ["ercot_energy", "nyiso_energy", "miso_energy", "isone_energy", "pjm_energy",
+                  "ercot_nonenergy", "nyiso_nonenergy", "miso_nonenergy", "isone_nonenergy", "pjm_nonenergy",
+                  "ercot_rec", "nyiso_rec", "isone_rec", "pjm_rec"
+                  ]
+        states_responses = dict()
+        curve_responses = {"energy": dict(), "nonenergy": dict(), "rec": dict()}
+        try:
+            for table in tables:
+                
+                single_response = list()
+                control_areas =  self.get_control_area_for_dropdown(table)
+                for c_area in control_areas:
+                    states = self.get_state_for_dropdown(table, c_area)
+                    for st in states:
+                        load_zones = self.get_load_zone_for_dropdown(table, c_area, st)
+                        for l_zone in load_zones:
+                            capacity_zones = self.get_capacity_zone_for_dropdown(table, c_area, st, l_zone)
+                            for c_zone in capacity_zones:
+                                utilities = self.get_utility_for_dropdown(table, c_area, st, l_zone, c_zone)
+                                for util in utilities:
+                                    strips = self.get_block_type_for_dropdown(table, c_area, st, l_zone, c_zone, util)
+                                    for strip in strips:
+                                        cost_groups = self.get_cost_group_for_dropdown(table, c_area, st, l_zone, c_zone, util, strip)
+                                        for c_group in cost_groups:
+                                            cost_components = self.get_cost_components_for_dropdown(table, c_area, st, l_zone, c_zone, util, strip, c_group)
+                                            for c_comp in cost_components:
+                                                sub_cost_component = self.get_sub_cost_components_for_dropdown (table, c_area, st, l_zone, c_zone, util, strip, c_group, c_comp)
+                                                single_response.extend([
+                                                    {
+                                                        "control_area": c_area,
+                                                        "state": st,
+                                                        "load_zone": l_zone,
+                                                        "capacity_zone": c_zone,
+                                                        "utility": util,
+                                                        "block_type": strip,
+                                                        "cost_group": c_group,
+                                                        "cost_component": c_comp,
+                                                        "sub_cost_component": sc_comp
+                                                    }
+                                                    for sc_comp in sub_cost_component
+                                                ])
+
+
+                # states_responses[table.split("_")[0]] = single_response
+                curve_responses[table.split("_")[1]][table.split("_")[0]] = single_response
+                
+            return curve_responses
+        except :
+            import traceback, sys
+            print(traceback.format_exc())
+            return None
+        
+    def ingest_multiple_filters(self, filters, user_email):
+        """
+        insert all rules into databases for data
+        """
+
+        try:
+            base_query = "INSERT INTO trueprice.column_authorization (email, control_table, startMonth, endMonth, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component) VALUES"
+            values = []
+            for query_strings in filters:
+                value_set = f"('{query_strings['user']}', '{query_strings['control_table']}', '{query_strings['start']}', '{query_strings['end']}', '{query_strings['control_area']}', '{query_strings['state']}', '{query_strings['load_zone']}', '{query_strings['capacity_zone']}', '{query_strings['utility']}', '{query_strings['block_type']}', '{query_strings['cost_group']}', '{query_strings['cost_component']}', '{query_strings['sub_cost_component']}')"
+                values.append(value_set)
+           
+            self.session.begin()
+            query = base_query + ", ".join(values)
+            query = text(query)
+
+            deletion_query = f"""
+                DELETE FROM trueprice.column_authorization
+                WHERE email = '{user_email}';
+            """
+
+            result = self.engine.execute(deletion_query)
+            result = self.engine.execute(query)
+            self.session.commit()
+            if result.rowcount > 0:
+                return True
+            self.session.rollback()
+            return False
+        except :
+            self.session.rollback()
+            return False
+        
+    def remove_all_subscription(self, user_id):
+        """
+        remove all subscription for all the users
+        """
+        try:
+            query = f"""
+                DELETE FROM trueprice.column_authorization
+                WHERE email = (select email from trueprice.users WHERE id={user_id});
+            """
+            result = self.engine.execute(query)
+            if result.rowcount >= 0:
+                return True
+            return False
+        except :
+            return False

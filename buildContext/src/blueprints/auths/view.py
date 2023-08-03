@@ -74,7 +74,7 @@ def signup():
             email = request.form.get("email")
             password = request.form.get("password")
             json_obj, status_code = api_util.signup(email, password)
-            if status_code==200:
+            if json_obj["message_flag"]== "success":
                 return render_template('auths/signup.html',  flash_message=True, message_toast = "Signup Successfully", message_flag = "success"), 200
             else:
                 return render_template('auths/signup.html',  flash_message=True, message_toast = "Signup Failed", message_flag = "error"), 403
@@ -122,7 +122,7 @@ def login():
             email = request.form.get('email')
             pswd = request.form.get('password')
             json_obj, status_code = api_util.login(email, pswd)
-            if status_code==200:
+            if json_obj["message_flag"] == "success":
                 return api_util.application_startup()
             else:
                 return render_template('auths/login.html',  flash_message=True, message_toast = "Login Failed", message_flag = "error"), 403
@@ -228,7 +228,7 @@ def create_user():
 
             prv_level, email, pswd= request.form.get('prv_level'), request.form.get("email"),request.form.get("password")
             json_obj, status_code = api_util.create_user(email, pswd, prv_level)
-            if status_code==200:
+            if json_obj["message_flag"]== "success":
                 return render_template('auths/create_user.html', flash_message=True, message_toast = "User Created", message_flag = "success")
             else:
                 return render_template('auths/create_user.html', flash_message=True, message_toast = "Unable to create user", message_flag = "error")
@@ -306,7 +306,7 @@ def disable_user_ui():
         
         json_obj, status_code = api_util.enable_disable_user(user_id, "disabled")
         record = db_obj.get_all_users()
-        if status_code==200:
+        if json_obj["message_flag"]== "success":
             return render_template('auths/view_user.html', flash_message=True, message_toast = "User Disabled", message_flag = "success", data = record)                
         else:
             return render_template('auths/view_user.html', flash_message=True, message_toast = "Unable to disable user", message_flag = "error", data = record)
@@ -389,7 +389,7 @@ def enable_user_ui():
         
         json_obj, status_code = api_util.enable_disable_user(user_id, "enabled")
         record = db_obj.get_all_users()
-        if status_code==200:
+        if json_obj["message_flag"]== "success":
             return render_template('auths/view_user.html', flash_message=True, message_toast = "User Disabled", message_flag = "success", data = record)                
         else:
             return render_template('auths/view_user.html', flash_message=True, message_toast = "Unable to disable user", message_flag = "error", data = record)
@@ -475,7 +475,7 @@ def update_user_ui():
             prv_level= request.form.get('prv_level') 
             json_obj, status_code = api_util.update_user(user_id, prv_level)
             record = db_obj.get_all_users()
-            if status_code==200:
+            if json_obj["message_flag"]== "success":
                 return render_template('auths/view_user.html', flash_message=True, message_toast = "User Updated", message_flag = "success", data = record)                
             else:
                 return render_template('auths/view_user.html', flash_message=True, message_toast = "Unable to update user", message_flag = "error", data = record)
@@ -564,7 +564,7 @@ def reset_password_ui():
         
         json_obj, status_code = api_util.reset_password(user_id)
         record = db_obj.get_all_users()
-        if status_code==200:
+        if json_obj["message_flag"] == "success":
             return render_template('auths/view_user.html', flash_message=True, message_toast = "Reset Password", message_flag = "success", data = record)                
         else:
             return render_template('auths/view_user.html', flash_message=True, message_toast = "Unable to to reset Password", message_flag = "error", data = record)
@@ -652,7 +652,7 @@ def update_password():
         if request.method == 'POST':
             email, old_pswd, new_pswd = session["user"], request.form.get("old_password"), request.form.get("password")
             json_obj, status_code = api_util.update_password(email, old_pswd, new_pswd )
-            if status_code==200:
+            if json_obj["message_flag"] == "success":
                 return render_template("auths/update_password.html",  flash_message=True, message_toast = "password updated", message_flag = "success")
             else:
                 return render_template("auths/update_password.html",  flash_message=True, message_toast = "unable to update password", message_flag = "error") 

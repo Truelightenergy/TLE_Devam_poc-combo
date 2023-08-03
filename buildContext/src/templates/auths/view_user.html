@@ -69,7 +69,8 @@
                                 <th>Disable/Enable</th>
                                 <th>Update</th>
                                 <th>Reset Password</th>
-                                <th>subscribed Columns</th>
+                                <th>Subscribed Columns</th>
+                                <th>Reset Subscription</th>
                             </tr>
                         </thead>
 
@@ -94,8 +95,10 @@
 
                               {%if row["privileged_level"]=="admin"%}
                                 <td><a href = "/view_authorized_columns_ui?user_id={{ row['id'] }}" class="btn btn-primary disabled">View</a></td> 
+                                <td><a href = "/reset_subscription?user_id={{ row['id'] }}" class="btn btn-warning disabled">Remove</a></td>
                                 {%else%}
-                                <td><a href = "/view_authorized_columns_ui?user_id={{ row['id'] }}" class="btn btn-primary">View</a></td> 
+                                <td><a href = "/view_authorized_columns_ui?user_id={{ row['id'] }}" class="btn btn-primary">View</a></td>
+                                <td><a href = "/reset_subscription?user_id={{ row['id'] }}" class="btn btn-warning">Remove</a></td> 
                                 {%endif%}
 
                               
@@ -105,6 +108,7 @@
                               <td><a href = "/update_user_ui?user_id={{ row['id'] }}" class="btn btn-info disabled">Update</a></td> 
                               <td><a href = "/reset_password_ui?user_id={{ row['id'] }}" class="btn btn-primary disabled">Reset</a></td>
                               <td><a href = "/view_authorized_columns_ui?user_id={{ row['id'] }}" class="btn btn-primary disabled">View</a></td>
+                              <td><a href = "/reset_subscription?user_id={{ row['id'] }}" class="btn btn-warning disabled">Remove</a></td>
                               {%endif%}
       
                               </tr>
