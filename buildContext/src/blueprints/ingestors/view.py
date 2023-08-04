@@ -71,7 +71,7 @@ def upload_csv():
             json_obj, status_code = api_util.upload_csv()
             session["acceptance"]=None
             
-            if status_code==200:
+            if json_obj["message_flag"]== "success":
                 return render_template('ingestors/upload_csv.html', flash_message=True, message_toast = "Data Inserted", message_flag = "success")        
             else:    
                 return render_template('ingestors/upload_csv.html', flash_message=True, message_toast = json_obj["message_toast"], message_flag = "error")

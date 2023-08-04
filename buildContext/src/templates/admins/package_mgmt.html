@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Add Filter</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Favicon -->
+    <link href="static/img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    
+    <link href="/static/external_cdns/css/css2.css" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+
+    <link href="/static/external_cdns/css/all.min.css" rel="stylesheet">
+    <link href="/static/external_cdns/css/bootstrap-icons.css" rel="stylesheet">
+
+   
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="static/css/style.css" rel="stylesheet">
+    <link href="static/css/package_mgmt.css" rel="stylesheet">
+
+    <!-- scroll_bar -->
+    <script src="static/js/multiselect.js" ></script>
+    
+    
+
+</head>
+
+<body>
+   
+    <div class="container-fluid position-relative d-flex p-0">
+        <!-- Spinner Start -->
+        <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <!-- Spinner End -->
+
+        
+
+
+        <!-- Sidebar Start -->
+        <div class="sidebar pe-4 pb-3">
+            {% include 'navbar.html'%}
+        </div>
+        <!-- Sidebar End -->
+
+
+         <!-- Content Start -->
+         <div class="content">
+            <!-- Navbar Start -->
+            {% include 'upper_navbar.html'%}
+            <!-- Navbar End -->
+
+            <div id="custom_content">
+            {% include 'notification.html'%}
+            </div>
+
+            <div id="loading">
+                
+            </div>
+
+            <!-- Blank Start -->
+            <div class="container-fluid pt-4 px-4">
+                <div class="row g-4 ">
+                    <div class="col-sm-12 col-md-6 col-xl-12">
+                        <div class="h-100 bg-secondary rounded p-4">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="mb-0">User</h6>
+                                
+                            </div>
+                            <div class="row">
+                                <select name="user" id ="user" class="form-control mt-2 bg-dark text-white" >
+                                        
+                                </select>
+                            
+                            </div>
+                            
+                        </div>
+                    </div>
+                    <!-- curve -->
+                    <div class="col-sm-12 col-md-6 col-xl-12">
+                        <div class="h-100 bg-secondary rounded p-4">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="mb-0">Curve</h6>
+                                
+                            </div>
+                            <div class="row">
+                            <div class="" id="curves_button">
+                            </div>
+                        </div>
+                            
+                            
+                        </div>
+                    </div>
+                    <!-- Control Area -->
+                    <div class="col-sm-12 col-md-6 col-xl-12">
+                        <div class="h-100 bg-secondary rounded p-4">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="mb-0">Control Area</h6>
+                                
+                            </div>
+                            <div class="row">
+                            <div class="" id="control_area_buttons">
+                                
+
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div> 
+                    <!-- State -->
+                    <div class="col-sm-12 col-md-6 col-xl-12">
+                        <div class="h-100 bg-secondary rounded p-4">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="mb-0">State</h6>
+                                
+                            </div>
+                            <div class="row">
+                            <div class="" id="state_buttons">
+                                </div> 
+                            </div>
+                            
+                        </div>
+                    </div>
+
+                    <!-- Load Zone -->
+                    <div class="col-sm-12 col-md-6 col-xl-12">
+                        <div class="h-100 bg-secondary rounded p-4">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="mb-0">Load Zone</h6>
+                                
+                            </div>
+                            <div class="row">
+                            <div class="" id="load_zone_buttons">
+                                </div>  
+                            </div>
+                            
+                            
+                        </div>
+                    </div> 
+
+                    <!-- Capacity Zone -->
+                    <div class="col-sm-12 col-md-6 col-xl-12">
+                        <div class="h-100 bg-secondary rounded p-4">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="mb-0">Capacity Zone</h6>
+                                
+                            </div>
+                            <div class="row">
+                            <div class="" id="capacity_zone_buttons">
+                                </div>  
+                            </div>
+                            
+                            
+                        </div>
+                    </div> 
+
+                    <!-- Utility -->
+                    <div class="col-sm-12 col-md-6 col-xl-12">
+                        <div class="h-100 bg-secondary rounded p-4">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="mb-0">Utility</h6>
+                                
+                            </div>
+                            <div class="row">
+                            <div class="" id="utility_buttons">
+                                </div>
+                            </div>
+                            
+                            
+                        </div>
+                    </div> 
+
+                    <!-- Block type -->
+                    <div class="col-sm-12 col-md-6 col-xl-12">
+                        <div class="h-100 bg-secondary rounded p-4">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="mb-0">Block Type</h6>
+                                
+                            </div>
+                            <div class="row">
+                            <div class="" id="block_type_buttons">
+                            </div> 
+                            </div>
+                            
+                            
+                        </div>
+                    </div>
+
+                    <!-- Cost Group -->
+                    <div class="col-sm-12 col-md-6 col-xl-12">
+                        <div class="h-100 bg-secondary rounded p-4">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="mb-0">Cost Group</h6>
+                                
+                            </div>
+                            <div class="row">
+                            
+                            <div class="" id="cost_group_buttons">
+                            </div>
+                            </div>
+                            
+                            
+                        </div>
+                    </div>
+
+                    <!-- Cost Component -->
+                    <div class="col-sm-12 col-md-6 col-xl-12">
+                        <div class="h-100 bg-secondary rounded p-4">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="mb-0">Cost Component</h6>
+                                
+                            </div>
+                            <div class="row">
+                            <div class="" id="cost_component_buttons">
+                            </div>  
+                            </div>
+                            
+                            
+                        </div>
+                    </div>
+
+                    <!-- sub cost component -->
+                    <div class="col-sm-12 col-md-6 col-xl-12">
+                        <div class="h-100 bg-secondary rounded p-4">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="mb-0">Sub Cost Component</h6>
+                                
+                            </div>
+                            <div class="row">
+                            <div class="" id="sub_cost_component_buttons">
+                            </div>
+                            </div>
+                            
+                            
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+
+                        <label for="start" class="form-label">Start</label>
+                        <input type="date" class="form-control mt-2 text-white" required id="start" name="start" style="background-color: gray;" >
+                        
+                    </div>
+
+                    
+                    <div class="mb-3">
+                        <label for="end" class="form-label">End</label>
+                        
+                        <input type="date" class="form-control mt-2  text-white" required id="end" name="end" style="background-color: gray;" >
+                       
+                    </div>
+                
+                <input type="button" class="btn btn-success" id="submition" value="Add Filter">
+                <input type="button" class="btn btn-secondary" id="reset" value="Reset">
+                </div>
+            </div>
+            <!-- Blank End -->
+
+
+            <!-- Footer Start -->
+            {% include 'footer.html'%}
+            <!-- Footer End -->
+        </div>
+        <!-- Content End -->
+
+
+        <!-- Back to Top -->
+         
+    </div>
+
+    <!-- JavaScript Libraries -->
+    
+    <script src="/static/external_cdns/js/jquery-3.4.1.min.js"></script>
+    <script src="/static/external_cdns/js/bootstrap.bundle.min.js"></script>
+    <script src="static/lib/waypoints/waypoints.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="static/js/main.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+
+        var token = "{{session.get('jwt_token')}}";
+    </script>
+    <script src="static/js/package_manager.js"></script>
+    
+</body>
+
+</html>

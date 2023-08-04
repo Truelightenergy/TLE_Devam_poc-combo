@@ -83,7 +83,7 @@ class Util:
             return {"flash_message": True, "message_toast":f"ui is {status}", "message_flag":"success"},200
         else:
             logging.error(f"{session['user']}: ui is not{status}")
-            return {"flash_message": True, "message_toast": f"ui is not{status}", "message_flag":"error"},400
+            return {"flash_message": True, "message_toast": f"ui is not{status}", "message_flag":"error"},200
   
     def switch_api(self, status):
         """
@@ -95,7 +95,7 @@ class Util:
             return {"flash_message": True, "message_toast":f"api is {status}", "message_flag":"success"},200
         else:
             logging.error(f"{session['user']}: api is not{status}")
-            return {"flash_message": True, "message_toast": f"api is not{status}", "message_flag":"error"},400
+            return {"flash_message": True, "message_toast": f"api is not{status}", "message_flag":"error"},200
 
     def get_column_filter_for_user_from_api(self, email):
         """
@@ -122,6 +122,18 @@ class Util:
                 status_code =400
         return response, status_code
     
+    def remove_all_subscription(self, user_id):
+        """
+        removes all the subscriptions
+        """
+        try:
+            response = self.admin_util.remove_all_subscription(user_id)
+            status_code = 200
+        except:
+            response = None
+            status_code = 400
+        return response, status_code
+    
     def remove_column_auth_filter(self, filter_id):
         """
         enable and disable the api side
@@ -132,7 +144,7 @@ class Util:
             return {"flash_message": True, "message_toast":f" Authentication Removed on columns", "message_flag":"success"},200
         else:
             logging.error(f"{session['user']}: Unable to Remove column Authentication")
-            return {"flash_message": True, "message_toast": f"Unable to Remove column Authentication", "message_flag":"error"},400
+            return {"flash_message": True, "message_toast": f"Unable to Remove column Authentication", "message_flag":"error"},200
         
     def add_filter_ui(self):
         """
@@ -155,16 +167,16 @@ class Util:
         query_strings["end"] = request.form.get('end')
         
         
-        flag = self.admin_util.check_filter_rule(query_strings)
+        flag = self.admin_util.remove_previous_filter_rule(query_strings)
         if flag:
             flag = self.admin_util.ingest_filter_rule(query_strings)
         
         if flag:
             logging.info(f"{session['user']}: Filter Rule Added Successfully")
-            return {"flash_message": True, "message_toast":f"Filter Rule Added Successfully"},200
+            return {"flash_message": True, "message_toast":f"Filter Rule Added Successfully", "message_flag":"success"},200
         else:
             logging.error(f"{session['user']}: Unable to Add Filter Rule")
-            return {"flash_message": True, "message_toast": f"Unable to Add Filter Rule", "message_flag":"error"},400
+            return {"flash_message": True, "message_toast": f"Unable to Add Filter Rule", "message_flag":"error"},200
         
     def add_filter_api(self):
         """
@@ -192,11 +204,59 @@ class Util:
         
         if flag:
             logging.info(f"{session['user']}: Filter Rule Added Successfully")
-            return {"flash_message": True, "message_toast":f"Filter Rule Added Successfully"},200
+            return {"flash_message": True, "message_toast":f"Filter Rule Added Successfully", "message_flag":"success"},200
         else:
             logging.error(f"{session['user']}: Unable to Add Filter Rule")
-            return {"flash_message": True, "message_toast": f"Unable to Add Filter Rule", "message_flag":"error"},400
+            return {"flash_message": True, "message_toast": f"Unable to Add Filter Rule", "message_flag":"error"},200
         
+    def multiple_filters_ingestion(self):
+        """
+        add multiple filters at once
+        """
+
+        try:
+
+            data = request.get_json()
+            filters= self.pre_processing_data(data)
+            flag = self.admin_util.ingest_multiple_filters(filters, data["email"])
+            if flag:
+                logging.info(f"{session['user']}: Filter Rule Added Successfully")
+                return {"flash_message": True, "message_toast":f"Filter Rules Added Successfully", "message_flag":"success"},200
+            else:
+                logging.error(f"{session['user']}: Unable to Add Filter Rule")
+                return {"flash_message": True, "message_toast": f"Unable to Add Filter Rules", "message_flag":"error"},200
+        except:
+            logging.error(f"{session['user']}: Unable to Add Filter Rule")
+            return {"flash_message": True, "message_toast": f"Unable to Add Filter Rules", "message_flag":"error"},400
             
+    def pre_processing_data(self, data):
+        """
+        makes data ready for bulk ingestions
+        """      
+        filtered_data = data["data"]
+        start_date = data["start_date"]
+        end_date = data["end_date"]
+        email = data["email"]
+
+        filters = list()
+
+        for curve in filtered_data:
+            if curve is None:
+                continue
+            for control_area in filtered_data[curve]:
+                if control_area is None:
+                    continue
+                control_table = f"{control_area}_{curve}"
+                catalog_data = filtered_data[curve][control_area]
+                for item in catalog_data:
+                    if item is None:
+                        continue
+                    item["control_table"] = control_table
+                    item["start"] = start_date
+                    item["end"] = end_date
+                    item['user'] = email
+                    filters.append(item)
+        return filters
+
         
     

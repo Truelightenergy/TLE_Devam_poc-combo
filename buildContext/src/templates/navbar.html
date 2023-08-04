@@ -1,5 +1,4 @@
 
-
 <nav class="navbar bg-secondary navbar-dark">
     <a href="{{ url_for('auths.index') }}" class="navbar-brand mx-4 mb-3">
         <h3 class="text-primary"><i class="fa fa-bolt me-2"></i>TRUEPrice</h3>
@@ -21,9 +20,18 @@
 
         <a href="{{ url_for('admins.upload_status')}}" class="nav-item nav-link {% if request.path == '/upload_status' %}active{% endif %}"><i class="fa fa-clipboard me-2"></i>Recent Uploads</a>
         <a href="{{ url_for('extractors.download_data')}}" class="nav-item nav-link {% if request.path == '/download_data' %}active{% endif %}"><i class="fa fa-download me-2"></i>Downloads</a>
-        {%if session["level"]=="admin"%} 
-            <a href="{{ url_for('admins.add_filter')}}" class="nav-item nav-link {% if request.path == '/add_filter' %}active{% endif %}"><i class="fa fa-columns me-2"></i>Columns</a>
+        {%if session["level"]=="admin"%}
         
+        <div class="nav-item dropdown">
+            <a href="#" class="nav-link dropdown-toggle {% if request.path == '/add_filter' or request.path == '/package_mgmt' %}active{% endif %}" data-bs-toggle="dropdown"><i class="fa fa-filter me-2"></i>Subscription</a>
+            <div class="dropdown-menu bg-transparent border-0">
+                <a href="{{ url_for('admins.add_filter')}}" class="dropdown-item"><i class="fa fa-columns me-2"></i>Columns</a>
+                <a href="{{ url_for('admins.package_mgmt')}}" class="dropdown-item"><i class="fa fa-filter me-2"></i>Packages</a>
+                
+                
+            </div>
+        </div>
+            
             <a href="{{ url_for('admins.get_logs')}}" class="nav-item nav-link {% if request.path == '/get_logs' %}active{% endif %} "><i class="fa fa-clock me-2"></i>Logs</a>
             <a href="{{ url_for('admins.site_control')}}" class="nav-item nav-link {% if request.path == '/site_control' %}active{% endif %}"><i class="fa fa-cog me-2"></i>Site</a>
             <div class="nav-item dropdown">

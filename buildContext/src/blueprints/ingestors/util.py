@@ -120,10 +120,10 @@ class Util:
             else:
                 self.moving_defaulted_files(file.filename)
                 logging.error(f"User: {session['user']}, File: {file.filename}, Response: {response}")
-                return {"flash_message" : True, "message_toast" : response, "message_flag":"error"},400
+                return {"flash_message" : True, "message_toast" : response, "message_flag":"error"},200
             
         logging.info(f"{session['user']}: Unable to Upload file because of 'No selected file'")
-        return {"flash_message" : True, "message_toast" : "Unable to Upload file because of 'No selected file'", "message_flag":"error"},400
+        return {"flash_message" : True, "message_toast" : "Unable to Upload file because of 'No selected file'", "message_flag":"error"},200
             
 
 
