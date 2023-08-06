@@ -27,3 +27,21 @@ class ExtractorUtil:
             return True, response
         except:
             return False, None
+        
+    def fetch_latest_operating_day(self, table):
+        """
+        fetches the latest operating day from table
+        """
+
+        try:
+            query = f"SELECT MAX(DATE(curvestart::date)) AS latest_date FROM trueprice.{table};"
+            result = self.engine.execute(query)
+            if result.rowcount >0:
+                for row in result:
+                    result = row
+                    result = result[0].strftime('%Y-%m-%d')
+                    break
+                return result, 0
+            return None, None
+        except:
+            return None, None

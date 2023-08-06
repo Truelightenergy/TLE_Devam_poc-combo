@@ -615,6 +615,10 @@ services:
           sub_cost_component varchar(100)
         );
 
+      -- adding column to existing table
+        ALTER TABLE trueprice.column_authorization
+          ADD COLUMN balanced_month_range INT DEFAULT 0;
+
 
       EOSQL
   # adminer: # for postgres, php admin interface

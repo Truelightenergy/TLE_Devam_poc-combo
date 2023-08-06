@@ -179,7 +179,7 @@ class AdminUtil:
         """
         try:
             query = f"""
-                SELECT id, control_table, email, startMonth::timestamp::date, endMonth::timestamp::date, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component 
+                SELECT id, control_table, email, startMonth::timestamp::date, endMonth::timestamp::date, balanced_month_range, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component 
                 FROM trueprice.column_authorization
                 WHERE email = '{email}';
             """
@@ -188,6 +188,7 @@ class AdminUtil:
             emails = []
             start = []
             end = []
+            months =[]
             control_area = []
             state = []
             load_zone = []
@@ -206,6 +207,7 @@ class AdminUtil:
                 emails.append(row["email"])
                 start.append(row["startmonth"])
                 end.append(row["endmonth"])
+                months.append(row['balanced_month_range'])
                 control_area.append(row["control_area"])
                 state.append(row["state"])
                 load_zone.append(row["load_zone"])
@@ -222,6 +224,7 @@ class AdminUtil:
                 "email": emails,
                 "startMonth": start,
                 "endMonth": end,
+                "balanced_month_range": months,
                 "control_area" : control_area,
                 "state" : state,
                 "load_zone" : load_zone,
@@ -243,7 +246,7 @@ class AdminUtil:
         """
         try:
             query = f"""
-                SELECT id, control_table, email, startMonth::timestamp::date, endMonth::timestamp::date, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component 
+                SELECT id, control_table, email, startMonth::timestamp::date, endMonth::timestamp::date, balanced_month_range, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component 
                 FROM trueprice.column_authorization
                 WHERE email = (select email from trueprice.users WHERE id={user_id});
             """
@@ -252,6 +255,7 @@ class AdminUtil:
             emails = []
             start = []
             end = []
+            months =[]
             control_area = []
             state = []
             load_zone = []
@@ -270,6 +274,7 @@ class AdminUtil:
                 emails.append(row["email"])
                 start.append(row["startmonth"])
                 end.append(row["endmonth"])
+                months.append(row['balanced_month_range'])
                 control_area.append(row["control_area"])
                 state.append(row["state"])
                 load_zone.append(row["load_zone"])
@@ -280,12 +285,14 @@ class AdminUtil:
                 cost_component.append(row["cost_component"])
                 sub_cost_component.append(row["sub_cost_component"])
 
+
             results = {
                 "id": id,
                 "control_table": table,
                 "email": emails,
                 "startMonth": start,
                 "endMonth": end,
+                "balanced_month_range": months,
                 "control_area" : control_area,
                 "state" : state,
                 "load_zone" : load_zone,
@@ -296,7 +303,6 @@ class AdminUtil:
                 "cost_component" : cost_component, 
                 "sub_cost_component" : sub_cost_component
             }
-
 
             return results
         except:
@@ -309,7 +315,7 @@ class AdminUtil:
 
         try:
             
-            query = f"INSERT INTO trueprice.column_authorization (email, control_table,  startMonth, endMonth, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component) VALUES ('{query_strings['user']}', '{query_strings['control_table']}', '{query_strings['start']}', '{query_strings['end']}', '{query_strings['control_area']}', '{query_strings['state']}', '{query_strings['load_zone']}', '{query_strings['capacity_zone']}', '{query_strings['utility']}', '{query_strings['strip']}', '{query_strings['cost_group']}', '{query_strings['cost_component']}', '{query_strings['sub_cost_component']}');"
+            query = f"INSERT INTO trueprice.column_authorization (email, control_table,  startMonth, endMonth, balanced_month_range, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component) VALUES ('{query_strings['user']}', '{query_strings['control_table']}', '{query_strings['start']}', '{query_strings['end']}', '{query_strings['balanced_month']}', '{query_strings['control_area']}', '{query_strings['state']}', '{query_strings['load_zone']}', '{query_strings['capacity_zone']}', '{query_strings['utility']}', '{query_strings['strip']}', '{query_strings['cost_group']}', '{query_strings['cost_component']}', '{query_strings['sub_cost_component']}');"
         
             result = self.engine.execute(query)
             if result.rowcount > 0:
@@ -412,7 +418,7 @@ class AdminUtil:
         
         try :
             query = f"""
-                SELECT id, control_table,  email, startMonth::timestamp::date, endMonth::timestamp::date, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component 
+                SELECT id, control_table,  email, startMonth::timestamp::date, endMonth::timestamp::date, balanced_month_range, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component 
                 FROM trueprice.column_authorization
                 WHERE email = (select email from trueprice.users WHERE id={user_id});
             """
@@ -676,10 +682,10 @@ class AdminUtil:
         """
 
         try:
-            base_query = "INSERT INTO trueprice.column_authorization (email, control_table, startMonth, endMonth, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component) VALUES"
+            base_query = "INSERT INTO trueprice.column_authorization (email, control_table, startMonth, endMonth, balanced_month_range, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component) VALUES"
             values = []
             for query_strings in filters:
-                value_set = f"('{query_strings['user']}', '{query_strings['control_table']}', '{query_strings['start']}', '{query_strings['end']}', '{query_strings['control_area']}', '{query_strings['state']}', '{query_strings['load_zone']}', '{query_strings['capacity_zone']}', '{query_strings['utility']}', '{query_strings['block_type']}', '{query_strings['cost_group']}', '{query_strings['cost_component']}', '{query_strings['sub_cost_component']}')"
+                value_set = f"('{query_strings['user']}', '{query_strings['control_table']}', '{query_strings['start']}', '{query_strings['end']}', '{query_strings['balanced_month']}', '{query_strings['control_area']}','{query_strings['state']}', '{query_strings['load_zone']}', '{query_strings['capacity_zone']}', '{query_strings['utility']}', '{query_strings['block_type']}', '{query_strings['cost_group']}', '{query_strings['cost_component']}', '{query_strings['sub_cost_component']}')"
                 values.append(value_set)
            
             self.session.begin()

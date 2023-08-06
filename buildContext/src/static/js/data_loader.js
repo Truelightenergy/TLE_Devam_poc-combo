@@ -1,4 +1,27 @@
 $(document).ready(function() {
+
+    // check weather range or date is selected
+    var dateRadio = document.getElementById('date_radio');
+    var rangeRadio = document.getElementById('range_radio');
+    dateRadio.addEventListener('click', function() {
+        if (dateRadio.checked) {
+            document.getElementById('dates').style.display = 'block';
+            document.getElementById('ranges').style.display = 'none';
+
+            document.getElementById('bal_month').value = 0;
+        }
+      });
+
+    rangeRadio.addEventListener('click', function() {
+        if (rangeRadio.checked) {
+            document.getElementById('dates').style.display = 'none';
+            document.getElementById('ranges').style.display = 'block';
+
+            document.getElementById('start').value ="2000-01-01";
+            document.getElementById('end').value ="9999-12-31";
+            
+        }
+      });
     /////////////////////////////////////////users////////////////////////////////
 
 

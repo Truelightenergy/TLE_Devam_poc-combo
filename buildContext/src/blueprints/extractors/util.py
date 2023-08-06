@@ -17,6 +17,7 @@ from flask import render_template
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 import logging
 from .extractor import Extractor
+from .extractor_model import ExtractorUtil
 
 
 
@@ -31,7 +32,10 @@ class Util:
         all the intializers will be handled here
         """
         
+        self.secret_key = "super-scret-key" #env variable
+        self.secret_salt = "secret-salt" #env variable
         self.extractor = Extractor()
+        self.db_model = ExtractorUtil(self.secret_key, self.secret_salt)
 
 
     def get_operating_days(self, date, offset):
@@ -83,9 +87,8 @@ class Util:
         """
         try:
 
-            if not "operating_day" in  query_strings:
-                operating_day = None
-                offset = None
+            if query_strings['operating_day'] == '':
+                operating_day, offset = self.db_model.fetch_latest_operating_day(f"{query_strings['iso']}_{query_strings['curve_type']}")
             else:
                 offset= query_strings["offset"]
                 operating_day = query_strings["operating_day"]

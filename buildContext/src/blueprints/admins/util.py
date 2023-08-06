@@ -116,6 +116,7 @@ class Util:
         """
         try:
             response = self.admin_util.view_authorized_columns_from_ui(user_id)
+
             status_code = 200
         except:
                 response = None
@@ -165,6 +166,7 @@ class Util:
         query_strings["sub_cost_component"] = request.form.get('sub_cost_component')
         query_strings["start"] = request.form.get('start')
         query_strings["end"] = request.form.get('end')
+        query_strings["balanced_month"] = request.form.get('bal_month')
         
         
         flag = self.admin_util.remove_previous_filter_rule(query_strings)
@@ -237,6 +239,7 @@ class Util:
         start_date = data["start_date"]
         end_date = data["end_date"]
         email = data["email"]
+        bal_month = data["balanced_month"]
 
         filters = list()
 
@@ -255,6 +258,7 @@ class Util:
                     item["start"] = start_date
                     item["end"] = end_date
                     item['user'] = email
+                    item['balanced_month'] = bal_month
                     filters.append(item)
         return filters
 
