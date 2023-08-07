@@ -175,24 +175,47 @@
                                     
                                 </div>
 
-
-                                
-
+          
                                 <div class="mb-3">
-
-                                    <label for="start" class="form-label">Start</label>
-                                    <input type="date" class="form-control mt-2 text-white" required id="start" name="start" style="background-color: gray;" >
-                                    
+                                    <div class="btn-group" role="group">      
+                                        <input type="radio" class="btn-check" name="btnradio" id="date_radio" autocomplete="off"
+                                            checked>
+                                        <label class="btn btn-outline-primary" for="date_radio">Dates</label>
+                
+                                        <input type="radio" class="btn-check" name="btnradio" id="range_radio" autocomplete="off">
+                                        <label class="btn btn-outline-primary" for="range_radio">Balanced Ranges</label>
+                
+                                    </div>
                                 </div>
 
-                                
+                                <div id="dates">
+                                    <div class="mb-3">
 
-                                <div class="mb-3">
-                                    <label for="end" class="form-label">End</label>
+                                        <label for="start" class="form-label">Start</label>
+                                        <input type="date" class="form-control mt-2 text-white" required id="start" name="start" style="background-color: gray;" >
+                                        
+                                    </div>
+
                                     
-                                    <input type="date" class="form-control mt-2  text-white" required id="end" name="end" style="background-color: gray;" >
-                                   
+
+                                    <div class="mb-3">
+                                        <label for="end" class="form-label">End</label>
+                                        
+                                        <input type="date" class="form-control mt-2  text-white" required id="end" name="end" style="background-color: gray;" >
+                                    
+                                        </div>
                                 </div>
+                                    
+                                <div id="ranges" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="bal_month" class="form-label">Month Ranges</label>
+                                        
+                                        <input type="number" value="0" class="form-control mt-2  text-white" required id="bal_month" name="bal_month" style="background-color: gray;" >
+                                       
+                                    </div>
+                                </div>
+
+
 
                                 
                                 <div class="mb-3">
@@ -218,6 +241,43 @@
         <!-- Back to Top -->
          
     </div>
+
+    <script>
+        function currennt_date(){
+            // Get the current date
+            var currentDate = new Date();
+        
+            // Format the date as YYYY-MM-DD
+            var year = currentDate.getFullYear();
+            var month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+            var day = currentDate.getDate().toString().padStart(2, '0');
+            var formattedDate = year + '-' + month + '-' + day;
+            return formattedDate;
+            
+        }
+
+        function next_date(){
+            var currentDate = new Date();
+            // Subtract five years from the current date
+            var fiveYearsAgo = new Date(currentDate.getFullYear() - 5, currentDate.getMonth(), currentDate.getDate());
+
+            // Format the date as YYYY-MM-DD
+            var year = fiveYearsAgo.getFullYear();
+            var month = (fiveYearsAgo.getMonth() + 1).toString().padStart(2, '0');
+            var day = fiveYearsAgo.getDate().toString().padStart(2, '0');
+            var formattedDate = year + '-' + month + '-' + day;
+            return formattedDate;
+        }
+
+        end = currennt_date();
+        start = next_date();
+
+        // Set the value of the input field
+        document.getElementById('start').value= start;
+        document.getElementById('end').value= end;
+
+
+      </script>
 
     <!-- JavaScript Libraries -->
     <script src="/static/external_cdns/js/jquery-3.4.1.min.js"></script>

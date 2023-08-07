@@ -3,7 +3,7 @@ makes query to the database and returns to the database
 """
 
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import session
 from .helper.extraction_rules import Rules
 from utils.database_connection import ConnectDatabase
@@ -44,7 +44,7 @@ class Extractor:
             flattened_df = pivoted_df.apply(lambda x: pd.Series(x).explode())
 
             # rename indexes
-            flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Start', 'month': "Month" , 'cob': 'COB'})
+            flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month" , 'cob': 'COB'})
 
             # renaming columns
             flattened_df.columns.names =  ["Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", " "]
@@ -61,7 +61,7 @@ class Extractor:
             flattened_df = pivoted_df.apply(lambda x: pd.Series(x).explode())
 
             # rename indexes
-            flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Start', 'month': "Month"})
+            flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month"})
 
             # renaming columns
             flattened_df.columns.names =  ["Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", " "]
@@ -81,7 +81,7 @@ class Extractor:
             df["month"] = df["month"].dt.strftime('%Y-%m-%d %H:%M:%S')
             
         
-        df.columns = ["Month",'Data', 'Curve Start', "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", 'Sub Cost Component']
+        df.columns = ["Curve Start Month", 'Data', 'Curve Update Date', "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", 'Sub Cost Component']
         return df
 
 
@@ -129,9 +129,26 @@ class Extractor:
         for row in rules:
             query = f"control_area == '{row['control_area']}' & state == '{row['state']}' & load_zone == '{row['load_zone']}' & capacity_zone == '{row['capacity_zone']}' & utility == '{row['utility']}' & strip == '{row['strip']}' & cost_group == '{row['cost_group']}' & cost_component == '{row['cost_component']}' & sub_cost_component == '{row['sub_cost_component']}'"
             df = dataframe.query(query)
-            df = df.loc[(df['month'] >= row['startmonth']) & (df['month'] <= row['endmonth'])]
+            if row['balanced_month_range'] ==  0:
+                df = df.loc[(df['month'] >= row['startmonth']) & (df['month'] <= row['endmonth'])]
+            else:
+                start_month, end_month = self.calculate_balanced_month(row['balanced_month_range'])
+                df = df.loc[(df['month'] >= start_month) & (df['month'] <= end_month)]
             dataframes.append(df)
         if len(dataframes)>=1:    
             return pd.concat(dataframes, axis=0), "success"
         return None, "error"
         
+    def calculate_balanced_month(self, months):
+        current_date = datetime.now()
+        first_day_of_month = current_date.replace(day=1)
+        end_date = first_day_of_month + timedelta(days=months * 30)
+        end_date = end_date.replace(day=1)
+
+        first_day_of_month = first_day_of_month.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_date = end_date.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        start_date = pd.to_datetime(first_day_of_month, utc=True)
+        end_date = pd.to_datetime(end_date, utc=True)
+
+        return start_date, end_date

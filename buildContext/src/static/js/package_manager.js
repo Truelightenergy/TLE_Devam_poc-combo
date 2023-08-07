@@ -1,4 +1,21 @@
 $(document).ready(function() {
+    // check weather range or date is selected
+    var dateRadio = document.getElementById('date_radio');
+    var rangeRadio = document.getElementById('range_radio');
+    dateRadio.addEventListener('click', function() {
+        if (dateRadio.checked) {
+            document.getElementById('dates').style.display = 'block';
+            document.getElementById('ranges').style.display = 'none';
+        }
+      });
+
+    rangeRadio.addEventListener('click', function() {
+        if (rangeRadio.checked) {
+            document.getElementById('dates').style.display = 'none';
+            document.getElementById('ranges').style.display = 'block';
+        }
+      });
+
     var selected_filters;
     var unselected_filters = [];
     /////////////////////////////////////////users////////////////////////////////
@@ -606,18 +623,31 @@ $(document).ready(function() {
 
         
         document.getElementById("submition").onclick = function jsFunc() {
-            sdate = document.getElementById('start').value;
-            edate = document.getElementById('end').value;
+
+            if(dateRadio.checked){
+                sdate = document.getElementById('start').value;
+                edate = document.getElementById('end').value;
+                month = 0;
+            }
+            else{
+                month = document.getElementById('bal_month').value;
+                sdate = "2000-01-01";
+                edate = "9999-12-31";
+            }
+            
+            
+            
             for(let i = 0; i < unselected_filters.length; i++){
                 selected_filters = update_filters(unselected_filters[i], selected_filters);
                 }
-            if (sdate && edate){
+            
             
             
             data = {
                 "data" : selected_filters,
                 "start_date" : sdate,
                 "end_date" : edate,
+                "balanced_month": month,
                 "email" : document.getElementById('user').value,
             }
             
@@ -633,8 +663,11 @@ $(document).ready(function() {
             success: function(response) {
               // Handle the response from the server if needed
               $(document).scrollTop(0);
-              $('body').html(response);
-              $('body').html(response);
+              
+            //   $('body').html(response);
+                document.open();
+                document.write(response);
+                document.close();
             
             },
             error: function(xhr, status, error) {
@@ -644,12 +677,6 @@ $(document).ready(function() {
             }
           });
 
-        }
-
-        else{
-            alert("Select the dates");
-            return;
-        }
             
         }
         

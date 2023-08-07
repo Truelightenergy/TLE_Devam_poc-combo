@@ -46,8 +46,12 @@ $(document).ready(function() {
                 $('#save').attr('disabled', false);
 				// document.write(response);
 				$('#upload_form')[0].reset();
-				$('body').html(response);
-				$('body').html(response);
+				
+				// $('body').append(response);
+				document.open();
+				document.write(response);
+				document.close();
+				
 
 
 				
