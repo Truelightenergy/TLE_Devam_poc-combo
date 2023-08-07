@@ -87,7 +87,7 @@ class Util:
         """
         try:
 
-            if query_strings['operating_day'] == '':
+            if ('operating_day' not in query_strings)or (query_strings['operating_day'] == ''):
                 operating_day, offset = self.db_model.fetch_latest_operating_day(f"{query_strings['iso']}_{query_strings['curve_type']}")
             else:
                 offset= query_strings["offset"]
