@@ -620,6 +620,135 @@ services:
           ADD COLUMN balanced_month_range INT DEFAULT 0;
 
 
+
+
+      --notification schema starts here
+
+      -- languages table
+      CREATE TABLE trueprice.languages (
+          language_id SERIAL PRIMARY KEY,
+          language_code VARCHAR(10) NOT NULL UNIQUE, -- e.g., 'en', 'es', 'fr'
+          language_name VARCHAR(255) NOT NULL
+      );
+
+      -- email_templates table
+      CREATE TABLE trueprice.email_templates (
+          template_id SERIAL PRIMARY KEY,
+          template_name VARCHAR(255) NOT NULL UNIQUE, -- e.g., 'PRICE_DROP', 'NEW_FEATURE'
+          subject_template TEXT, -- Optional: subject can be multi-lingual too
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- email_template_contents table
+      CREATE TABLE trueprice.email_template_contents (
+          content_id SERIAL PRIMARY KEY,
+          template_id INT REFERENCES trueprice.email_templates(template_id),
+          language_id INT REFERENCES trueprice.languages(language_id),
+          subject_content TEXT, -- Multi-lingual subject content
+          body_content TEXT NOT NULL, -- Actual email content in HTML/Text
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- notification_events table to define possible events
+      CREATE TABLE trueprice.notification_events (
+          event_id SERIAL PRIMARY KEY,
+          event_name VARCHAR(255) NOT NULL UNIQUE, -- e.g., 'PRICE_CHANGE', 'HEADROOM_CHANGE'
+          description TEXT
+      );
+
+      -- notifications table
+      CREATE TABLE trueprice.notifications (
+          notification_id SERIAL PRIMARY KEY,
+          user_id INT REFERENCES trueprice.trueprice.users(id), -- NULL for global (all users) notifications
+          event_id INT REFERENCES trueprice.notification_events(event_id),
+          template_id INT REFERENCES trueprice.email_templates(template_id),
+          type VARCHAR(50) NOT NULL CHECK (type IN ('USER_DEFINED', 'SYSTEM')),
+          is_global BOOLEAN NOT NULL DEFAULT FALSE, 
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- schedule_patterns table to store individual schedule patterns
+      CREATE TABLE trueprice.schedule_patterns (
+          pattern_id SERIAL PRIMARY KEY,
+          notification_id INT REFERENCES trueprice.notifications(notification_id),
+          cron_pattern VARCHAR(255) NOT NULL, -- cron-style scheduling string
+          schedule_description TEXT, -- human-readable description of the schedule
+          next_notification_time TIMESTAMP,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          recursive BOOLEAN DEFAULT false
+      );
+
+      -- notifications_log table to store sent notifications
+      CREATE TABLE trueprice.notifications_log (
+          log_id SERIAL PRIMARY KEY,
+          notification_id INT REFERENCES trueprice.notifications(notification_id),
+          user_id INT REFERENCES trueprice.users(id), -- to whom the notification was sent
+          message TEXT NOT NULL, -- rendered message based on the message_template
+          sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- price_changes_notifications to cater the changes in each uploads
+      CREATE TABLE trueprice.price_changes_notifications (
+        change_id SERIAL PRIMARY KEY,
+        price_shift_value NUMERIC(20,10),
+        price_shift_prct NUMERIC(20,10),
+        price_shift TEXT,
+        location TEXT,
+        curvestart TIMESTAMPTZ,
+        status TEXT DEFAULT 'waiting',
+        retries NUMERIC DEFAULT 0,
+        event_id INT REFERENCES trueprice.notification_events(event_id)
+      );
+
+      -- file uploads trigger
+      CREATE TABLE trueprice.price_change_trigger(
+        change_id SERIAL PRIMARY KEY,
+        curvestart TIMESTAMPTZ,
+        filename varchar(255),
+        status varchar(255) Default 'waiting'
+      );
+
+
+      -- add language first
+      INSERT INTO trueprice.languages (language_code, language_name)
+          VALUES ('en', 'English');
+
+      -- email_template
+      INSERT INTO trueprice.email_templates (template_name, subject_template)
+          VALUES ('PriceChange', 'Price changes');
+      INSERT INTO trueprice.email_templates (template_name, subject_template)
+          VALUES ('HeadroomChange', 'Headromm changes');
+
+      -- email_template_content
+      INSERT INTO trueprice.email_template_contents (template_id, language_id, subject_content, body_content)
+        VALUES (1, 1, 'Price Change Alert', '<html><body><p>Dear {username},<br/> There has been a change in energy pricing in {location}.<br/> Energy has {price_shift} by {price_shift_value} resulting in a {price_shift_prct}.<br/>Your Friends at TRUEPrice </p></body></html>');
+      INSERT INTO trueprice.email_template_contents (template_id, language_id, subject_content, body_content)
+        VALUES (2, 1, 'Headroom Change Alert', '<html><body><p>We are here to inform you about the recent Headroom changes...</p></body></html>');
+
+      -- notification_events
+      INSERT INTO trueprice.notification_events (event_name, description)
+        VALUES ('PRICE_CHANGE', 'Notification sent when there is a PRICE change in monitored.');
+      INSERT INTO trueprice.notification_events (event_name, description)
+        VALUES ('HEADROOM_CHANGE', 'Notification sent when there is a HEDROOM change in monitored.');
+
+      --notification
+      INSERT INTO trueprice.notifications (user_id, event_id, template_id, type, is_global)
+        VALUES (NULL, 1, 1, 'SYSTEM', true);  --price drop
+      INSERT INTO trueprice.notifications (user_id, event_id, template_id, type, is_global)
+        VALUES (NULL, 2, 2, 'SYSTEM', true);  --price hike
+
+
+      --schedule the notification
+      INSERT INTO trueprice.schedule_patterns (notification_id, cron_pattern, schedule_description, next_notification_time)
+        VALUES (1, '0 8 * * MON', 'Every Monday at 8:00 AM', '2023-08-14 08:00:00');
+      INSERT INTO trueprice.schedule_patterns (notification_id, cron_pattern, schedule_description, next_notification_time)
+        VALUES (2, '0 8 * * MON', 'Every Monday at 8:00 AM', '2023-08-14 08:00:00');
+      
+      --notification schema ends here
+
+
       EOSQL
   # adminer: # for postgres, php admin interface
   #   image: adminer
