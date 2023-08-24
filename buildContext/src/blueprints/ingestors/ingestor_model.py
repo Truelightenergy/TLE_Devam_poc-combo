@@ -40,3 +40,17 @@ class IngestorUtil:
             return True, response
         except:
             return False, None
+        
+    def event_for_notification(self, curvestart_date, file_name):
+        """
+        stores the notification event to be triggered by the event job
+        """
+
+        query =f"INSERT INTO trueprice.price_change_trigger (curvestart, filename) VALUES ('{curvestart_date}', '{file_name}'); "
+        try:
+            result = self.engine.execute(query)
+            if result.rowcount > 0:
+                return True
+            return False
+        except:
+            return False
