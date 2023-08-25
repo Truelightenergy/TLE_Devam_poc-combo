@@ -25,8 +25,8 @@ class IsoneRecHelper:
         columns = df.columns.tolist()
 
         # Rename the columns separately
-        columns[33] = 'class_i_thermal_prct'
-        columns[34] = 'class_i_thermal_price'
+        # columns[33] = 'class_i_thermal_prct'
+        # columns[34] = 'class_i_thermal_price'
 
         # Update the dataframe with the modified column names
         df.columns = columns
@@ -78,6 +78,7 @@ class IsoneRecHelper:
             resultant_df = pd.concat(dataframes, axis=0)
             resultant_df=resultant_df.sort_values("Date")
             resultant_df['Data'].fillna(0, inplace=True)
+            resultant_df['Data'].replace('-', '0', regex=True, inplace=True)
             resultant_df['Data'].replace('[\$,]', '', regex=True, inplace=True)
             resultant_df['Data'].replace('[\%,]', '', regex=True, inplace=True)
             resultant_df.reset_index(drop=True, inplace=True)

@@ -17,7 +17,7 @@ class ErcotRecHelper:
         df = df.rename(columns={
         df.columns[0]: 'Date', 
         df.columns[1] : 'tx_total_cost_per_mWh',
-        df.columns[2] : 'tx_compliance' ,
+        df.columns[2] : 'tx_compliance_obligation',
         df.columns[3] : 'tx_rec_price'} )
     
         return df
@@ -70,6 +70,7 @@ class ErcotRecHelper:
             resultant_df = pd.concat(dataframes, axis=0)
             resultant_df=resultant_df.sort_values("Date")
             resultant_df['Data'].fillna(0, inplace=True)
+            resultant_df['Data'].replace('-', '0', regex=True, inplace=True)
             resultant_df['Data'].replace('[\$,]', '', regex=True, inplace=True)
             resultant_df['Data'].replace('[\%,]', '', regex=True, inplace=True)
             resultant_df.reset_index(drop=True, inplace=True)
