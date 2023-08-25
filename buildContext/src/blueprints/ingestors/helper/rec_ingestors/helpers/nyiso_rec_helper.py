@@ -69,6 +69,7 @@ class NyisoRecHelper:
             resultant_df = pd.concat(dataframes, axis=0)
             resultant_df=resultant_df.sort_values("Date")
             resultant_df['Data'].fillna(0, inplace=True)
+            resultant_df['Data'].replace('-', '0', regex=True, inplace=True)
             resultant_df['Data'].replace('[\$,]', '', regex=True, inplace=True)
             resultant_df['Data'].replace('[\%,]', '', regex=True, inplace=True)
             resultant_df.reset_index(drop=True, inplace=True)
