@@ -8,3 +8,5 @@ PyJWT
 boto3
 pyopenssl # for TLS - see https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https
 flasgger
+apscheduler
+croniter
