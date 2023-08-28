@@ -44,7 +44,7 @@ class Nyiso_energy:
                 'date' : 'month'
             })
 
-            if "_cob" in data.fileName:
+            if "_cob" in data.fileName.lower():
                 df.insert(0, 'cob', 1)
             else:
                 df.insert(0, 'cob', 0)
