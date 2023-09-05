@@ -9,26 +9,29 @@
 
 
 {%else%}
-
     
-    
-
-
-    
-    <div class="alert alert-success alert-dismissible fade show col-md-4 " id="alert" role="alert" style="width:50%; margin:0 auto;">
+    <div class="alert alert-success alert-dismissible fade show col-md-4" id="alert" role="alert" style="width:50%; margin:0 auto;">
         <i class="fa fa-exclamation-circle me-2"></i>{{message_toast}}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     
 
 {% endif %}
-
 {% endif %}
+<div id="custom_alert" style="display: none;">
+    <div class="alert alert-success alert-dismissible fade show col-md-4" id="alert" role="alert" style="width:50%; margin:0 auto;">
+        <i class="fa fa-exclamation-circle me-2"></i>{{message_toast}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
 
 
 <script>
 
 setTimeout(function(){
-  $('#alert').remove();
+    $('#alert').hide();
+    
+  
 }, 8000);
+
 </script>

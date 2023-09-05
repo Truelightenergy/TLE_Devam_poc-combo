@@ -6,6 +6,7 @@ from blueprints.auths.view import auths
 from blueprints.admins.view import admins
 from blueprints.extractors.view import extractors
 from blueprints.ingestors.view import ingestors
+from blueprints.graph_view.view import graph_view
 from utils.revoke_tokens import RevokedTokens
 from utils.roles import RolesDecorator
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
@@ -48,6 +49,7 @@ def create_app():
     app.register_blueprint(admins)
     app.register_blueprint(ingestors)
     app.register_blueprint(extractors)
+    app.register_blueprint(graph_view)
 
     return app
 template = {

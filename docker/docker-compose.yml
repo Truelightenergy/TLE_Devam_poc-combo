@@ -748,6 +748,21 @@ services:
       
       --notification schema ends here
 
+      --graph view schema starts here
+
+      -- file uploads trigger
+
+      -- save the graphview table
+
+      CREATE TABLE trueprice.save_graphview(
+        change_id SERIAL PRIMARY KEY,
+        url varchar(255),
+        user_id INT REFERENCES trueprice.trueprice.users(id),
+        status varchar(255)
+      );
+
+      --graph view schema ends here
+
 
       EOSQL
   # adminer: # for postgres, php admin interface
