@@ -10,3 +10,4 @@ pyopenssl # for TLS - see https://blog.miguelgrinberg.com/post/running-your-flas
 flasgger
 apscheduler
 croniter
+plotly

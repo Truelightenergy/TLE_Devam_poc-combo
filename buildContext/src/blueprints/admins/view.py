@@ -7,6 +7,7 @@ from utils.revoke_tokens import RevokedTokens
 from utils.roles import RolesDecorator
 from utils.keys import secret_key, secret_salt
 from utils.blocked_tokens import revoked_jwt
+import json
 
 
 admins = Blueprint('admins', __name__,
@@ -710,8 +711,13 @@ def get_catalog_data():
 
     try:
       
-      subcostcomponents = db_obj.get_catalog_data_from_db()
-      return jsonify(subcostcomponents)
+      base_dir = os.path.dirname(os.path.abspath(__file__))
+      data_file_path = os.path.join(base_dir, 'catalog.json')
+      #subcostcomponents = db_obj.get_catalog_data_from_db()
+      with open(data_file_path, 'r') as json_file:
+        data = json.load(json_file)
+
+      return jsonify(data)
     except:
         return list()
     
