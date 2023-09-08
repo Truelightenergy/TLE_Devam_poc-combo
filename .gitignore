@@ -18,3 +18,4 @@ defaulted_file_upload/
 pyvenv.cfg
 
 /training
+/.vs
