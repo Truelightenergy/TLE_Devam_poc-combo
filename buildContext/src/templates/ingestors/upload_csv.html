@@ -72,55 +72,107 @@
 
             <!-- Blank Start -->
             <div class="container-fluid pt-4 px-4">
-                <div class="row g-4 align-items-center justify-content-center mx-0  mt-5">
-                    <div class="col-sm-12 col-xl-6">
-                        <div class="bg-secondary rounded h-100 p-4">
-                            <h6 class="mb-4">Uploads</h6>
-                            <form id="upload_form"  enctype="multipart/form-data" method="post">
-                                
+                <div id ="upload_view">
+                    <div class="row g-4 align-items-center justify-content-center mx-0 mt-5">
+                        <div class="col-sm-12 col-xl-6">
+                            <div class="bg-secondary rounded h-100 p-4">
+                                <h6 class="mb-4">Uploads</h6>
+                                <form id="upload_form"  enctype="multipart/form-data" method="post">
 
-
-                                <div class="mb-3">
-                                    
-                                    
-                                  
-                                        <label for="formFileLg" class="form-label">Upload CSV file here with following rules:</label>
-                                        <div class="text">
-                                            * if no data exists, data is inserted.</br>
-                                            * if data exists, newer data is inserted.</br>
-                                            * if data exists, same timestamp will archive existing data then update it.</br>
-                                            * if energy file has "_cob" marker in filename, same time rules apply.</br>
-                                            * if database has cob marked data for timestamp, any same/newer same data is ignored.</br>
-                                            <br>
-                        
-                        
-                                        </div>	
-                                        
-                                        <input type="file" name="file" class="form-control form-control-md bg-dark"  id = 'upload_file' required id="file" />                                 
-                                </div>
                                     <div class="mb-3">
-                                        <div class="bg-secondary rounded h-100 p-4">
-                                            <div class="pg-bar mb-0">
-                                                <div class="form-group" id="process" style="display: none;">
-                                                    <div class="progress" >
-                                                        <div id="progressBar" class="progress-bar progress-bar-striped bg-danger" role="progressbar" >
+                    
+                                            <label for="formFileLg" class="form-label">Upload CSV file here with following rules:</label>
+                                            <div class="text">
+                                                * if no data exists, data is inserted.</br>
+                                                * if data exists, newer data is inserted.</br>
+                                                * if data exists, same timestamp will archive existing data then update it.</br>
+                                                * if energy file has "_cob" marker in filename, same time rules apply.</br>
+                                                * if database has cob marked data for timestamp, any same/newer same data is ignored.</br>
+                                                <br>
+                            
+                            
+                                            </div>	
+                                            
+                                            <input type="file" name="file" class="form-control form-control-md bg-dark"  id = 'upload_file' required id="file" />                                 
+                                    </div>
+                                        <div class="mb-3">
+                                            <div class="bg-secondary rounded h-100 p-4">
+                                                <div class="pg-bar mb-0">
+                                                    <div class="form-group" id="process" style="display: none;">
+                                                        <div class="progress" >
+                                                            <div id="progressBar" class="progress-bar progress-bar-striped bg-danger" role="progressbar" >
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                            </div>
+                                        
                                         </div>
+                                    </div>
                                     
+                                    
+                                    <div class="mb-3">
+                                        <input type="submit" value="Test Upload File" id="save" class="btn btn-outline-primary w-100 m-2">
+                                    </div>
+                                </form>
+                            </div>
+                        </div>              
+                    </div>
+                </div>
+
+            <!-- results to display for tester -->
+            <div id="tester_view" style="display: none;">
+                <div class="row mt-5">
+                    <div class="col-sm-12 col-xl-12">
+                        <div class="bg-secondary rounded h-100 p-4">
+                            
+                            <div class="row">
+                                <div class="col-md-10"> 
+                                    <h6 class="mb-4">Tester View</h6>
+                                </div>
+                                <div class="col-md-1">
+                                    <button id = "retry_btn" class="mb-4 btn btn-warning">Retry</button>
+                                </div>
+                                <div class="col-md-1">
+                                    <button id = "upload_btn" class="mb-4 btn btn-success">Upload</button>
+                                </div>
+
+                                <div>
+                                <div class="row">
+
+                                    <div class="col-md-4">
+                                        <strong>Status: </strong>
+                                    </div>
+                                    <div id="status" class="col-md-8">
+                                        None
                                     </div>
                                 </div>
-                                
-                                
-                                <div class="mb-3">
-                                    <input type="submit" value="Upload" id="save" class="btn btn-outline-primary w-100 m-2">
-                                </div>
-                            </form>
-                        </div>
-                    </div>              
-            </div>
+                                <br/>
 
+                                    <table id="myTable" class="table-dark table-hover table">
+                                        <thead>
+                                            <tr>
+                                                <th>Min/Max</th>
+                                                <th>Min/Max 5x16 </th>
+                                                <th>Min/Max 2x16 </th>
+                                                <th>Min/Max 7x8 </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td id ='min_max'>0/0</td>
+                                                <td id ='min_max_5x16'>0/0</td>
+                                                <td id ='min_max_2x16'>0/0</td>
+                                                <td id ='min_max_7x8'>0/0</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             </div>
             <!-- Blank End -->
