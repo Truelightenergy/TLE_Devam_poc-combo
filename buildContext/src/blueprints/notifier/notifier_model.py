@@ -141,6 +141,7 @@ class NotifierUtil:
         fetches the most recent data from the file
         """
         date = curvestart.date()
+        previous_date = None
         try:
             query =f"""
                     SELECT MAX(curvestart) AS most_recent_date
@@ -148,7 +149,7 @@ class NotifierUtil:
                     WHERE curvestart <= '{date}';
                     """
             result = self.engine.execute(query)
-            previous_date = None
+            
             for row in result:
                 previous_date = row['most_recent_date']
                 break
