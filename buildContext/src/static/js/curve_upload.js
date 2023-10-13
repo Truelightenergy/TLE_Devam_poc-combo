@@ -135,14 +135,14 @@ $(document).ready(function () {
 		return true;
 	}
 
-	function populate_results(resultant) {
-		if ((resultant['months'] >= 60) && (resultant.negativeResult.foundNegative !==true)) {
+	function populate_results(resultant, file) {
+		if ((resultant['months'] >= 60) && ((resultant.negativeResult.foundNegative !==true) || (file.name.toLowerCase().includes("nonenergy")))) {
 
 			$('#status').html("&#10004; Success");
 			$("#status").css("color", "green");
 		}
 		else {
-			if (resultant.negativeResult.foundNegative ===true) {
+			if ((resultant.negativeResult.foundNegative ===true) && (!(file.name.toLowerCase().includes("nonenergy")))) {
 				$('#status').html(`&#10006; Failure: Negative price (${resultant.negativeResult.value}) detected!`);
 				$("#status").css("color", "red");
 
@@ -222,7 +222,7 @@ $(document).ready(function () {
 					"months": months
 				}
 
-				populate_results(resultant);
+				populate_results(resultant, file);
 
 			} catch (error) {
 				console.error('Error processing file:', error);
