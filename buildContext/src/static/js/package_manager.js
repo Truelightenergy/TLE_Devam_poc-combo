@@ -20,6 +20,107 @@ $(document).ready(function() {
     var unselected_filters = [];
     /////////////////////////////////////////users////////////////////////////////
 
+    function pre_process_unsubscribed_filters(selected_data){
+        let items_to_clear = ["control_area_buttons", "state_buttons", "load_zone_buttons", "capacity_zone_buttons", "utility_buttons", "block_type_buttons", "cost_group_buttons","cost_component_buttons","sub_cost_component_buttons" ];
+        empty_divs(items_to_clear);
+        var unsubscribed_filters = []; // Assuming selected_filters is defined elsewhere
+        for (var curve in selected_filters) {
+            document.getElementById(curve).classList.remove('btn-warning');
+            for (var control_area in selected_filters[curve]) {
+                for (var i = 0; i < selected_filters[curve][control_area].length; i++) {
+                    sub_item = selected_filters[curve][control_area][i];
+                    state = sub_item['state'];
+                    load_zone = sub_item['load_zone'];
+                    capacity_zone = sub_item['capacity_zone'];
+                    utility = sub_item['utility'];
+                    block_type = sub_item["block_type"];
+                    cost_group = sub_item['cost_group'];
+                    cost_component = sub_item['cost_component'];
+                    sub_cost_component = sub_item['sub_cost_component'];
+                    var result = selected_data.filter(item => (
+                        item.strip === block_type &&
+                        item.state === state &&
+                        item.load_zone === load_zone &&
+                        item.capacity_zone === capacity_zone &&
+                        item.utility === utility &&
+                        item.cost_group === cost_group &&
+                        item.cost_component === cost_component &&
+                        item.sub_cost_component === sub_cost_component
+                    
+                    ),
+                    );
+                    if (result.length == 0) {
+                        var unsubscribed_filter;
+                        console.log(sub_item);          
+                        unsubscribed_filters.push(unsubscribed_filter);
+                    }
+                }
+            }
+        }
+        return unsubscribed_filters;    
+    }
+    
+    
+
+
+    function pre_process_subscribed_filters(data) {
+        var subscribed_filters = {};
+    
+        for (let i = 0; i < data.length; i++) {
+            let data_dict = data[i];
+            let curve = data_dict["control_table"].split("_")[1];
+            let control_area = data_dict['control_table'].split("_")[0];
+    
+            if (!(curve in subscribed_filters)) {
+                subscribed_filters[curve] = {};
+            }
+    
+            if (!(control_area in subscribed_filters[curve])) {
+                subscribed_filters[curve][control_area] = [];
+            }
+             var values = {
+                "block_type": data_dict["strip"],
+                "capacity_zone": data_dict['capacity_zone'],
+                "control_area": data_dict['control_area'],
+                "cost_component": data_dict['cost_component'],
+                "cost_group": data_dict['cost_group'],
+                "load_zone": data_dict['load_zone'],
+                "state": data_dict['state'],
+                "sub_cost_component": data_dict['sub_cost_component'],
+                "utility": data_dict['utility']
+             }
+             subscribed_filters[curve][control_area].push(values);
+        }
+
+        return subscribed_filters;
+    
+        
+    }
+    
+
+    function load_subscriptions(selectedUser){
+          
+        data= {
+            "email" : selectedUser
+        }
+        $.ajax({
+            url: '/view_authorized_columns',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            headers: {
+                'Authorization': "Bearer "+token
+            },
+            success: function(response) {
+                selected_data = pre_process_subscribed_filters(response);
+                unselected_data = pre_process_unsubscribed_filters(response);
+                // unselected_filters = unselected_data;
+
+            }   
+        });
+
+    }
+
     // empty divs before placing them
     function empty_divs(items){
         for(let i = 0; i < items.length; i++){
@@ -82,7 +183,7 @@ $(document).ready(function() {
 
 
         }
-        else if (nodes.length ==5){
+        else if (nodes.length == 5){
             curve = nodes[0];
             control_area = nodes[1];
             state = nodes[2];
@@ -332,7 +433,9 @@ $(document).ready(function() {
     }
     
     // Define the change event handler for curve type dropdown
+
     $('#user').change(function() {
+        var user;
         var selectedUser = $(this).val();
         $.ajax({
             url: '/get_users',
@@ -344,14 +447,27 @@ $(document).ready(function() {
             success: function(response) {
                 $('#user').empty();
                 $.each(response, function(index, value) {
+                    if (index==0){
+                        user = value;
+                    }
+                    
                     var html = '<option value="' + value + '">' + value + '</option>';
                     $('#user').append(html);
                 });
                 if (selectedUser){
                     $('#user').val(selectedUser);
+                    load_subscriptions(selectedUser);
                 }
+                else{
+                    load_subscriptions(user);
+                }
+
+                
             }   
         });
+
+        
+        
     });
 
     $('#user').trigger('change');
@@ -392,7 +508,7 @@ $(document).ready(function() {
         // control Area
         $("#curves_button").on("click", "button", function() {
             document.getElementById(this.id).classList.remove('btn-warning');
-            unselected_filters = unselected_filters.filter(item => item !== this.id);
+            unselected_filters = unselected_filters.filter(item => item !== this.id);        
             
             
             var control_areas = [];
@@ -638,10 +754,10 @@ $(document).ready(function() {
             
             
             for(let i = 0; i < unselected_filters.length; i++){
-                selected_filters = update_filters(unselected_filters[i], selected_filters);
+                if (unselected_filters[i]){
+                    selected_filters = update_filters(unselected_filters[i], selected_filters);
                 }
-            
-            
+                }
             
             data = {
                 "data" : selected_filters,
@@ -650,7 +766,6 @@ $(document).ready(function() {
                 "balanced_month": month,
                 "email" : document.getElementById('user').value,
             }
-            
            $.ajax({
             url: '/package_mgmt',
             type: 'POST',
