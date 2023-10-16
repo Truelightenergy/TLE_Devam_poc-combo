@@ -27,6 +27,7 @@ $(document).ready(function() {
         for (var curve in selected_filters) {
             document.getElementById(curve).classList.remove('btn-warning');
             for (var control_area in selected_filters[curve]) {
+                var unsubscribed_filter;
                 for (var i = 0; i < selected_filters[curve][control_area].length; i++) {
                     sub_item = selected_filters[curve][control_area][i];
                     state = sub_item['state'];
@@ -46,19 +47,172 @@ $(document).ready(function() {
                         item.cost_group === cost_group &&
                         item.cost_component === cost_component &&
                         item.sub_cost_component === sub_cost_component
-                    
                     ),
                     );
-                    if (result.length == 0) {
-                        var unsubscribed_filter;
-                        console.log(sub_item);          
+                    var flag = false;
+                    if ((result.length == 0) && (selected_data.length>0)) {
+                        // curve                     
+                        var curve_check = selected_data.filter(item => (
+                           item.control_table.split("_")[1] == curve 
+                        ),
+                        );
+                        if((curve_check.length==0)&&(!flag)){
+                            unsubscribed_filter = curve;
+                            flag = true;
+                            document.getElementById(curve).classList.add('btn-warning');
+                            
+                        }
+                        // control area
+                        var control_area_check = selected_data.filter(item => (
+                            item.control_table.split("_")[1] == curve &&
+                            item.control_table.split("_")[0] == control_area 
+                         ),
+                         );
+                         if((control_area_check.length==0)&&(!flag)){
+                            unsubscribed_filter = curve +"___"+ control_area;
+                            flag = true;
+                            
+                         }
+
+                        // state
+                        var state_check = selected_data.filter(item => (
+                            item.control_table.split("_")[1] == curve &&
+                            item.control_table.split("_")[0] == control_area &&
+                            item.state === state
+                         ),
+                         );
+                         if((state_check.length==0)&&(!flag)){
+                            unsubscribed_filter = curve +"___"+ control_area+"___"+state;
+                            flag = true;
+                            
+                         }
+                        // load zone
+                        var load_zone_check = selected_data.filter(item => (
+                            item.control_table.split("_")[1] == curve &&
+                            item.control_table.split("_")[0] == control_area &&
+                            item.state === state &&
+                            item.load_zone === load_zone
+                         ),
+                         );
+                        if((load_zone_check.length==0)&&(!flag)){
+                            unsubscribed_filter = curve +"___"+ control_area+"___"+state+"___"+load_zone;
+                            flag = true;
+                            
+                         }
+
+                        // capacity zone
+
+                        var capacity_zone_check = selected_data.filter(item => (
+                            item.control_table.split("_")[1] == curve &&
+                            item.control_table.split("_")[0] == control_area &&
+                            item.state === state &&
+                            item.load_zone === load_zone &&
+                            item.capacity_zone === capacity_zone
+                         ),
+                         );
+                        if((capacity_zone_check.length==0)&&(!flag)){
+                            unsubscribed_filter = curve +"___"+ control_area+"___"+state+"___"+load_zone+"___"+capacity_zone;
+                            flag = true;
+                        }
+                        // utility 
+                        var utility_check = selected_data.filter(item => (
+                            item.control_table.split("_")[1] == curve &&
+                            item.control_table.split("_")[0] == control_area &&
+                            item.state === state &&
+                            item.load_zone === load_zone &&
+                            item.capacity_zone === capacity_zone &&
+                            item.utility === utility
+                         ),
+                         );
+                        if((utility_check.length==0)&&(!flag)){
+                            unsubscribed_filter = curve +"___"+ control_area+"___"+state+"___"+load_zone+"___"+capacity_zone+"___"+utility;
+                            flag = true;
+                        }
+                        // block type
+
+                        var block_check = selected_data.filter(item => (
+                            item.control_table.split("_")[1] == curve &&
+                            item.control_table.split("_")[0] == control_area &&
+                            item.state === state &&
+                            item.load_zone === load_zone &&
+                            item.capacity_zone === capacity_zone &&
+                            item.utility === utility &&
+                            item.strip === block_type
+                         ),
+                         );
+                        if((block_check.length==0)&&(!flag)){
+                            unsubscribed_filter = curve +"___"+ control_area+"___"+state+"___"+load_zone+"___"+capacity_zone+"___"+utility+"___"+block_type;
+                            flag = true;
+                        }
+
+                        // cost group
+                        var cost_group_check = selected_data.filter(item => (
+                            item.control_table.split("_")[1] == curve &&
+                            item.control_table.split("_")[0] == control_area &&
+                            item.state === state &&
+                            item.load_zone === load_zone &&
+                            item.capacity_zone === capacity_zone &&
+                            item.utility === utility &&
+                            item.strip === block_type &&
+                            item.cost_group === cost_group
+                         ),
+                         );
+                        if((cost_group_check.length==0)&&(!flag)){
+                            unsubscribed_filter = curve +"___"+ control_area+"___"+state+"___"+load_zone+"___"+capacity_zone+"___"+utility+"___"+block_type+"___"+cost_group;
+                            flag = true;
+                        }
+                        // cost component
+
+                        var cost_component_check = selected_data.filter(item => (
+                            item.control_table.split("_")[1] == curve &&
+                            item.control_table.split("_")[0] == control_area &&
+                            item.state === state &&
+                            item.load_zone === load_zone &&
+                            item.capacity_zone === capacity_zone &&
+                            item.utility === utility &&
+                            item.strip === block_type &&
+                            item.cost_group === cost_group &&
+                            item.cost_component ===  cost_component
+                         ),
+                         );
+                        if((cost_component_check.length==0)&&(!flag)){
+                            unsubscribed_filter = curve +"___"+ control_area+"___"+state+"___"+load_zone+"___"+capacity_zone+"___"+utility+"___"+block_type+"___"+cost_group+"___"+cost_component;
+                            flag = true;
+                        }
+
+                        // sub cost component
+
+                        var sub_cost_component_check = selected_data.filter(item => (
+                            item.control_table.split("_")[1] == curve &&
+                            item.control_table.split("_")[0] == control_area &&
+                            item.state === state &&
+                            item.load_zone === load_zone &&
+                            item.capacity_zone === capacity_zone &&
+                            item.utility === utility &&
+                            item.strip === block_type &&
+                            item.cost_group === cost_group &&
+                            item.cost_component ===  cost_component &&
+                            item.sub_cost_component === sub_cost_component
+                         ),
+                         );
+                        if((sub_cost_component_check.length==0)&&(!flag)){
+                            unsubscribed_filter = curve +"___"+ control_area+"___"+state+"___"+load_zone+"___"+capacity_zone+"___"+utility+"___"+block_type+"___"+cost_group+"___"+cost_component+"___"+sub_cost_component;
+                            flag =true;   
+                        }
+                        
+
+                    }
+                    if ((!unsubscribed_filters.includes(unsubscribed_filter)) && (unsubscribed_filter)) {
                         unsubscribed_filters.push(unsubscribed_filter);
                     }
+                    
                 }
+                
             }
         }
         return unsubscribed_filters;    
     }
+    
     
     
 
@@ -112,9 +266,9 @@ $(document).ready(function() {
                 'Authorization': "Bearer "+token
             },
             success: function(response) {
-                selected_data = pre_process_subscribed_filters(response);
+                // selected_data = pre_process_subscribed_filters(response);
                 unselected_data = pre_process_unsubscribed_filters(response);
-                // unselected_filters = unselected_data;
+                unselected_filters = unselected_data;
 
             }   
         });
@@ -750,7 +904,6 @@ $(document).ready(function() {
                 sdate = "2000-01-01";
                 edate = "9999-12-31";
             }
-            
             
             
             for(let i = 0; i < unselected_filters.length; i++){
