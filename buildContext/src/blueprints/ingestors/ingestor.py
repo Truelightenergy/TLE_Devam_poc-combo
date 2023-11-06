@@ -6,6 +6,9 @@ import datetime
 from .helper.nonenergy import NonEnergy
 from .helper.energy import Energy
 from .helper.rec import Rec
+from .helper.ptc import Ptc
+from .helper.matrix import MATRIX
+
 from botocore.exceptions import ClientError
 
 logging.basicConfig(level=logging.INFO)
@@ -26,6 +29,8 @@ class Ingestion:
         self.non_energy = NonEnergy()
         self.energy = Energy()
         self.rec = Rec()
+        self.ptc = Ptc()
+        self.matrix = MATRIX()
 
     def validate(self, file_name):
         """
@@ -122,7 +127,7 @@ class Ingestion:
         if object_name is None:
             object_name = os.path.basename(file_name)
 
-        condition =(not "LOCALDEV" in os.environ)
+        condition =False and (not "LOCALDEV" in os.environ)
         # upload file to s3
         s3_client = None
         if condition:
@@ -170,6 +175,10 @@ class Ingestion:
             result = self.process(files, {"validate_data":self.validate, "ingestion":self.energy.ingestion, "storage":self.storage, "validate_api": self.validate_api})
         elif re.search("rec", file, re.IGNORECASE):
             result = self.process(files, {"validate_data":self.validate, "ingestion":self.rec.ingestion, "storage":self.storage, "validate_api": self.validate_api})
+        elif re.search("ptc", file, re.IGNORECASE):
+            result = self.process(files, {"validate_data":self.validate, "ingestion":self.ptc.ingestion, "storage":self.storage, "validate_api": self.validate_api})
+        elif re.search("matrix", file, re.IGNORECASE):
+            result = self.process(files, {"validate_data":self.validate, "ingestion":self.matrix.ingestion, "storage":self.storage, "validate_api": self.validate_api})
         else:
             result = "Shouldn't be here"
         
