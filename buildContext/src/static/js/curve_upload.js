@@ -136,7 +136,11 @@ $(document).ready(function () {
 	}
 
 	function populate_results(resultant, file) {
-		if ((resultant['months'] >= 60) && ((resultant.negativeResult.foundNegative !==true) || (file.name.toLowerCase().includes("nonenergy")))) {
+		if((file.name.toLowerCase().includes("ptc")) || (file.name.toLowerCase().includes("matrix"))){
+			$('#status').html("&#10004; Success");
+			$("#status").css("color", "green");
+		}
+		else if ((resultant['months'] >= 60) && ((resultant.negativeResult.foundNegative !==true) || (file.name.toLowerCase().includes("nonenergy")))) {
 
 			$('#status').html("&#10004; Success");
 			$("#status").css("color", "green");
