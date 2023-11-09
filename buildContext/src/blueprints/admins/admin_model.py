@@ -183,61 +183,30 @@ class AdminUtil:
                 FROM trueprice.column_authorization
                 WHERE email = '{email}';
             """
-            id = []
-            table = []
-            emails = []
-            start = []
-            end = []
-            months =[]
-            control_area = []
-            state = []
-            load_zone = []
-            capacity_zone = []
-            utility = []
-            strip = []
-            cost_group = []
-            cost_component = []
-            sub_cost_component = []
-
-        
+            data = list()        
             response = self.engine.execute(query).fetchall()
             for row in response:
-                id.append(row["id"])
-                table.append(row['control_table'])
-                emails.append(row["email"])
-                start.append(row["startmonth"])
-                end.append(row["endmonth"])
-                months.append(row['balanced_month_range'])
-                control_area.append(row["control_area"])
-                state.append(row["state"])
-                load_zone.append(row["load_zone"])
-                capacity_zone.append(row["capacity_zone"])
-                utility.append(row["utility"])
-                strip.append(row["strip"])
-                cost_group.append(row["cost_group"])
-                cost_component.append(row["cost_component"])
-                sub_cost_component.append(row["sub_cost_component"])
 
-            results = {
-                "id": id,
-                'control_table':table,
-                "email": emails,
-                "startMonth": start,
-                "endMonth": end,
-                "balanced_month_range": months,
-                "control_area" : control_area,
-                "state" : state,
-                "load_zone" : load_zone,
-                "capacity_zone" : capacity_zone,
-                "utility" : utility,
-                "strip" : strip,
-                "cost_group" : cost_group, 
-                "cost_component" : cost_component, 
-                "sub_cost_component" : sub_cost_component
-            }
+                results = {
+                "control_table":row['control_table'],
+                "email": row["email"],
+                "startMonth": row["startmonth"],
+                "endMonth": row["endmonth"],
+                "balanced_month_range": row['balanced_month_range'],
+                "control_area" : row["control_area"],
+                "state" : row["state"],
+                "load_zone" : row['load_zone'],
+                "capacity_zone" : row['capacity_zone'],
+                "utility" : row["utility"],
+                "strip" : row["strip"],
+                "cost_group" : row["cost_group"], 
+                "cost_component" : row["cost_component"], 
+                "sub_cost_component" : row["sub_cost_component"]
+            }     
+                data.append(results)      
 
 
-            return results
+            return data
         except:
             return None
     def view_authorized_columns_from_ui(self, user_id):
