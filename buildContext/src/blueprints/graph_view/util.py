@@ -25,12 +25,12 @@ class Util:
         secret_salt = "secret-salt"
         self.db_model = GraphView_Util(secret_key, secret_salt)
 
-    def generate_line_chart(self, table, location, start_date, end_date):
+    def generate_line_chart(self, table, location, start_date, end_date,operating_day,history,cod,operatin_day_timestamp):
 
         """
         generates the line chart based on the available data
         """
-        df = self.db_model.get_data(table, location, start_date, end_date)
+        df = self.db_model.get_data(table, location, start_date, end_date,operating_day,history,cod,operatin_day_timestamp)
         pio.templates.default = "plotly_dark"
         
         fig = px.line(df, x = "month", y = "data", line_shape='linear')

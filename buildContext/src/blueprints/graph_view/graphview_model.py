@@ -48,17 +48,67 @@ class GraphView_Util:
         except:
             return None
         
-    def get_data(self, table, location, start_date, end_date):
+    def get_data(self, table, location, start_date, end_date,operating_day,history,cob,operatin_day_timestamp):
         """
         extracts the data from the database based on the given filters
         """
 
-        query = f"select month::date, data FROM trueprice.{table} where strip='5x16' and sub_cost_component='{location}' and month::date >= '{start_date}' and month::date <= '{end_date}' and curvestart = (select max(curvestart) from trueprice.{table});"
+        curvestartfilter = f"and curvestart::date = '{operating_day}'"
+
+        tableName = table
+
+        if history == 'true':
+            tableName = tableName + '_history'
+            curvestartfilter = f"and date_trunc('minute',curvestart) = '{operatin_day_timestamp}'::timestamp"
+
+        query = f"""select month::date, data FROM trueprice.{tableName} 
+                        where strip='5x16' and sub_cost_component='{location}' 
+                        and month::date >= '{start_date}' 
+                        and month::date <= '{end_date}' 
+                        {curvestartfilter}
+                        and cob = {cob=='true'} 
+                        --and curvestart::timestamp = '{operatin_day_timestamp}' 
+                        order by month::date;"""
+        
         data_frame = pd.read_sql_query(sql=query, con=self.engine.connect())
         data_frame.sort_values(by='month', inplace = True)
         return data_frame
 
+    def get_intraday_timestamps(self, table, operating_day, strip):
+        """
+        extracts all the intraday timestamps and their history status from the database
+        """
+        query = f"""
+            SELECT distinct curvestart, true as history FROM trueprice.{table}_history 
+            WHERE curvestart::date = '{operating_day}' AND strip='{strip}'
+            UNION 
+            SELECT distinct curvestart, false as history FROM trueprice.{table} 
+            WHERE curvestart::date = '{operating_day}' AND strip='{strip}';
+        """
 
+        try:
+            results = self.engine.execute(query).fetchall()
+            timestamps = [{'timestamp': row['curvestart'].strftime('%Y-%m-%d %H:%M'), 'history': row['history']} for row in results]
+            return timestamps
+        except:
+            return None
+
+
+    def get_load_zones(self,table,strip):
+        """
+        extracts all the load zones from the database
+        """
+        query = f"select DISTINCT(load_zone) FROM trueprice.{table} where strip='{strip}';"
+
+        try:
+            results = self.engine.execute(query).fetchall()
+            loadZones = []
+            for row in results:
+                loadZones.append(row['load_zone'])
+            return loadZones
+        except:
+            return None
+        
     def safe_url_insertions(self, email, url):
         """
         check weather url is already added or not

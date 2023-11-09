@@ -108,23 +108,58 @@ def generate_garph_view():
       if request.method=="POST":
         data_type = request.form.get("data_type")
         control_table = request.form.get("control_table")
-        location = request.form.get("sub_cost_component")
+        location = request.form.get("loadZone")
         start_date = request.form.get("start")
         end_date = request.form.get("end")
+        operating_day = request.form.get("operating_day")
+        history = request.form.get("history")
+        cob = request.form.get("cob")
+        operatin_day_timestamps = request.form.get("operatin_day_timestamps")
 
-        return redirect(url_for('.graphs', control_table=control_table, location=location, start=start_date, end=end_date))    
+        return redirect(url_for('.graphs', control_table=control_table, location=location,
+                                start=start_date, 
+                                end=end_date,
+                                operating_day = operating_day,
+                                history=history, 
+                                cob=cob,
+                                operating_day_timestamp=operatin_day_timestamps))
+      
       return render_template('graph_view/generate_graph.html')
 
 
-
-@graph_view.route('/graph/<control_table>/<location>/<start>/<end>', methods=['GET', 'POST'])
+@graph_view.route('/load_zones', methods=['GET'])
 @roles.admin_token_required
-def graphs(control_table, location, start, end):
+def load_zones():
+    """
+    returns the load zones
+    """
+    table = request.args.get("control_table")
+    strip = '5x16'
+    load_zones = db_obj.get_load_zones(table, strip)
+    return jsonify(load_zones)
+
+@graph_view.route('/intraday_timestamps', methods=['GET'])
+@roles.admin_token_required
+def intraday_timestamps():
+    """
+    returns the intraday timestamps
+    """
+    table = request.args.get("control_table")
+    operating_day = request.args.get("operating_day") 
+    strip = '5x16'
+    timestamps = db_obj.get_intraday_timestamps(table,operating_day, strip)
+    return jsonify(timestamps)
+  
+
+
+@graph_view.route('/graph/<control_table>/<location>/<start>/<end>/<operating_day>/<history>/<cob>/<operating_day_timestamp>', methods=['GET', 'POST'])
+@roles.admin_token_required
+def graphs(control_table, location, start, end,operating_day,history,cob,operating_day_timestamp):
   """
   generates the graph
   """
   rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
-  graph = api_util.generate_line_chart (control_table, location, start, end)
+  graph = api_util.generate_line_chart (control_table, location, start, end,operating_day,history,cob,operating_day_timestamp)
   if rest_api_condition:
     return graph
   else:
