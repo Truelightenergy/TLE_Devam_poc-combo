@@ -67,17 +67,32 @@
             <!-- Blank Start -->
             <div class="container-fluid pt-4 px-4">
                 <div class="row g-4 align-items-center justify-content-center mx-0  mt-5">
+                    
                     <div class="col-sm-12 col-xl-12">
                         <div class="bg-secondary rounded h-100 p-4">
-                            <h6 class="mb-4">Line Chart</h6>
+                            
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="mb-4">Line Chart</h6>
+                                </div>
+                                <div class="col-md-4">
+                                    <button id="yoy" class="btn btn-outline-primary">YoY</button>
+                                
+                                    <button id="mom" class="btn  btn-outline-primary">MoM</button>
+                                
+                                    <button id="wow" class="btn btn-outline-primary">WoW</button>
+                                
+                                    <button id="dod" class="btn btn-outline-primary">dod</button>
+                                
+                                    <button id="custom_graph" class="btn btn-outline-primary">Custom Graph</button>
+                                </div>
+                            </div>
                             <div style="height: 700px;" id='chart' class='chart'></div>
                             <div class="mt-3 row">
-                              <div class="col-md-6">
+                              <div class="col-md-12">
                                 <button type="button" id="save_graph" class="btn btn-outline-primary w-100 m-2">Save Graph</button>
                               </div>
-                              <div class="col-md-6">
-                                <button type="button" id="link" class="col-md-6 btn btn-outline-primary w-100 m-2">Copy Link</button>
-                              </div>
+                              
                             
                           </div>
                         </div>

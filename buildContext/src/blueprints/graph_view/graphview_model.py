@@ -48,7 +48,7 @@ class GraphView_Util:
         except:
             return None
         
-    def get_data(self, table, location, start_date, end_date,operating_day,history,cob,operatin_day_timestamp):
+    def get_data(self, table, location, start_date, end_date, operating_day, history, cob, operatin_day_timestamp):
         """
         extracts the data from the database based on the given filters
         """
@@ -67,7 +67,6 @@ class GraphView_Util:
                         and month::date <= '{end_date}' 
                         {curvestartfilter}
                         and cob = {cob=='true'} 
-                        --and curvestart::timestamp = '{operatin_day_timestamp}' 
                         order by month::date;"""
         
         data_frame = pd.read_sql_query(sql=query, con=self.engine.connect())
@@ -122,16 +121,36 @@ class GraphView_Util:
         except :
             return False
     
-    def save_graph_url(self, email, url, status):
+    def save_graph_url(self, email, control_table, location, start_date, end_date,operating_day,history,cob,operatin_day_timestamps, status):
         """
         saves the graph the user id
         """
         try:
-            if not self.safe_url_insertions(email, url):
-                query = f"Insert into trueprice.save_graphview (user_id, url, status) Values ((select id from trueprice.users where email='{email}'), '{url}', '{status}');"
-                result = self.engine.execute(text(query))
-                if result.rowcount > 0:
-                    return True
+            
+            query = f"Insert into trueprice.save_graphview_v2 \
+            (user_id,control_table_data,loadzone_data,cob_data, history_data,startdate_data,enddate_data, operating_day_data, operating_day_timestamps_data, status) \
+            Values ((select id from trueprice.users where email='{email}'), {tuple(control_table)}, {tuple(location)}, {tuple(cob)}, {tuple(history)}, {tuple(start_date)}, {tuple(end_date)}, {tuple(operating_day)}, {tuple(operatin_day_timestamps)}, '{status}');"
+            query = text("""
+                INSERT INTO trueprice.save_graphview_v2  
+                (user_id, control_table_data, loadzone_data, cob_data, history_data, startdate_data, enddate_data, operating_day_data, operating_day_timestamps_data, status)   
+                VALUES 
+                ((SELECT id FROM trueprice.users WHERE email=:email), :control_table, :location, :cob, :history, :start_date, :end_date, :operating_day, :operatin_day_timestamps, :status)
+            """)
+            
+            result = self.engine.execute(query, {
+            'email': email,
+            'control_table': control_table,
+            'location': location,
+            'cob': cob,
+            'history': history,
+            'start_date': start_date,
+            'end_date': end_date,
+            'operating_day': operating_day,
+            'operatin_day_timestamps': operatin_day_timestamps,
+            'status': status,
+    })
+            if result.rowcount > 0:
+                return True
             return False
         except :
             return False
@@ -143,10 +162,10 @@ class GraphView_Util:
         """
         try:
             data = []
-            query = f"SELECT * FROM trueprice.save_graphview WHERE user_id = ((select id from trueprice.users where email='{email}'));"
+            query = f"SELECT * FROM trueprice.save_graphview_v2 WHERE user_id = ((select id from trueprice.users where email='{email}'));"
             results = self.engine.execute(query).fetchall()
             for row in results:
-                data.append({"graph_id": row['change_id'], "url": row['url'], "user_id": row['user_id'], "status": row['status']})
+                data.append({"graph_id": row['graph_id'], "user_id": row['user_id'], "status": row['status']})
             return data
         except :
             return data
@@ -157,7 +176,7 @@ class GraphView_Util:
         """
 
         try:
-            query = f"DELETE FROM trueprice.save_graphview WHERE change_id ={graph_id};"
+            query = f"DELETE FROM trueprice.save_graphview_v2 WHERE graph_id ={graph_id};"
             result = self.engine.execute(text(query))
             if result.rowcount > 0:
                 return True
@@ -178,6 +197,82 @@ class GraphView_Util:
             return data
         except :
             return data
+        
+
+    def share_graph(self, email, graph_id):
+        """
+        share graph with other users of the application
+        """
+
+        query = text(f"""
+            INSERT INTO trueprice.save_graphview_v2  
+            (user_id, control_table_data, loadzone_data, cob_data, history_data, startdate_data, enddate_data, operating_day_data, operating_day_timestamps_data, status)   
+            SELECT 
+                (SELECT id FROM trueprice.users WHERE email='{email}') AS user_id, 
+                control_table_data, 
+                loadzone_data, 
+                cob_data, 
+                history_data, 
+                startdate_data, 
+                enddate_data, 
+                operating_day_data, 
+                operating_day_timestamps_data, 
+                'shared' AS status
+            FROM trueprice.save_graphview_v2
+            WHERE graph_id ={graph_id};
+        """)
+        try:
+            result = self.engine.execute(query)
+            if result.rowcount > 0:
+                return True
+            return False
+        except :
+            return False
+        
+    def get_graph_data(self, graph_id):
+        """
+        fetches the data from the database
+        """
+
+        query = f"""
+            SELECT 
+                user_id, 
+                control_table_data, 
+                loadzone_data, 
+                cob_data, 
+                history_data, 
+                startdate_data, 
+                enddate_data, 
+                operating_day_data, 
+                operating_day_timestamps_data, 
+                status
+            FROM trueprice.save_graphview_v2
+            WHERE graph_id = {graph_id};
+        """
+        control_table_data = []
+        location = []
+        cob_data = []
+        history_data = []
+        startdate_data = []
+        enddate_data = []
+        operating_day_data = []
+        operating_day_timestamps_data = []
+        try:
+            results = self.engine.execute(query).fetchall()
+            for row in results:
+                control_table_data = row['control_table_data']
+                location = row['loadzone_data'] 
+                cob_data = row['cob_data']
+                history_data = row['history_data']
+                startdate_data = row['startdate_data']
+                enddate_data = row['enddate_data']
+                operating_day_data = row['operating_day_data']
+                operating_day_timestamps_data = row['operating_day_timestamps_data']
+                status = row['status']
+
+            return control_table_data, location, cob_data, history_data, startdate_data, enddate_data, operating_day_data, operating_day_timestamps_data 
+        except :
+            return control_table_data, location, cob_data, history_data, startdate_data, enddate_data, operating_day_data, operating_day_timestamps_data
 
 
 

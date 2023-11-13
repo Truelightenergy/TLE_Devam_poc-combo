@@ -90,8 +90,8 @@
                           {% if data%}
                           {% for row in data %}
                               <tr>
-                                <td><a href = "{{ row['url'] | safe }}" class="btn btn-primary">View</a></td>
-                                <td><a href = "/share_graphs?graph_url={{ row['url'] }}" class="btn btn-success">Share</a></td> 
+                                <td><a href = "/view_graphs?graph_id={{ row['graph_id'] }}" class="btn btn-primary">View</a></td>
+                                <td><a href = "/share_graphs?graph_id={{ row['graph_id'] }}" class="btn btn-success">Share</a></td> 
                                 <td><a href = "/remove_graph?graph_id={{ row['graph_id'] }}" class="btn btn-warning">Remove</a></td>
                                 <td>{{row['status']}}</td>
                                 </tr>
