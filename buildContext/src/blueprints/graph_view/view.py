@@ -9,6 +9,7 @@ from utils.keys import secret_key, secret_salt
 from utils.blocked_tokens import revoked_jwt
 
 
+
 graph_view = Blueprint('graph_view', __name__,
                     template_folder="../templates/",
                     static_folder='static')
@@ -94,41 +95,86 @@ def generate_garph_view():
       403:
         description: something went wrong
     """
-    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
-    if rest_api_condition:
-      data_type = request.args.get("data_type")
-      control_table = request.args.get("control_table")
-      location = request.args.get("sub_cost_component")
-      start_date = request.args.get("start")
-      end_date = request.args.get("end")
-      return redirect(url_for('.graphs', control_table=control_table, location=location, start=start_date, end=end_date))
-    
-    else:
-        
-      if request.method=="POST":
-        data_type = request.form.get("data_type")
-        control_table = request.form.get("control_table")
-        location = request.form.get("sub_cost_component")
-        start_date = request.form.get("start")
-        end_date = request.form.get("end")
-
-        return redirect(url_for('.graphs', control_table=control_table, location=location, start=start_date, end=end_date))    
+    if request.method=="POST":
+      data_type = request.json.get("data_type")
+      control_table = request.json.get("control_table")
+      location = request.json.get("loadZone")
+      start_date = request.json.get("start")
+      end_date = request.json.get("end")
+      operating_day = request.json.get("operating_day")
+      history = request.json.get("history")
+      cob = request.json.get("cob")
+      operatin_day_timestamps = request.json.get("operatin_day_timestamps")
+      return redirect(url_for('.graphs', control_table=control_table, location=location,
+                                start=start_date, 
+                                end=end_date,
+                                operating_day = operating_day,
+                                history=history, 
+                                cob=cob,
+                                operating_day_timestamp=operatin_day_timestamps))    
+    else:      
       return render_template('graph_view/generate_graph.html')
 
-
-
-@graph_view.route('/graph/<control_table>/<location>/<start>/<end>', methods=['GET', 'POST'])
+@graph_view.route('/load_zones', methods=['GET'])
 @roles.admin_token_required
-def graphs(control_table, location, start, end):
+def load_zones():
+    """
+    returns the load zones
+    """
+    table = request.args.get("control_table")
+    strip = '5x16'
+    load_zones = db_obj.get_load_zones(table, strip)
+    return jsonify(load_zones)
+
+@graph_view.route('/intraday_timestamps', methods=['GET'])
+@roles.admin_token_required
+def intraday_timestamps():
+    """
+    returns the intraday timestamps
+    """
+    table = request.args.get("control_table")
+    operating_day = request.args.get("operating_day") 
+    strip = '5x16'
+    timestamps = db_obj.get_intraday_timestamps(table,operating_day, strip)
+    return jsonify(timestamps)
+  
+
+@graph_view.route('/graph', defaults={'graph_id': None})
+@graph_view.route('/graph/<graph_id>', methods=['GET'])
+@roles.admin_token_required
+def graphs(graph_id):
   """
   generates the graph
   """
-  rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
-  graph = api_util.generate_line_chart (control_table, location, start, end)
+  if(graph_id is None):
+    return render_template('graph_view/graph.html')
+  else :
+    graph_details = db_obj.get_graph_data(graph_id)
+    return render_template('graph_view/graph.html', graph_details=graph_details)
+    
+  
+@graph_view.route('/graphs', methods=[ 'POST'])
+@roles.admin_token_required
+def graphsMultiLine():
+  """
+  Generates the graph based on posted parameters.
+  """
+  # Ensure the request is JSON and get the payload
+  if not request.is_json:
+      return jsonify({"msg": "Missing JSON in request"}), 400
+
+  # Extract parameters from the JSON payload
+  params_array = request.get_json()
+
+  # Call the generate_line_charts method with the array of parameters
+  graph = api_util.generate_line_charts(params_array)
+
+  # Decide the response based on the 'Accept' header in the request
+  rest_api_condition = not ('text/html' in request.headers.get('Accept', ''))
   if rest_api_condition:
-    return graph
+      return graph  # Return the graph JSON for API consumers
   else:
-    return render_template('graph_view/graph.html',graphJSON=graph)
+      return render_template('graph_view/graph.html', graphJSON=graph)  # Render a page for browsers
 
 @graph_view.route('/save_graph', methods=['GET', 'POST'])
 @roles.admin_token_required
@@ -136,24 +182,33 @@ def save_graph():
   """
   saves the graph 
   """
-  url = request.json['url']
-  token = request.json['token']
+  token = request.headers['Authorization']
+  
+  if not request.is_json:
+      return jsonify({"msg": "Missing JSON in request"}), 400
 
-  email = api_util.get_email(token)
-  flag = db_obj.save_graph_url(email, url, "self")
-  data = db_obj.get_user_graphs(email)
-  rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
-  if rest_api_condition:
-    if flag:
-      return jsonify("graph saved successfully"), 200
-    return jsonify("unable to save graph"), 200
-  else:
-    if flag:
-      #  success response
-      return render_template("graph_view/graphview_data.html", data=data, flash_message=True, message_toast = "graph saved successfully", message_flag = "success")
-    else:
-      #  error response
-      return render_template("graph_view/graphview_data.html", data=data, flash_message=True, message_toast = "unable to save graph", message_flag = "error")
+  email = api_util.get_email(token.replace("Bearer ", ""))
+  flag = db_obj.save_graph_url(email, request.get_json())
+  if flag:
+    return jsonify("graph saved successfully"), 200
+  return jsonify("unable to save graph"), 200  
+
+@graph_view.route('/update_graph_filters/<graph_id>', methods=['PUT'])
+@roles.admin_token_required
+def update_graph_filters(graph_id):
+  """
+  update graph filters
+  """
+  
+  if not request.is_json:
+      return jsonify({"msg": "Missing JSON in request"}), 400
+
+  flag = db_obj.update_graph_filters(graph_id, request.get_json())
+
+  if flag:
+    return jsonify("graph saved successfully"), 200
+  return jsonify("unable to save graph"), 200  
+  
   
 
 @graph_view.route('/remove_graph', methods=['GET', 'POST'])
@@ -177,7 +232,7 @@ def remove_graph():
   else:
     if flag:
       #  success response
-      return render_template("graph_view/graphview_data.html", data=data, flash_message=True, message_toast = "graph view removed successfully", message_flag = "success")
+      return render_template("graph_view/graphview_data.html", data=data, flash_message=True, message_toast = "Graph removed successfully", message_flag = "success")
     else:
       #  error response
       return render_template("graph_view/graphview_data.html", data=data, flash_message=True, message_toast = "unable to remove graph", message_flag = "error")
@@ -201,12 +256,13 @@ def available_graphs():
 def share_graphs():
   """
   share graphs
-  """
-  url = request.args.get("graph_url")
+  """  
+  graph_id = request.args.get("graph_id")
   emails = db_obj.get_emails()
   if request.method=="POST":
     email = request.form.get("email")
-    flag = db_obj.save_graph_url(email, url, "shared")
+    graph = db_obj.get_graph_data(graph_id)
+    flag = db_obj.save_graph_url(email,eval(graph["filters"]), "shared")
 
     user_email = api_util.get_email(session["jwt_token"])
     data = db_obj.get_user_graphs(user_email)
@@ -217,10 +273,10 @@ def share_graphs():
       return jsonify("unable to share graph"), 200
     else:
       if flag:
-        return render_template("graph_view/graphview_data.html", data=data, flash_message=True, message_toast = "graph shared successfully", message_flag = "success")
+        return redirect(url_for('.available_graphs'))
       else:
         return render_template("graph_view/graphview_data.html", data=data, flash_message=True, message_toast = "unable to share the graph", message_flag = "error")  
-  return render_template("graph_view/share_graph.html", data=url, emails=emails)
+  return render_template("graph_view/share_graph.html", data=graph_id, emails=emails)
 
 
   

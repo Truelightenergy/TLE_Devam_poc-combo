@@ -4,6 +4,7 @@ handles all the database operations for graph view
 import jwt
 import datetime
 import pandas as pd
+import json
 from sqlalchemy import text
 from utils.database_connection import ConnectDatabase
 
@@ -48,17 +49,67 @@ class GraphView_Util:
         except:
             return None
         
-    def get_data(self, table, location, start_date, end_date):
+    def get_data(self, table, location, start_date, end_date,operating_day,history,cob,operatin_day_timestamp):
         """
         extracts the data from the database based on the given filters
         """
 
-        query = f"select month::date, data FROM trueprice.{table} where strip='5x16' and sub_cost_component='{location}' and month::date >= '{start_date}' and month::date <= '{end_date}' and curvestart = (select max(curvestart) from trueprice.{table});"
+        curvestartfilter = f"and curvestart::date = '{operating_day}'"
+
+        tableName = table
+
+        if history == True or history == 'true':
+            tableName = tableName + '_history'
+            curvestartfilter = f"and date_trunc('minute',curvestart) = '{operatin_day_timestamp}'::timestamp"
+
+        query = f"""select month::date, data FROM trueprice.{tableName} 
+                        where strip='5x16' and sub_cost_component='{location}' 
+                        and month::date >= '{start_date}' 
+                        and month::date <= '{end_date}' 
+                        {curvestartfilter}
+                        and cob = {cob==True or cob=='true'} 
+                        --and curvestart::timestamp = '{operatin_day_timestamp}' 
+                        order by month::date;"""
+        
         data_frame = pd.read_sql_query(sql=query, con=self.engine.connect())
         data_frame.sort_values(by='month', inplace = True)
         return data_frame
 
+    def get_intraday_timestamps(self, table, operating_day, strip):
+        """
+        extracts all the intraday timestamps and their history status from the database
+        """
+        query = f"""
+            --SELECT distinct curvestart, true as history FROM trueprice.{table}_history 
+            --WHERE curvestart::date = '{operating_day}' AND strip='{strip}'
+            --UNION 
+            SELECT distinct curvestart, false as history,cob FROM trueprice.{table} 
+            WHERE curvestart::date = '{operating_day}' AND strip='{strip}';
+        """
 
+        try:
+            results = self.engine.execute(query).fetchall()
+            timestamps = [{'timestamp': row['curvestart'].strftime('%Y-%m-%d'), 'history': row['history'],'cob':row['cob']} for row in results]
+            return timestamps
+        except:
+            return None
+
+
+    def get_load_zones(self,table,strip):
+        """
+        extracts all the load zones from the database
+        """
+        query = f"select DISTINCT(load_zone) FROM trueprice.{table} where strip='{strip}';"
+
+        try:
+            results = self.engine.execute(query).fetchall()
+            loadZones = []
+            for row in results:
+                loadZones.append(row['load_zone'])
+            return loadZones
+        except:
+            return None
+        
     def safe_url_insertions(self, email, url):
         """
         check weather url is already added or not
@@ -72,16 +123,31 @@ class GraphView_Util:
         except :
             return False
     
-    def save_graph_url(self, email, url, status):
+    def save_graph_url(self, email, filters,source="self"):
         """
         saves the graph the user id
         """
         try:
-            if not self.safe_url_insertions(email, url):
-                query = f"Insert into trueprice.save_graphview (user_id, url, status) Values ((select id from trueprice.users where email='{email}'), '{url}', '{status}');"
-                result = self.engine.execute(text(query))
-                if result.rowcount > 0:
-                    return True
+            # filters = filters.replace("'","''")
+            filters = json.dumps(filters)
+            query = text(f"""Insert into trueprice.save_graphview (user_id, filters, status) Values ((select id from trueprice.users where email='{email}'), '{filters}', '{source}');""")
+            result = self.engine.execute(query)
+            if result.rowcount > 0:
+                return True
+            return False
+        except :
+            return False
+        
+    def update_graph_filters(self, id, filters):
+        """
+        saves the graph the user id
+        """
+        try:
+            filters = json.dumps(filters)
+            query = text(f"""update trueprice.save_graphview set filters = '{filters}' where change_id={id};""")
+            result = self.engine.execute(query)
+            if result.rowcount > 0:
+                return True
             return False
         except :
             return False
@@ -93,10 +159,10 @@ class GraphView_Util:
         """
         try:
             data = []
-            query = f"SELECT * FROM trueprice.save_graphview WHERE user_id = ((select id from trueprice.users where email='{email}'));"
+            query = f"SELECT * FROM trueprice.save_graphview WHERE user_id = ((select id from trueprice.users where email='{email}')) order by change_id;"
             results = self.engine.execute(query).fetchall()
             for row in results:
-                data.append({"graph_id": row['change_id'], "url": row['url'], "user_id": row['user_id'], "status": row['status']})
+                data.append({"graph_id": row['change_id'], "filters": row['filters'], "user_id": row['user_id'], "status": row['status']})
             return data
         except :
             return data
@@ -129,5 +195,21 @@ class GraphView_Util:
         except :
             return data
 
+    def get_graph_data(self, graph_id):
+        """
+        fetches the data from the database
+        """
+
+        query = f"""
+            SELECT 
+              *
+            FROM trueprice.save_graphview
+            WHERE change_id = {graph_id};
+        """
+        try:
+            row = self.engine.execute(query).fetchone()
+            return {"graph_id": row['change_id'], "filters": row['filters'], "user_id": row['user_id'], "status": row['status']}            
+        except :
+            return null
 
 

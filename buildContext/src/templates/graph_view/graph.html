@@ -13,7 +13,7 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='img/favicon.ico') }}">
 
     <!-- Google Web Fonts -->
-    
+
     <!-- <link href="/static/external_cdns/css/css2.css" rel="stylesheet"> -->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='external_cdns/css/css2.css') }}">
 
@@ -22,8 +22,9 @@
     <!-- <link href="/static/external_cdns/css/all.min.css" rel="stylesheet"> -->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='external_cdns/css/all.min.css') }}">
     <!-- <link href="/static/external_cdns/css/bootstrap-icons.css" rel="stylesheet"> -->
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='external_cdns/css/bootstrap-icons.css') }}">
-   
+    <link rel="stylesheet" type="text/css"
+        href="{{ url_for('static', filename='external_cdns/css/bootstrap-icons.css') }}">
+
 
     <!-- Customized Bootstrap Stylesheet -->
     <!-- <link href="static/css/bootstrap.min.css" rel="stylesheet"> -->
@@ -37,11 +38,12 @@
 </head>
 
 <body>
-  
-   
+
+
     <div class="container-fluid position-relative d-flex p-0">
         <!-- Spinner Start -->
-        <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div id="spinner"
+            class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
             <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
                 <span class="sr-only">Loading...</span>
             </div>
@@ -56,8 +58,8 @@
         <!-- Sidebar End -->
 
 
-         <!-- Content Start -->
-         <div class="content">
+        <!-- Content Start -->
+        <div class="content">
             <!-- Navbar Start -->
             {% include 'upper_navbar.html'%}
             <!-- Navbar End -->
@@ -67,65 +69,88 @@
             <!-- Blank Start -->
             <div class="container-fluid pt-4 px-4">
                 <div class="row g-4 align-items-center justify-content-center mx-0  mt-5">
+                    
                     <div class="col-sm-12 col-xl-12">
                         <div class="bg-secondary rounded h-100 p-4">
-                            <h6 class="mb-4">Line Chart</h6>
+                            <div class="d-flex justify-content-end">
+                                <input type="button" value="Day/Day" id="btnDayOverDay"
+                                    class="btn btn-outline-primary btn-sm m-2" />
+                                <input type="button" value="Week/Week" id="btnWeekOverWeek"
+                                    class="btn btn-outline-primary btn-sm m-2" />
+                                <input type="button" value="Month/Month" id="btnMonthOverMonth"
+                                    class="btn btn-outline-primary btn-sm m-2" />
+                                <input type="button" value="Custom Graph" id="btnAddCustomGraphToggle"
+                                    class="btn btn-outline-primary btn-sm m-2" />
+                            </div>
                             <div style="height: 700px;" id='chart' class='chart'></div>
-                            <div class="mt-3 row">
-                              <div class="col-md-6">
-                                <button type="button" id="save_graph" class="btn btn-outline-primary w-100 m-2">Save Graph</button>
-                              </div>
-                              <div class="col-md-6">
-                                <button type="button" id="link" class="col-md-6 btn btn-outline-primary w-100 m-2">Copy Link</button>
-                              </div>
-                            
-                          </div>
+                            <div class="mt-3 row d-flex justify-content-center">
+                                <div class="col-md-6">
+                                    <button type="button" id="save_graph" class="btn btn-outline-primary w-100 m-2">Save
+                                        Graph</button>
+                                </div>
+                                <!-- <div class="col-md-6">
+                                    <button type="button" id="link"
+                                        class="col-md-6 btn btn-outline-primary w-100 m-2">Copy Link</button>
+                                </div> -->
+
+                            </div>
                         </div>
-                    </div>                
-            </div>
-            <div id='chart' class='chart'”></div>
-            </div>
-            <!-- Blank End -->
+                    </div>
+                </div>
+                <div id='chart' class='chart' ”></div>
+                {% include 'components/graphviewfiltersmodal.html'%}
+                <!-- Blank End -->
 
 
-            <!-- Footer Start -->
-            {% include 'footer.html'%}
-            <!-- Footer End -->
+                <!-- Footer Start -->
+                {% include 'footer.html'%}
+                <!-- Footer End -->
+            </div>
+            <!-- Content End -->
+
+
+            <!-- Back to Top -->
+
+
+
         </div>
-        <!-- Content End -->
 
-
-        <!-- Back to Top -->
-         
-    
-    
-    </div>
-
-    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
-    <script type='text/javascript'>
+        <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+        <!-- <script type='text/javascript'>
       var graphs = {{graphJSON | safe}};
-
       Plotly.plot('chart',graphs,{});
-    </script>
+    </script> -->
 
-    <!-- JavaScript Libraries -->
-    <!-- <script src="/static/external_cdns/js/jquery-3.4.1.min.js"></script> -->
-    <script  src="{{ url_for('static', filename='external_cdns/js/jquery-3.4.1.min.js')}}"></script>
-    <!-- <script src="/static/external_cdns/js/bootstrap.bundle.min.js"></script> -->
-    <script  src="{{ url_for('static', filename='external_cdns/js/bootstrap.bundle.min.js')}}"></script>
-    <!-- <script src="static/lib/waypoints/waypoints.min.js"></script> -->
-    <script  src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js')}}"></script>
+        <!-- JavaScript Libraries -->
+        <!-- <script src="/static/external_cdns/js/jquery-3.4.1.min.js"></script> -->
+        <script src="{{ url_for('static', filename='external_cdns/js/jquery-3.4.1.min.js')}}"></script>
+        <!-- <script src="/static/external_cdns/js/bootstrap.bundle.min.js"></script> -->
+        <script src="{{ url_for('static', filename='external_cdns/js/bootstrap.bundle.min.js')}}"></script>
+        <!-- <script src="static/lib/waypoints/waypoints.min.js"></script> -->
+        <script src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js')}}"></script>
 
-    <!-- Template Javascript -->
-    <!-- <script src="static/js/main.js"></script> -->
-    <script  src="{{ url_for('static', filename='js/main.js')}}"></script>
-    <script  src="{{ url_for('static', filename='js/data_loader_graph_view.js')}}"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
+        <!-- Template Javascript -->
+        <!-- <script src="static/js/main.js"></script> -->
+        <script src="{{ url_for('static', filename='js/main.js')}}"></script>
+        <script src="{{ url_for('static', filename='js/loader.js')}}"></script>
+        <script src="{{ url_for('static', filename='js/toaster.js')}}"></script>
+        <script src="{{ url_for('static', filename='js/data_loader_graph_view.js')}}"></script>
+        <script src="{{ url_for('static', filename='js/graphview.js')}}"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
 
-        var token = "{{session.get('jwt_token')}}";
-    </script>
-    
+            var token = "{{session.get('jwt_token')}}";
+
+            $(document).ready(function () {
+                if (truelight && truelight.graphview && truelight.graphview.view) {
+                    {% if graph_details %}
+                    truelight.graphview.view.setFilters({{ graph_details | tojson | safe }});
+                    {% endif %}
+                    truelight.graphview.view.onViewLoad(token);
+                }
+            });
+        </script>
+
 </body>
 
 </html>

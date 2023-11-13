@@ -48,8 +48,8 @@
             <div class="nav-item dropdown">
                 <a href="#" class="nav-link dropdown-toggle {% if request.path == '/generate_graph_view' or request.path == '/available_graphs' %}active{% endif %}" data-bs-toggle="dropdown"><i class="far fa-chart-bar me-2"></i>Graph View</a>
                 <div class="dropdown-menu bg-transparent border-0">
-                    <a href="{{ url_for('graph_view.generate_garph_view')}}" class="dropdown-item"><i class="fa fa-plus me-2"></i>Generate</a>
-                    <a href="{{ url_for('graph_view.available_graphs')}}" class="dropdown-item"><i class="fa fa-eye me-2"></i>View</a>
+                    <a href="{{ url_for('graph_view.generate_garph_view')}}" onclick="sessionHandler();" class="dropdown-item"><i class="fa fa-plus me-2"></i>Generate</a>
+                    <a href="{{ url_for('graph_view.available_graphs')}}" onclick="sessionHandler();" class="dropdown-item"><i class="fa fa-eye me-2"></i>View</a>
                     
                 </div>
             </div>
@@ -60,3 +60,9 @@
         <a href="{{ url_for('auths.logout')}}" class="nav-item nav-link"><i class="fa fa-power-off me-2"></i>Log Out</a>
     </div>
 </nav>
+
+<script>
+    function sessionHandler() {
+        sessionStorage.clear()
+    }
+  </script>
