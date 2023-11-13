@@ -95,38 +95,25 @@ def generate_garph_view():
       403:
         description: something went wrong
     """
-    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
-    if rest_api_condition:
-      data_type = request.args.get("data_type")
-      control_table = request.args.get("control_table")
-      location = request.args.get("sub_cost_component")
-      start_date = request.args.get("start")
-      end_date = request.args.get("end")
-      return redirect(url_for('.graphs', control_table=control_table, location=location, start=start_date, end=end_date))
-    
-    else:
-        
-      if request.method=="POST":
-        data_type = request.form.get("data_type")
-        control_table = request.form.get("control_table")
-        location = request.form.get("loadZone")
-        start_date = request.form.get("start")
-        end_date = request.form.get("end")
-        operating_day = request.form.get("operating_day")
-        history = request.form.get("history")
-        cob = request.form.get("cob")
-        operatin_day_timestamps = request.form.get("operatin_day_timestamps")
-
-        return redirect(url_for('.graphs', control_table=control_table, location=location,
+    if request.method=="POST":
+      data_type = request.json.get("data_type")
+      control_table = request.json.get("control_table")
+      location = request.json.get("loadZone")
+      start_date = request.json.get("start")
+      end_date = request.json.get("end")
+      operating_day = request.json.get("operating_day")
+      history = request.json.get("history")
+      cob = request.json.get("cob")
+      operatin_day_timestamps = request.json.get("operatin_day_timestamps")
+      return redirect(url_for('.graphs', control_table=control_table, location=location,
                                 start=start_date, 
                                 end=end_date,
                                 operating_day = operating_day,
                                 history=history, 
                                 cob=cob,
-                                operating_day_timestamp=operatin_day_timestamps))
-      
+                                operating_day_timestamp=operatin_day_timestamps))    
+    else:      
       return render_template('graph_view/generate_graph.html')
-
 
 @graph_view.route('/load_zones', methods=['GET'])
 @roles.admin_token_required

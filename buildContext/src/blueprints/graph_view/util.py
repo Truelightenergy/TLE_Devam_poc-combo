@@ -55,25 +55,22 @@ class Util:
         """
         generates the line chart based on the available data
         """
-        df = self.db_model.get_data(table, location, start_date, end_date,operating_day,history,cod,operatin_day_timestamp)
-        pio.templates.default = "plotly_dark"
-        
-        fig = px.line(df, x = "month", y = "data", line_shape='linear')
+        dataframes = []
+       
+        for i, (table, location, start_date, end_date, operating_day, history, cod, operatin_day_timestamp) \
+            in enumerate(zip(tables,locations, start_dates, end_dates, operating_days, historys,cods,operatin_day_timestamps)):
 
-        fig.update_traces(mode="markers+lines", hovertemplate=None)
-        fig.update_layout(
-        template="plotly_dark",  # Use dark theme
-        title="Energy prices over time",
-        title_x=0.5,
-        xaxis_title="Date",
-        yaxis_title="Energy",
-        xaxis=dict(showgrid=False),
-        hovermode="x unified",
+            df = self.db_model.get_data(table, location, start_date, end_date, operating_day, history, cod, operatin_day_timestamp) 
+            dataframes.append(df)
         
-        )
-        line_color = "#1addc3"
-        for trace in fig.data:
-            trace.line.color = line_color
+        combined_df = pd.concat([df.assign(source=i) for i, df in enumerate(dataframes)], keys=range(len(dataframes)))
+
+            
+        pio.templates.default = "plotly_dark"
+        fig = px.line(combined_df, x='month', y='data', color='source', line_group='source',
+              labels={'source': 'DataFrame Index'})
+        fig.update_traces(mode="markers+lines", hovertemplate=None)
+
 
         graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
         return graphJSON
@@ -129,6 +126,13 @@ class Util:
         """
         payload = self.db_model.decode_auth_token(token)[1]
         return payload["client_email"]
+    
+    def get_graphs(self, garph_id):
+        """
+        generates the graph based on the graph id
+        """
+
+        return self.db_model.get_graph_data(garph_id)
     
     def get_graphs(self, garph_id):
         """

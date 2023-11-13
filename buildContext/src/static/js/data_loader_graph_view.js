@@ -3,7 +3,6 @@ truelight.graphview = {
     controls: {
         control_table: null,
         loadZone: null,
-        link: null,
         alert: null,
         custom_alert: null,
         save_graph: null,
@@ -130,22 +129,6 @@ truelight.graphview = {
             }
         });
     },
-    linkClickHandler: () => {
-        let self = truelight.graphview;
-        let controls = self.controls;
-
-        var url = window.location.href;
-        navigator.clipboard.writeText(url);
-        $(document).scrollTop(0);
-        controls.alert.show();
-        controls.custom_alert.show();
-        controls.alert.text('Link Copied');
-
-        setTimeout(function () {
-            controls.alert.hide();
-            controls.custom_alert.hide();
-        }, 8000);
-    },
     populateLoadZones: () => {
         let self = truelight.graphview;
         var options = '';
@@ -156,6 +139,11 @@ truelight.graphview = {
 
         self.controls.loadZone.html(options);
     },
+
+    custom_graph_generation: () =>{
+        location.reload();
+    },
+
     getLoadZones: () => {
         let self = truelight.graphview;
 
