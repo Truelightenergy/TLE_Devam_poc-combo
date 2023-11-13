@@ -13,7 +13,14 @@ truelight.graphview = {
         operatin_day_timestamps: null,
         operatin_day_timestampsContainer: null,
         history: null,
-        cob:null
+        cob: null,
+        btnDayOverDay: null,
+        btnWeekOverWeek: null,
+        btnMonthOverMonth: null,
+        btnGenerateGraph: null,
+        customGraphFiltersModal: null,
+        btnAddCustomGraphToggle: null,
+        btnAddGraph: null
     },
     cache: {
         loadZones: [],
@@ -21,19 +28,33 @@ truelight.graphview = {
     },
     initControls: () => {
         let self = truelight.graphview;
-        self.controls.control_table = $('#control_table');
-        self.controls.loadZone = $('#loadZone');
-        self.controls.link = $('#link');
-        self.controls.alert = $('#alert');
-        self.controls.custom_alert = $('#custom_alert');
-        self.controls.save_graph = $('#save_graph');
-        self.controls.startDate = $('#start');
-        self.controls.endDate = $('#end');
-        self.controls.operating_day = $('#operating_day');
-        self.controls.operatin_day_timestamps = $("#operatin_day_timestamps");
-        self.controls.operatin_day_timestampsContainer = $(".operatin_day_timestamps");
-        self.controls.history = $("#history");
-        self.controls.cob = $("#cob");
+        let controls = self.controls;
+        controls.control_table = $('#control_table');
+        controls.loadZone = $('#loadZone');
+        controls.link = $('#link');
+        controls.alert = $('#alert');
+        controls.custom_alert = $('#custom_alert');
+        controls.save_graph = $('#save_graph');
+        controls.startDate = $('#start');
+        controls.endDate = $('#end');
+        controls.operating_day = $('#operating_day');
+        controls.operatin_day_timestamps = $("#operatin_day_timestamps");
+        controls.operatin_day_timestampsContainer = $(".operatin_day_timestamps");
+        controls.history = $("#history");
+        controls.cob = $("#cob");
+        controls.btnGenerateGraph = $("#save");
+        controls.btnDayOverDay = $("#btnDayOverDay");
+        controls.btnWeekOverWeek = $("#btnWeekOverWeek");
+        controls.btnMonthOverMonth = $("#btnMonthOverMonth");
+        controls.btnAddCustomGraphToggle = $("#btnAddCustomGraphToggle");
+        controls.btnAddGraph = $("#btnAddGraph");
+
+        if ($("#customGraphFiltersModal").length > 0) {
+            self.controls.customGraphFiltersModal = new bootstrap.Modal($("#customGraphFiltersModal")[0], {
+                keyboard: false
+            });
+        }
+
 
         self.initHandlers();
     },
@@ -42,10 +63,10 @@ truelight.graphview = {
         let controls = self.controls;
 
         controls.control_table.change(function () { self.getLoadZones(); });
-        controls.link.click(function () { self.linkClickHandler(); });
-        controls.save_graph.click(function () { self.saveGraphHandler(); });
+        controls.link.click(function () { self.linkClickHandler(); });        
         controls.operating_day.change(function () { self.operatinDayChangeHnalder(); });
         controls.operatin_day_timestamps.change(function (event) { self.operatinDayTimestampChangeHnalder(event); });
+        controls.btnGenerateGraph.click(function () { self.generateGraphHandler(); });
     },
     onload: function () {
         let self = truelight.graphview;
@@ -61,10 +82,12 @@ truelight.graphview = {
         let options = '';
 
         $.each(timestamps.sort(), function (index, value) {
-            options += `<option value="${value.timestamp}">Intraday: ${value.timestamp}</option>`;
-        });
+            if (value.cob === true)
+                options += `<option value="${operatingDate}">Close of Business: ${operatingDate}</option>`;
+            else
+                options += `<option value="${value.timestamp}">Intraday: ${value.timestamp}</option>`;
 
-        options += `<option value="${operatingDate}">Close of Business: ${operatingDate}</option>`;
+        });
 
         controls.operatin_day_timestamps.html(options);
         controls.operatin_day_timestampsContainer.show();
@@ -75,20 +98,20 @@ truelight.graphview = {
         let self = truelight.graphview;
         let controls = self.controls;
 
-        debugger
         controls.cob.val('false');
         controls.history.val('false');
 
         let selectedTimestamp = controls.operatin_day_timestamps.val();
         let selectedTimestampText = controls.operatin_day_timestamps.find("option:selected").text();
 
-        if (selectedTimestampText.indexOf('Close of Business') > -1) {            
-            controls.cob.val('true');
-        }
-        else {
+        // if (selectedTimestampText.indexOf('Close of Business') > -1) {
+        //     controls.cob.val('true');
+        // }
+        // else {
             let timeStamp = self.cache.intradayTimestamps.find(x => x.timestamp == selectedTimestamp);
+            controls.cob.val(timeStamp.cob);
             controls.history.val(timeStamp ? timeStamp.history : 'false');
-        }
+        // }
     },
     operatinDayChangeHnalder: () => {
         let self = truelight.graphview;
@@ -149,52 +172,17 @@ truelight.graphview = {
                 self.controls.loadZone.trigger('change');
             }
         });
-    },
-    saveGraphHandler: () => {
+    },  
+    generateGraphHandler: () => {
         let self = truelight.graphview;
         let controls = self.controls;
-
-        var url = window.location.href;
-        data = {
-            "url": url,
-            "token": token,
-            control_table: controls.control_table.val(),
-            end: controls.endDate.val(),
-            start: controls.startDate.val(),
-            cob:controls.cob.val(),
-            operating_day_timestamps: controls.operatin_day_timestamps.val(),
-            history: controls.history.val(),
-        }
-
-        $.ajax({
-            url: '/save_graph',
-            type: 'POST',
-            async: false,
-            dataType: "html",
-            contentType: 'application/json',
-            data: JSON.stringify(data), // Convert the data dictionary to a JSON string
-            headers: {
-                'Authorization': "Bearer " + token
-            },
-            success: function (response) {
-                $(document).scrollTop(0);
-                document.open();
-                document.write(response);
-                document.close();
-
-            },
-            error: function (xhr, status, error) {
-                // Handle the error response from the server if needed
-                $(document).scrollTop(0);
-            }
-        });
+        let data = controls.btnGenerateGraph.parents("form").serializeArray().map(function (x) { this[x.name] = x.value; return this; }.bind({}))[0];
+        localStorage.setItem('graph_data', JSON.stringify(data));
+        document.location.href = '/graph';
+        return true;
     }
 };
 
-$(document).ready(function () {
-    if (truelight && truelight.graphview) {
-        truelight.graphview.onload();
-    }
-});
+
 
 
