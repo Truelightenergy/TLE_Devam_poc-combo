@@ -132,7 +132,7 @@ class HeadroomModel:
         try:
             results = self.engine.execute(query).fetchall()
             for row in results:
-                data.append({"state": row['state'], "load_zone": row['load_zone'], "utility": ['utility'],
+                data.append({"state": row['state'], "load_zone": row['load_zone'], "utility": row['utility'],
                              "headroom": row['headroom'], "headroom_prct": row['headroom_prct']
                              })
             return data

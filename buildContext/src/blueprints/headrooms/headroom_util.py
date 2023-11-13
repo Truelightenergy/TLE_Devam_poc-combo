@@ -29,71 +29,45 @@ class Util:
         fetches latest headroom heatmap data from the database
         """
         data = self.headroom_model.get_headrooms_data()
-        df = pd.DataFrame(data)
-        # mean calculations
-        df = df.groupby('state')['headroom'].mean().reset_index()
-        geojson = px.data.election_geojson()
-    
-
-        fig = px.choropleth(locations=df['state'], locationmode='USA-states', color=df['headroom'],
-                    color_continuous_scale='Viridis')
-
-        fig = px.choropleth(
-            df,
-            locationmode='USA-states',
-            featureidkey='properties.NAME_2',
-            locations='state',
-            color='headroom',
-            color_continuous_scale="viridis_r",
-            scope='usa'
-        )
-        fig.add_scattergeo(
-            locations=df['state'],
-            locationmode='USA-states',
-            text=df['state'],
-            mode='text'
-        )
-
-        # fig.update_geos(fitbounds="locations", visible=False)
-
-        graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-        return graphJSON
+        return data
 
     def calculate_headrooms(self):
         """
         calculates the headrooms prices
         """
-        data = self.headroom_model.get_waiting_headrooms()
-        for instance in data:
-            matrix_data = self.headroom_model.get_matrix_data(instance['curvestart'])
-            ptc_data = self.headroom_model.get_ptc_data()
+        try: 
+            data = self.headroom_model.get_waiting_headrooms()
+            for instance in data:
+                matrix_data = self.headroom_model.get_matrix_data(instance['curvestart'])
+                ptc_data = self.headroom_model.get_ptc_data()
 
-            # converting data to the dataframes
-            matrix_df = pd.DataFrame(matrix_data)
-            ptc_df = pd.DataFrame(ptc_data)
+                # converting data to the dataframes
+                matrix_df = pd.DataFrame(matrix_data)
+                ptc_df = pd.DataFrame(ptc_data)
 
-            # convert MWH to KWH in matrix df
-            matrix_df['total_bundled_price'] = matrix_df['total_bundled_price'] / 1000
-            ptc_df['data'] = ptc_df['data'].astype(float)
-            matrix_df['total_bundled_price'] = matrix_df['total_bundled_price'].astype(float)
+                # convert MWH to KWH in matrix df
+                matrix_df['total_bundled_price'] = matrix_df['total_bundled_price'] / 1000
+                ptc_df['data'] = ptc_df['data'].astype(float)
+                matrix_df['total_bundled_price'] = matrix_df['total_bundled_price'].astype(float)
 
-            # merging ptc and matrix dataframe on common characteristics
+                # merging ptc and matrix dataframe on common characteristics
 
-            common_columns = ['control_area_type', 'control_area', 'state', 'load_zone',
-                                'capacity_zone', 'utility', 'strip', 'cost_group', 'cost_component', 'load_profile']
-            
-            df = pd.merge(matrix_df, ptc_df, on=common_columns, how='inner')
-            df = df.rename(columns={'data': 'ptc'})
-            df['headroom'] = df['ptc'] - df['total_bundled_price']
-            df['headroom_prct'] = (df['headroom'] / df['ptc'])*100
-            df['headroom_prct'] = df['headroom_prct'].replace(-np.inf, -0.999)
-            df['curvestart'] = instance['curvestart']
+                common_columns = ['control_area_type', 'control_area', 'state', 'load_zone',
+                                    'capacity_zone', 'utility', 'strip', 'cost_group', 'cost_component', 'load_profile']
+                
+                df = pd.merge(matrix_df, ptc_df, on=common_columns, how='inner')
+                df = df.rename(columns={'data': 'ptc'})
+                df['headroom'] = df['ptc'] - df['total_bundled_price']
+                df['headroom_prct'] = (df['headroom'] / df['ptc'])*100
+                df['headroom_prct'] = df['headroom_prct'].replace(-np.inf, -0.999)
+                df['curvestart'] = instance['curvestart']
 
-            # ingest calculated values
-            if self.headroom_model.headroom_ingestion(df):
-                self.headroom_model.mark_headroom_done(instance['curvestart'],instance['filename'])
-                print("*** Headroom Ingestion Successful ***")
-            else:
-                print("*** Headroom Ingestion Failed ***")
-
+                # ingest calculated values
+                if self.headroom_model.headroom_ingestion(df):
+                    self.headroom_model.mark_headroom_done(instance['curvestart'],instance['filename'])
+                    print("*** Headroom Ingestion Successful ***")
+                else:
+                    print("*** Headroom Ingestion Failed ***")
+        except:
+            print("*** Headroom Ingestion Failed ***")
     
