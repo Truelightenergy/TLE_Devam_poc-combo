@@ -210,6 +210,6 @@ class GraphView_Util:
             row = self.engine.execute(query).fetchone()
             return {"graph_id": row['change_id'], "filters": row['filters'], "user_id": row['user_id'], "status": row['status']}            
         except :
-            return null
+            return None
 
 

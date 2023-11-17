@@ -50,7 +50,7 @@ class Util:
         return '#{:02X}{:02X}{:02X}'.format(r, g, b)
 
 
-    def generate_line_chart(self, table, location, start_date, end_date,operating_day,history,cod,operatin_day_timestamp):
+    def generate_line_chart(self, tables, locations, start_dates, end_dates,operating_days,historys,cods,operatin_day_timestamps):
 
         """
         generates the line chart based on the available data

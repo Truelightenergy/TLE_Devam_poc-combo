@@ -41,26 +41,42 @@ function populate_table(data){
     });
 }
 
-// Assuming 'data' is in the correct format as an array of objects
-
-
-// Calculate the mean headroom value for each state
-var stateMeanHeadroom = {};
-json_data.forEach(item => {
-    var state = item.state;
-    var headroom = parseFloat(item.headroom);
-    if (state in stateMeanHeadroom) {
-        stateMeanHeadroom[state].sum += headroom;
-        stateMeanHeadroom[state].count += 1;
-    } else {
-        stateMeanHeadroom[state] = { sum: headroom, count: 1 };
-    }
-});
-
-for (var state in stateMeanHeadroom) {
-    stateMeanHeadroom[state].mean = stateMeanHeadroom[state].sum / stateMeanHeadroom[state].count;
+// calculate mean
+function calculate_mean(values){
+    return values.reduce((acc, value) => acc + value, 0) / values.length;
 }
 
+// calculate standard deviation 
+function calculate_std(values, mean){
+    const variance = values.reduce((acc, value) => acc + Math.pow(value - mean, 2), 0) / values.length;
+    return Math.sqrt(variance);
+}
+
+function data_adjustments(data){
+    const result = data.reduce((acc, { state, headroom }) => {
+        acc[state] = acc[state] || { state, headrooms: [] };
+        acc[state].headrooms.push(parseFloat(headroom));
+        return acc;
+    }, {});  
+    return Object.values(result);
+}
+
+var stateMeanHeadroom = {};
+let allHeadrooms = json_data.flatMap(data => parseFloat(data.headroom));
+let global_mean = calculate_mean(allHeadrooms);
+let global_std = calculate_std(allHeadrooms, global_mean);
+
+state_wise_data = data_adjustments(json_data);
+
+state_wise_data.forEach(stateData => {
+    var state = stateData.state;
+    var headrooms = stateData.headrooms;
+
+    let state_mean = calculate_mean(headrooms);
+    let normalized_mean = (state_mean - global_mean) / global_std;
+    stateMeanHeadroom[state] = { mean: normalized_mean};
+
+});
 
 var trace = {
     type: 'choropleth',
