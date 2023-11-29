@@ -341,9 +341,9 @@ def view_authorized_columns():
       403:
         description: Something went wrong
     """
-    if not (request.args.get("email")):
+    if not (request.json["email"]):
             return jsonify({"error": "Incorrect Params"}), 400
-    email = request.args.get("email")
+    email = request.json["email"]
     setup_session(request.headers['Authorization'].split()[-1])
     json_obj, status_code = api_util.get_column_filter_for_user_from_api(email)
     return jsonify(json_obj), status_code

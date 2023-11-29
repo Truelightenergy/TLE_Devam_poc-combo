@@ -287,3 +287,43 @@
     background: var(--dark);
     border-color: var(--primary);
 }
+
+
+.modal-dialog-attached-right {
+    position: fixed;
+    top: 0;
+    right: 0;
+    margin-right: 0;
+    width: auto;
+    height: 100%;
+    max-width: none;
+    margin:0 !important;
+}
+
+/* Custom modal styling for dark theme */
+.modal-content {
+    background-color: var(--secondary); /* Dark background for the modal content */
+    color: #fff; /* Light text color for readability */
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+    min-width: 400px;
+   
+}
+
+.modal-header, .modal-body, .modal-footer {
+    border-color:var(--dark); /* Darker borders within the modal */
+}
+
+/* If you're using custom buttons inside the modal and want them to match the theme */
+.btn-custom {
+    background-color: var(--dark); /* Dark background for buttons */
+    color: #ddd; /* Light text color for buttons */
+    border-color: #444; /* Dark border color for buttons */
+}
+
+/* Optional: if you want to style the backdrop */
+.modal-backdrop.show {
+    background-color: rgba(0, 0, 0, 0.85); /* Darker backdrop */
+}
+

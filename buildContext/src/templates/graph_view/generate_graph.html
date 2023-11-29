@@ -12,7 +12,7 @@
     <link href="static/img/favicon.ico" rel="icon">
 
     <!-- Google Web Fonts -->
-    
+
     <link href="/static/external_cdns/css/css2.css" rel="stylesheet">
 
     <!-- Icon Font Stylesheet -->
@@ -20,7 +20,7 @@
     <link href="/static/external_cdns/css/all.min.css" rel="stylesheet">
     <link href="/static/external_cdns/css/bootstrap-icons.css" rel="stylesheet">
 
-   
+
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="static/css/bootstrap.min.css" rel="stylesheet">
@@ -29,17 +29,18 @@
     <link href="static/css/style.css" rel="stylesheet">
 
     <!-- scroll_bar -->
-    <script src="static/js/multiselect.js" ></script>
-    
-    
+    <script src="static/js/multiselect.js"></script>
+
+
 
 </head>
 
 <body>
-   
+
     <div class="container-fluid position-relative d-flex p-0">
         <!-- Spinner Start -->
-        <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div id="spinner"
+            class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
             <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
                 <span class="sr-only">Loading...</span>
             </div>
@@ -54,8 +55,8 @@
         <!-- Sidebar End -->
 
 
-         <!-- Content Start -->
-         <div class="content">
+        <!-- Content Start -->
+        <div class="content">
             <!-- Navbar Start -->
             {% include 'upper_navbar.html'%}
             <!-- Navbar End -->
@@ -69,67 +70,18 @@
                         <div class="bg-secondary rounded h-100 p-4">
                             <h6 class="mb-4">Graph Parameters</h6>
                             <form id="download_forms" enctype="multipart/form-data" method="POST">
-                                
-                                
-
+                                {% include 'components/graphviewfilters.html'%}
                                 <div class="mb-3">
-                                    <label for="data_type" class="form-label">Data Type</label>
-                                    <select name="data_type" id ="data_type" class="form-control mt-2 bg-dark text-white" >
-                                        <option value="ptc">PTC</option>
-                                    
-                                    </select>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="control_table" class="form-label">Curve</label>
-                                    <select name="control_table" id ="control_table" class="form-control mt-2 bg-dark text-white" >
-                                        <option value="ercot_energy">ERCOT</option>
-                                        <option value="nyiso_energy">NYISO</option>
-                                        <option value="miso_energy">MISO</option>
-                                        <option value="isone_energy">ISONE</option>
-                                        <option value="pjm_energy">PJM</option>
-
-                                    </select>
-                                </div>
-                                
-
-                                <div class="mb-3">
-                                    <label for="sub_cost_component" class="form-label">Location</label>
-                                    <select name="sub_cost_component" id="sub_cost_component"  required class="form-control mt-2 bg-dark text-white" >
-                                        
-                                    </select>
-                                    
-                                </div>
-
-
-                                <div id="dates">
-                                    <div class="mb-3">
-
-                                        <label for="start" class="form-label">Start</label>
-                                        <input type="date" class="form-control mt-2 text-white" required id="start" name="start" style="background-color: gray;" >
-                                        
-                                    </div>
-
-                                    
-
-                                    <div class="mb-3">
-                                        <label for="end" class="form-label">End</label>
-                                        
-                                        <input type="date" class="form-control mt-2  text-white" required id="end" name="end" style="background-color: gray;" >
-                                    
-                                        </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <input type="submit" value="Generate Graph Veiw" id="save" class="btn btn-outline-primary w-100 m-2">
+                                    <input type="button" value="Generate Graph Veiw" id="save"
+                                        class="btn btn-outline-primary w-100 m-2" />
                                 </div>
                             </form>
                         </div>
-                    </div>                
-            </div>
+                    </div>
+                </div>
 
-            <div id='chart' class='chart'”></div>
-            
+                <div id='chart' class='chart' ”></div>
+
             </div>
             <!-- Blank End -->
 
@@ -142,26 +94,26 @@
 
 
         <!-- Back to Top -->
-         
-    
-    
+
+
+
     </div>
 
     <script>
-        function currennt_date(){
+        function currennt_date() {
             // Get the current date
             var currentDate = new Date();
-        
+
             // Format the date as YYYY-MM-DD
             var year = currentDate.getFullYear();
             var month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
             var day = currentDate.getDate().toString().padStart(2, '0');
             var formattedDate = year + '-' + month + '-' + day;
             return formattedDate;
-            
+
         }
 
-        function next_date(){
+        function next_date() {
             var currentDate = new Date();
             // Subtract five years from the current date
             var fiveYearsAgo = new Date(currentDate.getFullYear() - 5, currentDate.getMonth(), currentDate.getDate());
@@ -178,11 +130,11 @@
         start = next_date();
 
         // Set the value of the input field
-        document.getElementById('start').value= start;
-        document.getElementById('end').value= end;
+        document.getElementById('start').value = start;
+        document.getElementById('end').value = end;
 
 
-      </script>
+    </script>
 
     <!-- JavaScript Libraries -->
     <script src="/static/external_cdns/js/jquery-3.4.1.min.js"></script>
@@ -192,12 +144,16 @@
     <!-- Template Javascript -->
     <script src="static/js/main.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="static/js/data_loader_graph_view.js"></script>
     <script>
 
         var token = "{{session.get('jwt_token')}}";
+        $(document).ready(function () {
+            if (truelight && truelight.graphview) {
+                truelight.graphview.onload();
+            }
+        });
     </script>
-    <script src="static/js/data_loader_graph_view.js"></script>
-    
 </body>
 
 </html>

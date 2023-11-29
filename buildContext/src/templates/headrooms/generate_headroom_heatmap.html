@@ -75,6 +75,17 @@
                     </div>                
             </div>
             <div id='chart' class='chart'”></div>
+            <table id="data-table" class="table-dark table-hover table">
+                <!-- Table headers will be added dynamically using JavaScript -->
+                <thead>
+                    <tr>
+                        <!-- Headers go here -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data rows will be added dynamically using JavaScript -->
+                </tbody>
+            </table>
             </div>
             <!-- Blank End -->
 
@@ -92,12 +103,15 @@
     
     </div>
 
-    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
-    <script type='text/javascript'>
-      var graphs = {{graphJSON | safe}};
+<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+<script type='text/javascript'>
+var json_data = {{ data | tojson }}; 
+    
+</script>
 
-      Plotly.plot('chart',graphs,{});
-    </script>
+
+    
+
 
     <!-- JavaScript Libraries -->
     <!-- <script src="/static/external_cdns/js/jquery-3.4.1.min.js"></script> -->
@@ -109,6 +123,7 @@
 
     <!-- Template Javascript -->
     <!-- <script src="static/js/main.js"></script> -->
+    <script  src="{{ url_for('static', filename='js/heatmap_mapper.js')}}"></script>
     <script  src="{{ url_for('static', filename='js/main.js')}}"></script>
     <script  src="{{ url_for('static', filename='js/data_loader_graph_view.js')}}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

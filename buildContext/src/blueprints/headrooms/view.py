@@ -53,7 +53,7 @@ def generate_headroom_heatmap():
     if rest_api_condition:
         return graph
     else:
-        return render_template('headrooms/generate_headroom_heatmap.html',graphJSON=graph)
+        return render_template('headrooms/generate_headroom_heatmap.html',data=graph)
 
 
     
