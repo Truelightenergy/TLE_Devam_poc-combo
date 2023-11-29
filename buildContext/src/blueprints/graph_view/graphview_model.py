@@ -60,16 +60,16 @@ class GraphView_Util:
 
         if history == True or history == 'true':
             tableName = tableName + '_history'
-            curvestartfilter = f"and date_trunc('minute',curvestart) = '{operatin_day_timestamp}'::timestamp"
+            curvestartfilter = f"and curvestart::date = '{operatin_day_timestamp}'"
 
-        query = f"""select month::date, data FROM trueprice.{tableName} 
+        query = f"""SELECT DISTINCT ON (month::date) month::date, curvestart, data FROM trueprice.{tableName} 
                         where strip='5x16' and sub_cost_component='{location}' 
                         and month::date >= '{start_date}' 
                         and month::date <= '{end_date}' 
                         {curvestartfilter}
                         and cob = {cob==True or cob=='true'} 
                         --and curvestart::timestamp = '{operatin_day_timestamp}' 
-                        order by month::date;"""
+                        ORDER BY month::date, curvestart DESC;"""
         
         data_frame = pd.read_sql_query(sql=query, con=self.engine.connect())
         data_frame.sort_values(by='month', inplace = True)
