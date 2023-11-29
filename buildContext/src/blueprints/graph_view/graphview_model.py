@@ -80,16 +80,16 @@ class GraphView_Util:
         extracts all the intraday timestamps and their history status from the database
         """
         query = f"""
-            --SELECT distinct curvestart, true as history FROM trueprice.{table}_history 
-            --WHERE curvestart::date = '{operating_day}' AND strip='{strip}'
-            --UNION 
+            SELECT distinct curvestart, true as history, cob FROM trueprice.{table}_history 
+            WHERE curvestart::date = '{operating_day}' AND strip='{strip}'
+            UNION 
             SELECT distinct curvestart, false as history,cob FROM trueprice.{table} 
             WHERE curvestart::date = '{operating_day}' AND strip='{strip}';
         """
 
         try:
             results = self.engine.execute(query).fetchall()
-            timestamps = [{'timestamp': row['curvestart'].strftime('%Y-%m-%d'), 'history': row['history'],'cob':row['cob']} for row in results]
+            timestamps = [{'timestamp': row['curvestart'].strftime('%Y-%m-%d %H:%M'), 'history': row['history'],'cob':row['cob']} for row in results]
             return timestamps
         except:
             return None

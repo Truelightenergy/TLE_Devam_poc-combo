@@ -10,6 +10,7 @@ import plotly.graph_objs as go
 import plotly.express as px
 import random
 from .graphview_model import GraphView_Util
+from datetime import datetime
 
 
 
@@ -83,7 +84,13 @@ class Util:
         fig = go.Figure()
 
 
-        for params in parameters_array:
+        for i, params in enumerate(parameters_array):
+            if i>0:
+                datetime_object = datetime.strptime(params['operatin_day_timestamps'], '%Y-%m-%d %H:%M')
+                date_only_string = datetime_object.strftime('%Y-%m-%d')
+
+                params['operatin_day_timestamps'] = date_only_string
+                params['history'] = 'false'
             df = self.db_model.get_data(
                                         params['control_table'],
                                         params['loadZone'],
