@@ -76,6 +76,23 @@ class Util:
         graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
         return graphJSON
     
+    def fetch_data(self, params):
+        """
+        fetches data from the database
+        """
+
+        df = self.db_model.get_data(
+                                        params['control_table'],
+                                        params['loadZone'],
+                                        params['start'],
+                                        params['end'],
+                                        params['operating_day'],
+                                        params['history'],
+                                        params['cob'],
+                                        params['operatin_day_timestamps']
+                                        )
+        return df
+    
     def generate_line_charts(self, parameters_array):
         """
         generates line charts for each set of parameters in the array
@@ -90,17 +107,30 @@ class Util:
                 date_only_string = datetime_object.strftime('%Y-%m-%d')
 
                 params['operatin_day_timestamps'] = date_only_string
-                params['history'] = 'false'
-            df = self.db_model.get_data(
-                                        params['control_table'],
-                                        params['loadZone'],
-                                        params['start'],
-                                        params['end'],
-                                        params['operating_day'],
-                                        params['history'],
-                                        params['cob'],
-                                        params['operatin_day_timestamps']
-                                        )
+            df = self.fetch_data(params)
+            if df.empty:
+                cob_flag =  params['cob']
+                if params['cob']== False or params['cob']=='false':
+                    params['cob'] = True
+                    df = self.fetch_data(params)
+                elif params['cob']== True or params['cob']=='true':
+                    params['cob'] = False
+                    df = self.fetch_data(params)
+            if df.empty:
+                if params['history']== False or params['history']=='false':
+                    params['history'] = True
+                    params['cob'] = cob_flag
+                    df = self.fetch_data(params)
+                elif params['history']== True or params['history']=='true':
+                    params['history'] = False
+                    params['cob'] = cob_flag
+                    df = self.fetch_data(params)
+                
+
+                
+                
+                
+
             
             color = self.generate_random_color()
 
