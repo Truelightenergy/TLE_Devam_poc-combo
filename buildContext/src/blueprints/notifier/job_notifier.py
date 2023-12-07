@@ -30,13 +30,13 @@ class Process_Notifier:
         users = data["user_id"]
         head = data["subject_content"]
         body = data["body_content"]
-        body = body.format(username = "User", location = data["location"], price_shift = data["price_shift"], price_shift_value= "$"+str(round(data["price_shift_value"], 2)), price_shift_prct = str(round( data["price_shift_prct"],2))+"%")
-
+        
         emails= self.fetch_users_email(users)
         for email in emails:
             self.email_sender.send_email(head, body, email)
 
-        self.db_util.log_notification(emails, notification_id, head)
+        for not_id in notification_id:
+            self.db_util.log_notification(emails, not_id, head)
 
         return True
     
@@ -48,14 +48,32 @@ class Process_Notifier:
 
         try:
             results = self.db_util.fetch_pending_notifications()
-            success_flag = False
-            for row in results:
-                success_flag = self.send_notificaions(row)
-                if success_flag:
-                    success_flag = self.setup_next_schdule(row["notification_id"], row['cron_pattern'])
-                    self. db_util.update_status(row["change_id"], "processed")
-                else:
-                    self. db_util.update_retries(row["change_id"], row["retries"]+1)
+            data = {
+                "notification_id" : list(),
+                "body_content": ""
+            }
+            for i, row in enumerate(results):
+
+                notification_id = row["notification_id"]
+                user = row["user_id"]
+                head = row["subject_content"]
+                body = row["body_content"]
+                body = body.format(username = "User", location = row["location"], price_shift = row["price_shift"], price_shift_value= "$"+str(round(row["price_shift_value"], 2)), price_shift_prct = str(round( row["price_shift_prct"],2))+"%")
+                header_body, body_content, tail_body = body.split("<br/>")
+
+                data['user_id'] = user
+                data['subject_content'] = head
+                data['body_content'] = f"{data['body_content']}<br/>{body_content}"
+                data['notification_id'].append(notification_id)
+                if i == (len(results)-1):
+                    data['body_content'] = f"{header_body}<br/><br/>{data['body_content']}<br/><br/>{tail_body}"
+
+            success_flag = self.send_notificaions(data)
+            if success_flag:
+                success_flag = self.setup_next_schdule(row["notification_id"], row['cron_pattern'])
+                self. db_util.update_status(row["change_id"], "processed")
+            else:
+                self. db_util.update_retries(row["change_id"], row["retries"]+1)
             if success_flag:
                 print("Pending Notifications are done")
             else:

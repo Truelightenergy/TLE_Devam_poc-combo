@@ -8,6 +8,6 @@ if __name__=="__main__":
     notifier = Process_Notifier()
     notifier.process_notification()
    
-    scheduler = BlockingScheduler({'apscheduler.job_defaults.max_instances': 2})
-    scheduler.add_job(notifier.process_notification, 'interval', minutes=10)
-    scheduler.start()
+    # scheduler = BlockingScheduler({'apscheduler.job_defaults.max_instances': 2})
+    # scheduler.add_job(notifier.process_notification, 'interval', minutes=10)
+    # scheduler.start()

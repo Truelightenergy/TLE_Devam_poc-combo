@@ -81,7 +81,7 @@ class NotifierUtil:
                         JOIN trueprice.email_templates AS et ON lg.language_code = 'en' -- Replace 'en' with the appropriate language code
                         JOIN trueprice.email_template_contents AS etc ON et.template_id = etc.template_id AND lg.language_id = etc.language_id
                         JOIN trueprice.notification_events AS ne ON ne.event_name <> '' 
-                        JOIN trueprice.trueprice.price_changes_notifications as pcg ON pcg.event_id= ne.event_id AND pcg.status='waiting' AND pcg.retries<5
+                        JOIN trueprice.price_changes_notifications as pcg ON pcg.event_id= ne.event_id AND pcg.status='waiting' AND pcg.retries<5
                         JOIN trueprice.notifications AS ntf ON ntf.event_id = ne.event_id AND ntf.template_id = et.template_id
                         JOIN trueprice.schedule_patterns as sch ON ntf.notification_id = sch.notification_id AND sch.next_notification_time <= '{datetime.datetime.now()}';
                         
