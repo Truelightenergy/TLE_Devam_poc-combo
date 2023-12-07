@@ -30,7 +30,7 @@ class Util:
         else:
             filtered_df = merged_df[(merged_df['data_prev'] - merged_df['data_latest']) >=2]
         for itr, row in filtered_df.iterrows():
-            location = f"Control Area: {row['control_area']}, State: {row['state']}, Load Zone: {row['load_zone']}, Capacity Zone: {row['capacity_zone']}, Utility: {row['utility']}, Block Type: {row['strip']},  Cost Group: {row['cost_group']}, Cost Component: {row['cost_component']}, Sub Cost Component: {row['sub_cost_component']}"
+            location = f"{row['control_area']}, {row['load_zone']} ({row['strip']})"
             data = (row['data_latest'] - row['data_prev'])
             if volume == "increase":
                 data_prct = round((abs(row['data_latest'] - row['data_prev'])/ row['data_latest'])*100, 2)
@@ -57,11 +57,9 @@ class Util:
         decreased_data = self.notifications_item_calculations(latest_curve_data, prev_curve_data, "decrease")
         data = [*increased_data, *decreased_data]
         # update notificaions
-        success_flag = False
-        success_flag = self.db_util.update_notification_status(curvestart, filename)
+        success_flag = self.db_util.queue_notifications(data)
         if success_flag:
-            success_flag = self.db_util.queue_notifications(data)
-        if success_flag:
+            success_flag = self.db_util.update_notification_status(curvestart, filename)
             print(f"Notifciations add for upload {filename}_{curvestart}")
         else:
             print(f"Unable to add notifciations for upload {filename}_{curvestart}")
