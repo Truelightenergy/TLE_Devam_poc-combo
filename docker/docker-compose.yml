@@ -939,6 +939,31 @@ services:
         ptc NUMERIC(20,10)
         
       ); 
+
+      CREATE TABLE trueprice.headroom_history(
+        id serial PRIMARY KEY,
+        curveStart TIMESTAMPTZ,
+        curveend TIMESTAMPTZ,
+        month TIMESTAMPTZ,
+        control_area_type varchar(100),
+        control_area varchar(100),
+        state varchar(100),
+        load_zone varchar(100),
+        capacity_zone varchar(100),
+        utility varchar(100),
+        strip varchar(4),
+        cost_group varchar(100),
+        cost_component varchar(100),
+        headroom NUMERIC(20,10),
+        headroom_prct NUMERIC(20,10),
+        term NUMERIC(20,10),
+        beginning_date TIMESTAMPTZ,
+        load_profile varchar(100),
+        utility_name varchar(100),
+        total_bundled_price NUMERIC(20,10),
+        ptc NUMERIC(20,10)
+        
+      ); 
  
       
       -- headroom calculations schema ends here
@@ -950,6 +975,14 @@ services:
         filename varchar(255),
         status varchar(255) Default 'waiting'
       );
+
+      --ptc change
+      ALTER TABLE trueprice.ptc ADD COLUMN lookup_id2 text, ADD COLUMN lookup_id3 text;
+      ALTER TABLE trueprice.ptc_history ADD COLUMN lookup_id2 text, ADD COLUMN lookup_id3 text;
+
+      --headroom change
+      ALTER TABLE trueprice.headroom ADD COLUMN lookup_id2 text, ADD COLUMN lookup_id3 text;
+      ALTER TABLE trueprice.headroom_history ADD COLUMN lookup_id2 text, ADD COLUMN lookup_id3 text;
 
       EOSQL
   # adminer: # for postgres, php admin interface

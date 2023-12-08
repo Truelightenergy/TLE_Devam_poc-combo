@@ -52,8 +52,8 @@ class PTCHelper:
             df_info = df_info.drop(df_info.index[0])
             
             df_info =  df_info[['Control Area', 'State', 'Load Zone', 'Capacity Zone',
-                            'Utility', 'Block Type', 'Cost Group', 'Cost Component',
-                            'Utility Name', 'Rate Class/Load Profile'
+                            'Utility', 'Block Type', 'Cost Group', 'Cost Component', 'Lookup ID2', 'Lookup ID3',
+                            'Utility Name', 'Rate Class/Load Profile', 
                             ]]
             df_info = df_info.loc[:, ~df_info.columns.duplicated()]
             df_info.reset_index(inplace=True, drop=True)
@@ -69,7 +69,7 @@ class PTCHelper:
                 
                 tmp_df = df_data[["Date"]].copy()
                 tmp_df.loc[:, 'Data'] = df_data.iloc[:, index+1]
-                labels = ["Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", "Utility Name", "Rate Class/Load Profile"]
+                labels = ["Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", "Lookup ID2", "Lookup ID3", "Utility Name", "Rate Class/Load Profile"]
                 for label in labels:
                     tmp_df[label] = df_info.at[index, label]
                 if isinstance(col, float):

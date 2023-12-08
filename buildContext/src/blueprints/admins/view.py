@@ -42,13 +42,10 @@ def get_options():
     makes the current drop down dynamic
     """
     curve = request.json['curve']
-    if curve=="energy":
-        option = ["ERCOT", "ISONE", "NYISO","MISO", "PJM"]
-    elif curve == "nonenergy":
-        option = ["ERCOT", "ISONE", "NYISO","MISO", "PJM"]
-    elif curve == "rec":
+    if curve == "rec":
         option = ["ERCOT", "ISONE", "NYISO", "PJM"]
-
+    else:
+        option = ["ERCOT", "ISONE", "NYISO","MISO", "PJM"]
     return jsonify(option)
 
 @admins.route("/log_stream", methods=['GET','POST'])

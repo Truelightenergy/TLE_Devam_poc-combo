@@ -61,6 +61,9 @@ class Util:
                 df['headroom_prct'] = (df['headroom'] / df['ptc'])*100
                 df['headroom_prct'] = df['headroom_prct'].replace(-np.inf, -0.999)
                 df['curvestart'] = instance['curvestart']
+                df['lookup_id2'] = ptc_df['lookup_id2']
+                df['lookup_id3'] = ptc_df['lookup_id3']
+                
 
                 # ingest calculated values
                 if self.headroom_model.headroom_ingestion(df):

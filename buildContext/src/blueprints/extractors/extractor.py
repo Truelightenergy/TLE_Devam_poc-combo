@@ -10,6 +10,9 @@ from utils.database_connection import ConnectDatabase
 from .helper.nonenergy import NonEnergy
 from .helper.energy import Energy
 from .helper.rec import Rec
+from .helper.ptc import Ptc
+from .helper.matrix import Matrix
+from .helper.headroom import Headroom
 
 
 class Extractor:
@@ -27,6 +30,9 @@ class Extractor:
         self.non_energy = NonEnergy()
         self.energy = Energy()
         self.rec= Rec()
+        self.ptc = Ptc()
+        self.matrix = Matrix()
+        self.headroom = Headroom()
         self.filter = Rules()
 
     def post_processing_csv(self, df, type):
@@ -34,8 +40,45 @@ class Extractor:
         post process the dataframe
         """
 
+        if type == 'headroom':
+            pivoted_df = pd.pivot_table(df, values= ['headroom', 'headroom_prct'], index=['curvestart', 'month'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "control_area_type", "lookup_id2", "lookup_id3", "load_profile", "term"], aggfunc=list)
+            pivoted_df.columns.name = None
+            pivoted_df.index.name = None
+            
+            # Explode the lists into multiple rows
+            flattened_df = pivoted_df.apply(lambda x: pd.Series(x).explode())
 
-        if type =="energy":
+            # rename indexes
+            flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month"})
+
+            # renaming columns
+            flattened_df.columns.names =  ["Value", "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Strip", "Cost Group", "Cost Component", "Control Area Type", "Lookup Id2", "Lookup Id3", "Load Profile", "Term"]
+
+            # returning dataframe
+            return flattened_df
+
+        elif type=='matrix':
+            df = df.drop(['id', 'curveend'], axis=1)
+            return df.transpose()
+            
+        elif type == 'ptc':
+            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "control_area_type", "lookup_id2", "lookup_id3","utility_name", "profile_load"], aggfunc=list)
+            pivoted_df.columns.name = None
+            pivoted_df.index.name = None
+            
+            # Explode the lists into multiple rows
+            flattened_df = pivoted_df.apply(lambda x: pd.Series(x).explode())
+
+            # rename indexes
+            flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month"})
+
+            # renaming columns
+            flattened_df.columns.names =  ["Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", "lookup_id2", "lookup_id3", "Control_area_type", "Utility_name", "Profile_load"]
+
+            # returning dataframe
+            return flattened_df
+        
+        elif type =="energy":
             pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month', 'cob'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'sub_cost_component'], aggfunc=list)
             pivoted_df.columns.name = None
             pivoted_df.index.name = None
@@ -68,6 +111,7 @@ class Extractor:
             
             # returning dataframe
             return flattened_df
+        
     
     def post_processing_json(self, df):
         """
@@ -99,9 +143,21 @@ class Extractor:
                 dataframe, status = self.energy.extraction(query_strings)
             elif str(query_strings["curve_type"]).lower() == "rec":
                 dataframe, status = self.rec.extraction(query_strings)
+            elif str(query_strings["curve_type"]).lower() == "ptc":
+                dataframe, status = self.ptc.extraction(query_strings) 
+            elif str(query_strings["curve_type"]).lower() == "matrix":
+                dataframe, status = self.matrix.extraction(query_strings) 
+            elif str(query_strings["curve_type"]).lower() == "headroom":
+                dataframe, status = self.headroom.extraction(query_strings) 
 
             if not isinstance(dataframe, pd.DataFrame):
                     return dataframe, status
+            
+            # for un conditional responses (no subscription hence all data return)
+            un_conditional_curves = ['ptc', 'matrix', 'headroom']
+            if str(query_strings["curve_type"]).lower() in un_conditional_curves:
+                dataframe = self.post_processing_csv(dataframe, str(query_strings["curve_type"]).lower())
+                return dataframe, status
             
             control_table = f"{query_strings['iso']}_{query_strings['curve_type']}"
             email = session["user"]
