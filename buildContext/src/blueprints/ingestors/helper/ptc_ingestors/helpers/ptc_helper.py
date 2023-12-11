@@ -30,7 +30,7 @@ class PTCHelper:
         """
         try:
             df = data_frame
-            df_data = df.iloc[21:]
+            df_data = df.iloc[25:]
             df_data = df_data.dropna(axis = 1, how = 'all')
             df_data = df_data.dropna(axis = 0, how = 'all')
             df_data.reset_index(inplace=True, drop=True)
@@ -41,7 +41,7 @@ class PTCHelper:
             df_data = self.renaming_columns(df_data)
             
             # making the headers dataframe and tranposing it
-            df_info = df.iloc[0:21]
+            df_info = df.iloc[0:25]
             # df_info = df.iloc[[1, 2, 3, 4, 5, 6, 7, 8, 9, 14, 15]]
             df_info = df_info.reset_index(drop=True)
             df_info = df_info.dropna(axis = 1, how = 'all')
@@ -51,10 +51,11 @@ class PTCHelper:
             df_info.columns = df_info.iloc[0]
             df_info = df_info.drop(df_info.index[0])
             
-            df_info =  df_info[['Control Area', 'State', 'Load Zone', 'Capacity Zone',
-                            'Utility', 'Block Type', 'Cost Group', 'Cost Component', 'Lookup ID2', 'Lookup ID3',
-                            'Utility Name', 'Rate Class/Load Profile', 
-                            ]]
+            
+            df_info.columns = [column.lower() for column in df_info.columns]
+            df_info =  df_info[['control area', 'state', 'load zone', 
+                                'capacity zone', 'utility', 'block type', 'cost group', 
+                                'cost component', 'utility name', 'rate class/load profile']]
             df_info = df_info.loc[:, ~df_info.columns.duplicated()]
             df_info.reset_index(inplace=True, drop=True)
 
@@ -69,13 +70,15 @@ class PTCHelper:
                 
                 tmp_df = df_data[["Date"]].copy()
                 tmp_df.loc[:, 'Data'] = df_data.iloc[:, index+1]
-                labels = ["Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", "Lookup ID2", "Lookup ID3", "Utility Name", "Rate Class/Load Profile"]
+                labels = ['control area', 'state', 'load zone', 
+                            'capacity zone', 'utility', 'block type', 'cost group', 
+                            'cost component', 'utility name', 'rate class/load profile']
                 for label in labels:
                     tmp_df[label] = df_info.at[index, label]
                 if isinstance(col, float):
-                    tmp_df["Sub Cost Component"] = tmp_df["Cost Component"]
+                    tmp_df["sub cost component"] = tmp_df["cost component"]
                 else:
-                    tmp_df["Sub Cost Component"] = col
+                    tmp_df["sub cost component"] = col
                 tmp_df = tmp_df.reset_index(drop=True)
                 dataframes.append(tmp_df)
 
@@ -83,6 +86,8 @@ class PTCHelper:
             resultant_df=resultant_df.sort_values("Date")
             resultant_df['Data'].fillna(0, inplace=True)
             resultant_df['Data'].replace('-', '0', regex=True, inplace=True)
+            resultant_df['Data'].replace(' ', '0', regex=True, inplace=True)
+            resultant_df['Data'].replace('', '0', regex=True, inplace=True)
             resultant_df['Data'].replace('[\$,]', '', regex=True, inplace=True)
             resultant_df['Data'].replace('[\%,]', '', regex=True, inplace=True)
             resultant_df.reset_index(drop=True, inplace=True)

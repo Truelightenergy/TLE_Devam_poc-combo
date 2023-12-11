@@ -71,14 +71,15 @@ class HeadroomModel:
         try:
             results = self.engine.execute(query).fetchall()
             for row in results:
-                data.append({"control_area_type": row['control_area_type'], "control_area": row['control_area'],
-                             "state": row['state'], "load_zone": row['load_zone'],
-                             "capacity_zone": row['capacity_zone'], "utility": row['utility'],
-                             "strip": row['strip'], "cost_group": row['cost_group'],
-                             "cost_component": row['cost_component'], "term": row['term'],
-                             "beginning_date": row['beginning_date'], "load_profile": row['load_profile'],
-                             "total_bundled_price": row['total_bundled_price']
-                             })
+                if row['sub_cost_component'] == 'Total Bundled Price ($/MWh)':
+                    data.append({"control_area_type": row['control_area_type'], "control_area": row['control_area'],
+                                "state": row['state'], "load_zone": row['load_zone'],
+                                "capacity_zone": row['capacity_zone'], "utility": row['utility'],
+                                "strip": row['strip'], "cost_group": row['cost_group'],
+                                "cost_component": row['cost_component'], "term": row['term'],
+                                "beginning_date": row['beginning_date'], "load_profile": row['load_profile'],
+                                "total_bundled_price": row['data']
+                                })
             return data
         except:
             return data
@@ -101,9 +102,7 @@ class HeadroomModel:
                              "strip": row['strip'], "cost_group": row['cost_group'],
                              "cost_component": row['cost_component'], "utility_name": row['utility_name'],
                              "load_profile": row["profile_load"],
-                             "month": row['month'], "data": row['data'],
-                             "lookup_id2": row['lookup_id2'],
-                             "lookup_id3": row['lookup_id3']
+                             "month": row['month'], "data": row['data']
                              })
             return data
         except:
@@ -158,17 +157,17 @@ class HeadroomModel:
                                 -- get the current rows in the database, all of them, not just things that will change
 
                                 select id, control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, curvestart, ptc, lookup_id2, lookup_id3
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, curvestart, ptc,
                                 from trueprice.headroom where curvestart>='{sod}' and curvestart<='{eod}' and control_area_type='{df['control_area_type'].unique()[0]}'
                             ),
                             backup as (
                                 -- take current rows and insert into database but with a new "curveend" timestamp
 
                                 insert into trueprice.headroom_history (control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, curvestart, ptc, curveend, lookup_id2, lookup_id3)
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, curvestart, ptc, curveend)
 
                                 select control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, curvestart, ptc, {curveend} as curveend, lookup_id2, lookup_id3
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, curvestart, ptc, {curveend} as curveend
                                 from current
                             ),
                             single as (
@@ -186,10 +185,10 @@ class HeadroomModel:
 
                             updation as (
                             insert into trueprice.headroom (control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, curvestart, ptc, lookup_id2, lookup_id3)
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, curvestart, ptc)
 
                             select control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, curvestart, ptc, lookup_id2, lookup_id3
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, curvestart, ptc
                                 from trueprice.{tmp_table_name}
                             )
                         select * from trueprice.headroom;

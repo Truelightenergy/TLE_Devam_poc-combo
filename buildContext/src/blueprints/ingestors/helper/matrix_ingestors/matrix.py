@@ -98,47 +98,20 @@ class MATRIX:
                                 -- get the current rows in the database, all of them, not just things that will change
 
                                 select id, curvestart,control_area_type, control_area, state, load_zone, 
-                                        capacity_zone, utility, strip, cost_group, cost_component,
-                                        term, beginning_date, load_profile, address, energy,
-                                        variable_load_risk, line_losses, ncpc, da_economic, da_lscpr,
-                                        rt_economic, rt_lscpr, ancillaries, regulation, fwd_reserve,
-                                        rt_reserve, inadvertent_energy, marginal_loss_revenue_fund,
-                                        price_responsive_demand, schedule_2_energy_admin_svc,
-                                        schedule_3_reliability_admin_svc, gis, iso_fees, capacity,
-                                        arr, rps_charge, renewable_power, sleeve_fee,
-                                        utility_billing_surcharge, credit, other_1, other_2,
-                                        total_full_requirements_price, cents, margin,
-                                        total_bundled_price, total_contract_load  
+                                        capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component,
+                                        term, beginning_date, load_profile, data  
                                 from trueprice.matrix where curvestart>='{sod}' and curvestart<='{eod}' and control_area_type='{data.controlArea}'
                             ),
                             backup as (
                                 -- take current rows and insert into database but with a new "curveend" timestamp
 
                                 insert into trueprice.matrix_history (curvestart, curveend, control_area_type, control_area, state, load_zone, 
-                                                                    capacity_zone, utility, strip, cost_group, cost_component,
-                                                                    term, beginning_date, load_profile, address, energy,
-                                                                    variable_load_risk, line_losses, ncpc, da_economic, da_lscpr,
-                                                                    rt_economic, rt_lscpr, ancillaries, regulation, fwd_reserve,
-                                                                    rt_reserve, inadvertent_energy, marginal_loss_revenue_fund,
-                                                                    price_responsive_demand, schedule_2_energy_admin_svc,
-                                                                    schedule_3_reliability_admin_svc, gis, iso_fees, capacity,
-                                                                    arr, rps_charge, renewable_power, sleeve_fee,
-                                                                    utility_billing_surcharge, credit, other_1, other_2,
-                                                                    total_full_requirements_price, cents, margin,
-                                                                    total_bundled_price, total_contract_load) 
+                                        capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component,
+                                        term, beginning_date, load_profile, data) 
 
                                 select curvestart, '{curveend}' as curveend, control_area_type, control_area, state, load_zone, 
-                                        capacity_zone, utility, strip, cost_group, cost_component,
-                                        term, beginning_date, load_profile, address, energy,
-                                        variable_load_risk, line_losses, ncpc, da_economic, da_lscpr,
-                                        rt_economic, rt_lscpr, ancillaries, regulation, fwd_reserve,
-                                        rt_reserve, inadvertent_energy, marginal_loss_revenue_fund,
-                                        price_responsive_demand, schedule_2_energy_admin_svc,
-                                        schedule_3_reliability_admin_svc, gis, iso_fees, capacity,
-                                        arr, rps_charge, renewable_power, sleeve_fee,
-                                        utility_billing_surcharge, credit, other_1, other_2,
-                                        total_full_requirements_price, cents, margin,
-                                        total_bundled_price, total_contract_load 
+                                        capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component,
+                                        term, beginning_date, load_profile, data 
                                 from current
                             ),
                             single as (
@@ -156,30 +129,12 @@ class MATRIX:
 
                             updation as (
                             insert into trueprice.matrix (curvestart,control_area_type, control_area, state, load_zone, 
-                                                        capacity_zone, utility, strip, cost_group, cost_component,
-                                                        term, beginning_date, load_profile, address, energy,
-                                                        variable_load_risk, line_losses, ncpc, da_economic, da_lscpr,
-                                                        rt_economic, rt_lscpr, ancillaries, regulation, fwd_reserve,
-                                                        rt_reserve, inadvertent_energy, marginal_loss_revenue_fund,
-                                                        price_responsive_demand, schedule_2_energy_admin_svc,
-                                                        schedule_3_reliability_admin_svc, gis, iso_fees, capacity,
-                                                        arr, rps_charge, renewable_power, sleeve_fee,
-                                                        utility_billing_surcharge, credit, other_1, other_2,
-                                                        total_full_requirements_price, cents, margin,
-                                                        total_bundled_price, total_contract_load)
+                                        capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component,
+                                        term, beginning_date, load_profile, data)
 
                             select curvestart,control_area_type, control_area, state, load_zone, 
-                                    capacity_zone, utility, strip, cost_group, cost_component,
-                                    term, beginning_date, load_profile, address, energy,
-                                    variable_load_risk, line_losses, ncpc, da_economic, da_lscpr,
-                                    rt_economic, rt_lscpr, ancillaries, regulation, fwd_reserve,
-                                    rt_reserve, inadvertent_energy, marginal_loss_revenue_fund,
-                                    price_responsive_demand, schedule_2_energy_admin_svc,
-                                    schedule_3_reliability_admin_svc, gis, iso_fees, capacity,
-                                    arr, rps_charge, renewable_power, sleeve_fee,
-                                    utility_billing_surcharge, credit, other_1, other_2,
-                                    total_full_requirements_price, cents, margin,
-                                    total_bundled_price, total_contract_load
+                                        capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component,
+                                        term, beginning_date, load_profile, data
                                 from trueprice.{tmp_table_name}
                             )
                         select * from trueprice.matrix;

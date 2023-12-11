@@ -41,7 +41,7 @@ class Extractor:
         """
 
         if type == 'headroom':
-            pivoted_df = pd.pivot_table(df, values= ['headroom', 'headroom_prct'], index=['curvestart', 'month'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "control_area_type", "lookup_id2", "lookup_id3", "load_profile", "term"], aggfunc=list)
+            pivoted_df = pd.pivot_table(df, values= ['headroom', 'headroom_prct'], index=['curvestart', 'month'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "control_area_type", "load_profile", "term"], aggfunc=list)
             pivoted_df.columns.name = None
             pivoted_df.index.name = None
             
@@ -52,17 +52,35 @@ class Extractor:
             flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month"})
 
             # renaming columns
-            flattened_df.columns.names =  ["Value", "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Strip", "Cost Group", "Cost Component", "Control Area Type", "Lookup Id2", "Lookup Id3", "Load Profile", "Term"]
+            flattened_df.columns.names =  ["Value", "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Strip", "Cost Group", "Cost Component", "Control Area Type", "Load Profile", "Term"]
 
             # returning dataframe
             return flattened_df
 
         elif type=='matrix':
-            df = df.drop(['id', 'curveend'], axis=1)
-            return df.transpose()
+
+            # Assuming df is your DataFrame
+            # Using pivot_table to handle potential duplicate entries
+            pivot_df = df.pivot_table(index=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "term", "beginning_date", "load_profile"],
+                                    columns="sub_cost_component",
+                                    values="data",
+                                    aggfunc="first",  # You can choose an appropriate aggregation function
+                                    fill_value=0)  # Replace NaN with 0 or choose another fill value
+
+            # Resetting index to make the columns flat
+            reshaped_df = pivot_df.reset_index()
+
+            # Display the reshaped DataFrame
+            reshaped_df = reshaped_df.transpose()
+            reshaped_df = reshaped_df.drop(0)
+
+            # If you want to reset the index after removing the row
+            reshaped_df = reshaped_df.reset_index(drop=True)
+            return reshaped_df
+
             
         elif type == 'ptc':
-            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "control_area_type", "lookup_id2", "lookup_id3","utility_name", "profile_load"], aggfunc=list)
+            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "control_area_type", "utility_name", "profile_load"], aggfunc=list)
             pivoted_df.columns.name = None
             pivoted_df.index.name = None
             
@@ -73,7 +91,7 @@ class Extractor:
             flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month"})
 
             # renaming columns
-            flattened_df.columns.names =  ["Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", "lookup_id2", "lookup_id3", "Control_area_type", "Utility_name", "Profile_load"]
+            flattened_df.columns.names =  ["Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", "Control_area_type", "Utility_name", "Profile_load"]
 
             # returning dataframe
             return flattened_df

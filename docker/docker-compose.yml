@@ -812,7 +812,6 @@ services:
         CREATE TABLE trueprice.matrix (
         id serial PRIMARY KEY,
         curveStart TIMESTAMPTZ,
-        curveEnd TIMESTAMPTZ,
         control_area_type varchar(100),
         control_area varchar(100),
         state varchar(100),
@@ -822,43 +821,11 @@ services:
         strip varchar(4),
         cost_group varchar(100),
         cost_component varchar(100),
+        sub_cost_component varchar(100),
         term NUMERIC(20,10), 
         beginning_date TIMESTAMPTZ,
-        load_profile varchar(100), 
-        address varchar(100), 
-        energy NUMERIC(20,10),
-        variable_load_risk NUMERIC(20,10), 
-        line_losses NUMERIC(20,10), 
-        ncpc NUMERIC(20,10), 
-        da_economic NUMERIC(20,10), 
-        da_lscpr NUMERIC(20,10),
-        rt_economic NUMERIC(20,10),
-        rt_lscpr NUMERIC(20,10), 
-        ancillaries NUMERIC(20,10), 
-        regulation NUMERIC(20,10), 
-        fwd_reserve NUMERIC(20,10),
-        rt_reserve NUMERIC(20,10), 
-        inadvertent_energy NUMERIC(20,10), 
-        marginal_loss_revenue_fund NUMERIC(20,10),
-        price_responsive_demand NUMERIC(20,10), 
-        schedule_2_energy_admin_svc NUMERIC(20,10),
-        schedule_3_reliability_admin_svc NUMERIC(20,10), 
-        gis NUMERIC(20,10), 
-        iso_fees NUMERIC(20,10), 
-        capacity NUMERIC(20,10),
-        arr  NUMERIC(20,10), 
-        rps_charge NUMERIC(20,10), 
-        renewable_power  NUMERIC(20,10), 
-        sleeve_fee NUMERIC(20,10),
-        utility_billing_surcharge NUMERIC(20,10),
-        credit NUMERIC(20,10), 
-        other_1  NUMERIC(20,10), 
-        other_2 NUMERIC(20,10),
-        total_full_requirements_price  NUMERIC(20,10),
-        cents NUMERIC(20,10),
-        margin  NUMERIC(20,10),
-        total_bundled_price  NUMERIC(20,10),
-        total_contract_load NUMERIC(20,10)
+        load_profile varchar(100),
+        data NUMERIC(20,10)
       );
 
       CREATE TABLE trueprice.matrix_history(
@@ -874,43 +841,11 @@ services:
         strip varchar(4),
         cost_group varchar(100),
         cost_component varchar(100),
+        sub_cost_component varchar(100),
         term NUMERIC(20,10), 
         beginning_date TIMESTAMPTZ,
-        load_profile varchar(100), 
-        address varchar(100), 
-        energy NUMERIC(20,10),
-        variable_load_risk NUMERIC(20,10), 
-        line_losses NUMERIC(20,10), 
-        ncpc NUMERIC(20,10), 
-        da_economic NUMERIC(20,10), 
-        da_lscpr NUMERIC(20,10),
-        rt_economic NUMERIC(20,10),
-        rt_lscpr NUMERIC(20,10), 
-        ancillaries NUMERIC(20,10), 
-        regulation NUMERIC(20,10), 
-        fwd_reserve NUMERIC(20,10),
-        rt_reserve NUMERIC(20,10), 
-        inadvertent_energy NUMERIC(20,10), 
-        marginal_loss_revenue_fund NUMERIC(20,10),
-        price_responsive_demand NUMERIC(20,10), 
-        schedule_2_energy_admin_svc NUMERIC(20,10),
-        schedule_3_reliability_admin_svc NUMERIC(20,10), 
-        gis NUMERIC(20,10), 
-        iso_fees NUMERIC(20,10), 
-        capacity NUMERIC(20,10),
-        arr  NUMERIC(20,10), 
-        rps_charge NUMERIC(20,10), 
-        renewable_power  NUMERIC(20,10), 
-        sleeve_fee NUMERIC(20,10),
-        utility_billing_surcharge NUMERIC(20,10),
-        credit NUMERIC(20,10), 
-        other_1  NUMERIC(20,10), 
-        other_2 NUMERIC(20,10),
-        total_full_requirements_price  NUMERIC(20,10),
-        cents NUMERIC(20,10),
-        margin  NUMERIC(20,10),
-        total_bundled_price  NUMERIC(20,10),
-        total_contract_load NUMERIC(20,10)
+        load_profile varchar(100),
+        data NUMERIC(20,10)
       );
       -- Matrix schema ends here
 
@@ -975,14 +910,6 @@ services:
         filename varchar(255),
         status varchar(255) Default 'waiting'
       );
-
-      --ptc change
-      ALTER TABLE trueprice.ptc ADD COLUMN lookup_id2 text, ADD COLUMN lookup_id3 text;
-      ALTER TABLE trueprice.ptc_history ADD COLUMN lookup_id2 text, ADD COLUMN lookup_id3 text;
-
-      --headroom change
-      ALTER TABLE trueprice.headroom ADD COLUMN lookup_id2 text, ADD COLUMN lookup_id3 text;
-      ALTER TABLE trueprice.headroom_history ADD COLUMN lookup_id2 text, ADD COLUMN lookup_id3 text;
 
       EOSQL
   # adminer: # for postgres, php admin interface

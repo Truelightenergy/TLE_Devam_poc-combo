@@ -37,9 +37,7 @@ class PTC:
             df.rename(inplace=True, columns={
                 'block_type' : 'strip', 
                 'date' : 'month',
-                'rate_class/load_profile': 'profile_load',
-                'Lookup ID2': 'lookup_id2',
-                'Lookup ID3': 'lookup_id3'
+                'rate_class/load_profile': 'profile_load'
             })
             df = df.drop(columns=['sub_cost_component'])
 
@@ -87,15 +85,15 @@ class PTC:
                             with current as (
                                 -- get the current rows in the database, all of them, not just things that will change
 
-                                select id, month, curvestart, control_area_type, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, lookup_id2, lookup_id3, utility_name, profile_load
+                                select id, month, curvestart, control_area_type, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, utility_name, profile_load
                                 from trueprice.ptc where curvestart>='{sod}' and curvestart<='{eod}' and control_area_type='{data.controlArea}'
                             ),
                             backup as (
                                 -- take current rows and insert into database but with a new "curveend" timestamp
 
-                                insert into trueprice.ptc_history (month, curvestart, curveend, control_area_type, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, lookup_id2, lookup_id3, utility_name, profile_load)
+                                insert into trueprice.ptc_history (month, curvestart, curveend, control_area_type, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, utility_name, profile_load)
 
-                                select month, curvestart, '{curveend}' as curveend, control_area_type, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, lookup_id2, lookup_id3, utility_name, profile_load
+                                select month, curvestart, '{curveend}' as curveend, control_area_type, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  utility_name, profile_load
                                 from current
                             ),
                             single as (
@@ -112,9 +110,9 @@ class PTC:
                             ),
 
                             updation as (
-                            insert into trueprice.ptc (month, curvestart, control_area_type, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, lookup_id2, lookup_id3, utility_name, profile_load)
+                            insert into trueprice.ptc (month, curvestart, control_area_type, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  utility_name, profile_load)
 
-                            select month, curvestart, control_area_type, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, lookup_id2, lookup_id3, utility_name, profile_load
+                            select month, curvestart, control_area_type, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  utility_name, profile_load
                                 from trueprice.{tmp_table_name}
                             )
                         select * from trueprice.ptc;
