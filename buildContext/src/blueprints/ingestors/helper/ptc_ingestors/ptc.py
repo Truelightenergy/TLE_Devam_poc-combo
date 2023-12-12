@@ -26,7 +26,7 @@ class PTC:
 
 
         try:
-            df = pd.read_csv(data.fileName, header=None)
+            df = pd.read_csv(data.fileName, header=None,  encoding='latin-1')
             df= self.herlper.setup_dataframe(df)
             if not isinstance(df, pd.DataFrame):
                return "File Format Not Matched"
