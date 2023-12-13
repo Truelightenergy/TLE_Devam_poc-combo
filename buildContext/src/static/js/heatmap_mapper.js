@@ -23,6 +23,21 @@ function populate_table(data){
     headerRow.innerHTML = '';
     headers.forEach(header => {
         const th = document.createElement('th');
+        if( header=='headroom'){
+            header = 'Headroom'
+        }
+        else if( header=='headroom_prct'){
+            header = 'Headroom as a Prct'
+        }
+        else if( header=='utility'){
+            header = 'Utility'
+        } 
+        else if( header=='state'){
+            header = 'State'
+        }
+        else if( header=='load_zone'){
+            header = 'Load Zone'
+        }
         th.textContent = header;
         headerRow.appendChild(th);
     });
@@ -34,6 +49,12 @@ function populate_table(data){
         const tr = document.createElement('tr');
         headers.forEach(header => {
             const td = document.createElement('td');
+            if (header=='headroom'){
+                item[header]= "$"+ String(Math.round(item[header] * 100) / 100);
+            }
+            if (header=='headroom_prct'){
+                item[header]= String(Math.round(item[header] * 100) / 100) +"%";
+            }
             td.textContent = item[header];
             tr.appendChild(td);
         });
@@ -74,7 +95,7 @@ state_wise_data.forEach(stateData => {
 
     let state_mean = calculate_mean(headrooms);
     let normalized_mean = (state_mean - global_mean) / global_std;
-    stateMeanHeadroom[state] = { mean: normalized_mean};
+    stateMeanHeadroom[state] = { mean: Math.round(normalized_mean * 100)/100};
 
 });
 
