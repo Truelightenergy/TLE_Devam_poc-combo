@@ -16,8 +16,8 @@ services:
     image: "postgres:15"
     entrypoint:
       - /bin/bash
-      - -c 
-      - | 
+      - -c
+      - |
         set -e
         sleep 10 # wait for postgres to be ready
         psql -v ON_ERROR_STOP=1 --username $${PGUSER} --dbname postgres --host $${DATABASE} --port 5432 <<-EOSQL
@@ -36,778 +36,778 @@ services:
       - DATABASE=postgres
     image: "postgres:15"
     entrypoint:
-    - bin/bash
-    - -c
-    - |
-      set -e
-      sleep 10
-      psql -v ON_ERROR_STOP=1 --username $${PGUSER} --dbname trueprice --host $${DATABASE} --port 5432 <<-EOSQL
-        CREATE SCHEMA trueprice;
-        
-        -- NYISO energy
-        CREATE TABLE trueprice.nyiso_energy (
-          id serial PRIMARY KEY,
-          cob BOOLEAN,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10), 
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-        
-        -- old data
-        -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.nyiso_energy_history (
-          id serial PRIMARY KEY,
-          cob BOOLEAN,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10),
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-        
-        -- ERCOT energy
-        CREATE TABLE trueprice.ercot_energy (
-          id serial PRIMARY KEY,
-          cob BOOLEAN,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10), 
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-        
-        -- old data
-        -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.ercot_energy_history (
-          id serial PRIMARY KEY,
-          cob BOOLEAN,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10),
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
+      - bin/bash
+      - -c
+      - |
+        set -e
+        sleep 10
+        psql -v ON_ERROR_STOP=1 --username $${PGUSER} --dbname trueprice --host $${DATABASE} --port 5432 <<-EOSQL
+          CREATE SCHEMA trueprice;
+          
+          -- NYISO energy
+          CREATE TABLE trueprice.nyiso_energy (
+            id serial PRIMARY KEY,
+            cob BOOLEAN,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10), 
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+          
+          -- old data
+          -- union old and new data for all data (versus is_current column)
+          CREATE TABLE trueprice.nyiso_energy_history (
+            id serial PRIMARY KEY,
+            cob BOOLEAN,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10),
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+          
+          -- ERCOT energy
+          CREATE TABLE trueprice.ercot_energy (
+            id serial PRIMARY KEY,
+            cob BOOLEAN,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10), 
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+          
+          -- old data
+          -- union old and new data for all data (versus is_current column)
+          CREATE TABLE trueprice.ercot_energy_history (
+            id serial PRIMARY KEY,
+            cob BOOLEAN,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10),
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
 
 
-        -- ISONE energy
+          -- ISONE energy
 
-        CREATE TABLE trueprice.isone_energy (
-          id serial PRIMARY KEY,
-          cob BOOLEAN,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10), 
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-        
-        -- old data
-        -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.isone_energy_history (
-          id serial PRIMARY KEY,
-          cob BOOLEAN,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10),
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
+          CREATE TABLE trueprice.isone_energy (
+            id serial PRIMARY KEY,
+            cob BOOLEAN,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10), 
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+          
+          -- old data
+          -- union old and new data for all data (versus is_current column)
+          CREATE TABLE trueprice.isone_energy_history (
+            id serial PRIMARY KEY,
+            cob BOOLEAN,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10),
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
 
-        -- MISO energy
-        CREATE TABLE trueprice.miso_energy (
-          id serial PRIMARY KEY,
-          cob BOOLEAN,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10), 
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-        
-        -- old data
-        -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.miso_energy_history (
-          id serial PRIMARY KEY,
-          cob BOOLEAN,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10),
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
+          -- MISO energy
+          CREATE TABLE trueprice.miso_energy (
+            id serial PRIMARY KEY,
+            cob BOOLEAN,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10), 
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+          
+          -- old data
+          -- union old and new data for all data (versus is_current column)
+          CREATE TABLE trueprice.miso_energy_history (
+            id serial PRIMARY KEY,
+            cob BOOLEAN,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10),
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
 
-        -- PJM energy
-        CREATE TABLE trueprice.pjm_energy (
-          id serial PRIMARY KEY,
-          cob BOOLEAN,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10), 
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-        
-        -- old data
-        -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.pjm_energy_history (
-          id serial PRIMARY KEY,
-          cob BOOLEAN,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10),
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-        
+          -- PJM energy
+          CREATE TABLE trueprice.pjm_energy (
+            id serial PRIMARY KEY,
+            cob BOOLEAN,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10), 
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+          
+          -- old data
+          -- union old and new data for all data (versus is_current column)
+          CREATE TABLE trueprice.pjm_energy_history (
+            id serial PRIMARY KEY,
+            cob BOOLEAN,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10),
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+          
 
-        -- ercot nonenergy
-        CREATE TABLE trueprice.ercot_nonenergy (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10), 
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-        
-        -- old data
-        -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.ercot_nonenergy_history (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10),
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
+          -- ercot nonenergy
+          CREATE TABLE trueprice.ercot_nonenergy (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10), 
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+          
+          -- old data
+          -- union old and new data for all data (versus is_current column)
+          CREATE TABLE trueprice.ercot_nonenergy_history (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10),
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
 
-        -- isone nonenergy
-        CREATE TABLE trueprice.isone_nonenergy (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(12,8), 
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-        -- old data
-        -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.isone_nonenergy_history (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(12,8), 
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
+          -- isone nonenergy
+          CREATE TABLE trueprice.isone_nonenergy (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(12,8), 
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+          -- old data
+          -- union old and new data for all data (versus is_current column)
+          CREATE TABLE trueprice.isone_nonenergy_history (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(12,8), 
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
 
-        -- pjm nonenergy
-        CREATE TABLE trueprice.pjm_nonenergy (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10), 
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-        -- old data
-        -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.pjm_nonenergy_history (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10),
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
+          -- pjm nonenergy
+          CREATE TABLE trueprice.pjm_nonenergy (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10), 
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+          -- old data
+          -- union old and new data for all data (versus is_current column)
+          CREATE TABLE trueprice.pjm_nonenergy_history (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10),
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
 
-        -- nyiso nonenergy
-        CREATE TABLE trueprice.nyiso_nonenergy (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10), 
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-        
-        -- old data
-        -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.nyiso_nonenergy_history (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10),
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
+          -- nyiso nonenergy
+          CREATE TABLE trueprice.nyiso_nonenergy (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10), 
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+          
+          -- old data
+          -- union old and new data for all data (versus is_current column)
+          CREATE TABLE trueprice.nyiso_nonenergy_history (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10),
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
 
-      -- miso nonenergy
-        CREATE TABLE trueprice.miso_nonenergy (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10), 
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-        
-        -- old data
-        -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.miso_nonenergy_history (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10),
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-
-
-        -- pjm rec
-        -- new data
-        CREATE TABLE trueprice.pjm_rec (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10), 
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-        
-        -- old data
-        -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.pjm_rec_history (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10),
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-
-        --ercot rec
-        -- new data
-        CREATE TABLE trueprice.ercot_rec (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10), 
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-        
-        -- old data
-        -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.ercot_rec_history (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10),
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
+        -- miso nonenergy
+          CREATE TABLE trueprice.miso_nonenergy (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10), 
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+          
+          -- old data
+          -- union old and new data for all data (versus is_current column)
+          CREATE TABLE trueprice.miso_nonenergy_history (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10),
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
 
 
-        --isone rec
-        --new data
-        CREATE TABLE trueprice.isone_rec (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10), 
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-        
-        -- old data
-        -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.isone_rec_history (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10),
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
+          -- pjm rec
+          -- new data
+          CREATE TABLE trueprice.pjm_rec (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10), 
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+          
+          -- old data
+          -- union old and new data for all data (versus is_current column)
+          CREATE TABLE trueprice.pjm_rec_history (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10),
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+
+          --ercot rec
+          -- new data
+          CREATE TABLE trueprice.ercot_rec (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10), 
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+          
+          -- old data
+          -- union old and new data for all data (versus is_current column)
+          CREATE TABLE trueprice.ercot_rec_history (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10),
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
 
 
-      -- nyiso rec
-      CREATE TABLE trueprice.nyiso_rec (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10), 
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
-        
-        -- old data
-        -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.nyiso_rec_history (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          data NUMERIC(20,10),
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
-        );
+          --isone rec
+          --new data
+          CREATE TABLE trueprice.isone_rec (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10), 
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+          
+          -- old data
+          -- union old and new data for all data (versus is_current column)
+          CREATE TABLE trueprice.isone_rec_history (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10),
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
 
-        
-      --Authentication table
-      CREATE TABLE trueprice.users (
-        id SERIAL PRIMARY KEY,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL,
-        privileged_level VARCHAR(255) NOT NULL,
-        status text default 'enabled'
-      );
-      
-      -- add new column to user table
-      -- Alter table trueprice.users ADD COLUMN status text default 'enabled' ;
 
-      -- status table for uploads
-      CREATE TABLE trueprice.uploads(
-        id serial PRIMARY KEY,
-        timestamp TIMESTAMPTZ,
-        email varchar(255),
-        filename varchar(255)
-      );
+        -- nyiso rec
+        CREATE TABLE trueprice.nyiso_rec (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10), 
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+          
+          -- old data
+          -- union old and new data for all data (versus is_current column)
+          CREATE TABLE trueprice.nyiso_rec_history (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            data NUMERIC(20,10),
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
 
-      -- site control
-      CREATE TABLE trueprice.site(
-        id serial PRIMARY KEY,
-        admin varchar(100),
-        ui_status varchar(100),
-        api_status varchar(100)
-      );
-      
-      -- insert to the sit table
-      Insert into trueprice.site(admin, ui_status, api_status) VALUES ('tle_admin', 'enabled', 'enabled');
-
-      -- column filtering
-        CREATE TABLE trueprice.column_authorization(
-          id serial PRIMARY KEY,
-          control_table VARCHAR(255) NOT NULL,
-          email VARCHAR(255) NOT NULL,
-          startMonth TIMESTAMPTZ, -- per file name (sans tz)
-          endMonth TIMESTAMPTZ, -- per file name (sans tz)
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          sub_cost_component varchar(100)
+          
+        --Authentication table
+        CREATE TABLE trueprice.users (
+          id SERIAL PRIMARY KEY,
+          email VARCHAR(255) UNIQUE NOT NULL,
+          password VARCHAR(255) NOT NULL,
+          privileged_level VARCHAR(255) NOT NULL,
+          status text default 'enabled'
         );
 
-      -- adding column to existing table
-        ALTER TABLE trueprice.column_authorization
-          ADD COLUMN balanced_month_range INT DEFAULT 0;
+        -- add new column to user table
+        -- Alter table trueprice.users ADD COLUMN status text default 'enabled' ;
 
-
-
-
-      --notification schema starts here
-
-      -- languages table
-      CREATE TABLE trueprice.languages (
-          language_id SERIAL PRIMARY KEY,
-          language_code VARCHAR(10) NOT NULL UNIQUE, -- e.g., 'en', 'es', 'fr'
-          language_name VARCHAR(255) NOT NULL
-      );
-
-      -- email_templates table
-      CREATE TABLE trueprice.email_templates (
-          template_id SERIAL PRIMARY KEY,
-          template_name VARCHAR(255) NOT NULL UNIQUE, -- e.g., 'PRICE_DROP', 'NEW_FEATURE'
-          subject_template TEXT, -- Optional: subject can be multi-lingual too
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-
-      -- email_template_contents table
-      CREATE TABLE trueprice.email_template_contents (
-          content_id SERIAL PRIMARY KEY,
-          template_id INT REFERENCES trueprice.email_templates(template_id),
-          language_id INT REFERENCES trueprice.languages(language_id),
-          subject_content TEXT, -- Multi-lingual subject content
-          body_content TEXT NOT NULL, -- Actual email content in HTML/Text
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-
-      -- notification_events table to define possible events
-      CREATE TABLE trueprice.notification_events (
-          event_id SERIAL PRIMARY KEY,
-          event_name VARCHAR(255) NOT NULL UNIQUE, -- e.g., 'PRICE_CHANGE', 'HEADROOM_CHANGE'
-          description TEXT
-      );
-
-      -- notifications table
-      CREATE TABLE trueprice.notifications (
-          notification_id SERIAL PRIMARY KEY,
-          user_id INT REFERENCES trueprice.trueprice.users(id), -- NULL for global (all users) notifications
-          event_id INT REFERENCES trueprice.notification_events(event_id),
-          template_id INT REFERENCES trueprice.email_templates(template_id),
-          type VARCHAR(50) NOT NULL CHECK (type IN ('USER_DEFINED', 'SYSTEM')),
-          is_global BOOLEAN NOT NULL DEFAULT FALSE, 
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-
-      -- schedule_patterns table to store individual schedule patterns
-      CREATE TABLE trueprice.schedule_patterns (
-          pattern_id SERIAL PRIMARY KEY,
-          notification_id INT REFERENCES trueprice.notifications(notification_id),
-          cron_pattern VARCHAR(255) NOT NULL, -- cron-style scheduling string
-          schedule_description TEXT, -- human-readable description of the schedule
-          next_notification_time TIMESTAMP,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          recursive BOOLEAN DEFAULT false
-      );
-
-      -- notifications_log table to store sent notifications
-      CREATE TABLE trueprice.notifications_log (
-          log_id SERIAL PRIMARY KEY,
-          notification_id INT REFERENCES trueprice.notifications(notification_id),
-          user_id INT REFERENCES trueprice.users(id), -- to whom the notification was sent
-          message TEXT NOT NULL, -- rendered message based on the message_template
-          sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-
-      -- price_changes_notifications to cater the changes in each uploads
-      CREATE TABLE trueprice.price_changes_notifications (
-        change_id SERIAL PRIMARY KEY,
-        price_shift_value NUMERIC(20,10),
-        price_shift_prct NUMERIC(20,10),
-        price_shift TEXT,
-        location TEXT,
-        curvestart TIMESTAMPTZ,
-        status TEXT DEFAULT 'waiting',
-        retries NUMERIC DEFAULT 0,
-        event_id INT REFERENCES trueprice.notification_events(event_id)
-      );
-
-      -- file uploads trigger
-      CREATE TABLE trueprice.price_change_trigger(
-        change_id SERIAL PRIMARY KEY,
-        curvestart TIMESTAMPTZ,
-        filename varchar(255),
-        status varchar(255) Default 'waiting'
-      );
-
-
-      -- add language first
-      INSERT INTO trueprice.languages (language_code, language_name)
-          VALUES ('en', 'English');
-
-      -- email_template
-      INSERT INTO trueprice.email_templates (template_name, subject_template)
-          VALUES ('PriceChange', 'Price changes');
-      INSERT INTO trueprice.email_templates (template_name, subject_template)
-          VALUES ('HeadroomChange', 'Headromm changes');
-
-      -- email_template_content
-      INSERT INTO trueprice.email_template_contents (template_id, language_id, subject_content, body_content)
-        VALUES (1, 1, 'Price Change Alert', '<html><body><p>Dear {username},<br/> There has been a change in energy pricing in {location}.<br/> Energy has {price_shift} by {price_shift_value} resulting in a {price_shift_prct}.<br/>Your Friends at TRUEPrice </p></body></html>');
-      INSERT INTO trueprice.email_template_contents (template_id, language_id, subject_content, body_content)
-        VALUES (2, 1, 'Headroom Change Alert', '<html><body><p>We are here to inform you about the recent Headroom changes...</p></body></html>');
-
-      -- notification_events
-      INSERT INTO trueprice.notification_events (event_name, description)
-        VALUES ('PRICE_CHANGE', 'Notification sent when there is a PRICE change in monitored.');
-      INSERT INTO trueprice.notification_events (event_name, description)
-        VALUES ('HEADROOM_CHANGE', 'Notification sent when there is a HEDROOM change in monitored.');
-
-      --notification
-      INSERT INTO trueprice.notifications (user_id, event_id, template_id, type, is_global)
-        VALUES (NULL, 1, 1, 'SYSTEM', true);  --price drop
-      INSERT INTO trueprice.notifications (user_id, event_id, template_id, type, is_global)
-        VALUES (NULL, 2, 2, 'SYSTEM', true);  --price hike
-
-
-      --schedule the notification
-      INSERT INTO trueprice.schedule_patterns (notification_id, cron_pattern, schedule_description, next_notification_time)
-        VALUES (1, '0 8 * * MON', 'Every Monday at 8:00 AM', '2023-08-14 08:00:00');
-      INSERT INTO trueprice.schedule_patterns (notification_id, cron_pattern, schedule_description, next_notification_time)
-        VALUES (2, '0 8 * * MON', 'Every Monday at 8:00 AM', '2023-08-14 08:00:00');
-      
-      --notification schema ends here
-
-      --graph view schema starts here
-
-      -- file uploads trigger
-
-      -- save the graphview table
-
-      CREATE TABLE trueprice.save_graphview(
-        change_id SERIAL PRIMARY KEY,
-        url varchar(255),
-        user_id INT REFERENCES trueprice.trueprice.users(id),
-        status varchar(255)
-      );
-
-      --graph view schema ends here
-
-      -- PTC schema starts from here
-
-        -- new data
-        CREATE TABLE trueprice.ptc (
+        -- status table for uploads
+        CREATE TABLE trueprice.uploads(
           id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          control_area_type varchar(100),
-          data NUMERIC(20,10), 
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          utility_name varchar(100),
-          profile_load varchar(100)
-        );
-        
-        -- old data
-        -- union old and new data for all data (versus is_current column)
-        CREATE TABLE trueprice.ptc_history (
-          id serial PRIMARY KEY,
-          curveStart TIMESTAMPTZ, -- per file name (sans tz)
-          curveEnd TIMESTAMPTZ, -- per file name (sans tz)
-          month TIMESTAMPTZ,
-          control_area_type varchar(100),
-          data NUMERIC(20,10),
-          control_area varchar(100),
-          state varchar(100),
-          load_zone varchar(100),
-          capacity_zone varchar(100),
-          utility varchar(100),
-          strip varchar(4),
-          cost_group varchar(100),
-          cost_component varchar(100),
-          utility_name varchar(100),
-          profile_load varchar(100)
+          timestamp TIMESTAMPTZ,
+          email varchar(255),
+          filename varchar(255)
         );
 
-      -- PTC schema ends here
+        -- site control
+        CREATE TABLE trueprice.site(
+          id serial PRIMARY KEY,
+          admin varchar(100),
+          ui_status varchar(100),
+          api_status varchar(100)
+        );
 
-      -- Matrix schema starts here
+        -- insert to the sit table
+        Insert into trueprice.site(admin, ui_status, api_status) VALUES ('tle_admin', 'enabled', 'enabled');
+
+        -- column filtering
+          CREATE TABLE trueprice.column_authorization(
+            id serial PRIMARY KEY,
+            control_table VARCHAR(255) NOT NULL,
+            email VARCHAR(255) NOT NULL,
+            startMonth TIMESTAMPTZ, -- per file name (sans tz)
+            endMonth TIMESTAMPTZ, -- per file name (sans tz)
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            sub_cost_component varchar(100)
+          );
+
+        -- adding column to existing table
+          ALTER TABLE trueprice.column_authorization
+            ADD COLUMN balanced_month_range INT DEFAULT 0;
+
+
+
+
+        --notification schema starts here
+
+        -- languages table
+        CREATE TABLE trueprice.languages (
+            language_id SERIAL PRIMARY KEY,
+            language_code VARCHAR(10) NOT NULL UNIQUE, -- e.g., 'en', 'es', 'fr'
+            language_name VARCHAR(255) NOT NULL
+        );
+
+        -- email_templates table
+        CREATE TABLE trueprice.email_templates (
+            template_id SERIAL PRIMARY KEY,
+            template_name VARCHAR(255) NOT NULL UNIQUE, -- e.g., 'PRICE_DROP', 'NEW_FEATURE'
+            subject_template TEXT, -- Optional: subject can be multi-lingual too
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- email_template_contents table
+        CREATE TABLE trueprice.email_template_contents (
+            content_id SERIAL PRIMARY KEY,
+            template_id INT REFERENCES trueprice.email_templates(template_id),
+            language_id INT REFERENCES trueprice.languages(language_id),
+            subject_content TEXT, -- Multi-lingual subject content
+            body_content TEXT NOT NULL, -- Actual email content in HTML/Text
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- notification_events table to define possible events
+        CREATE TABLE trueprice.notification_events (
+            event_id SERIAL PRIMARY KEY,
+            event_name VARCHAR(255) NOT NULL UNIQUE, -- e.g., 'PRICE_CHANGE', 'HEADROOM_CHANGE'
+            description TEXT
+        );
+
+        -- notifications table
+        CREATE TABLE trueprice.notifications (
+            notification_id SERIAL PRIMARY KEY,
+            user_id INT REFERENCES trueprice.trueprice.users(id), -- NULL for global (all users) notifications
+            event_id INT REFERENCES trueprice.notification_events(event_id),
+            template_id INT REFERENCES trueprice.email_templates(template_id),
+            type VARCHAR(50) NOT NULL CHECK (type IN ('USER_DEFINED', 'SYSTEM')),
+            is_global BOOLEAN NOT NULL DEFAULT FALSE, 
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- schedule_patterns table to store individual schedule patterns
+        CREATE TABLE trueprice.schedule_patterns (
+            pattern_id SERIAL PRIMARY KEY,
+            notification_id INT REFERENCES trueprice.notifications(notification_id),
+            cron_pattern VARCHAR(255) NOT NULL, -- cron-style scheduling string
+            schedule_description TEXT, -- human-readable description of the schedule
+            next_notification_time TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            recursive BOOLEAN DEFAULT false
+        );
+
+        -- notifications_log table to store sent notifications
+        CREATE TABLE trueprice.notifications_log (
+            log_id SERIAL PRIMARY KEY,
+            notification_id INT REFERENCES trueprice.notifications(notification_id),
+            user_id INT REFERENCES trueprice.users(id), -- to whom the notification was sent
+            message TEXT NOT NULL, -- rendered message based on the message_template
+            sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- price_changes_notifications to cater the changes in each uploads
+        CREATE TABLE trueprice.price_changes_notifications (
+          change_id SERIAL PRIMARY KEY,
+          price_shift_value NUMERIC(20,10),
+          price_shift_prct NUMERIC(20,10),
+          price_shift TEXT,
+          location TEXT,
+          curvestart TIMESTAMPTZ,
+          status TEXT DEFAULT 'waiting',
+          retries NUMERIC DEFAULT 0,
+          event_id INT REFERENCES trueprice.notification_events(event_id)
+        );
+
+        -- file uploads trigger
+        CREATE TABLE trueprice.price_change_trigger(
+          change_id SERIAL PRIMARY KEY,
+          curvestart TIMESTAMPTZ,
+          filename varchar(255),
+          status varchar(255) Default 'waiting'
+        );
+
+
+        -- add language first
+        INSERT INTO trueprice.languages (language_code, language_name)
+            VALUES ('en', 'English');
+
+        -- email_template
+        INSERT INTO trueprice.email_templates (template_name, subject_template)
+            VALUES ('PriceChange', 'Price changes');
+        INSERT INTO trueprice.email_templates (template_name, subject_template)
+            VALUES ('HeadroomChange', 'Headromm changes');
+
+        -- email_template_content
+        INSERT INTO trueprice.email_template_contents (template_id, language_id, subject_content, body_content)
+          VALUES (1, 1, 'Price Change Alert', '<html><body><p>Dear {username},<br/> There has been a change in energy pricing in {location}.<br/> Energy has {price_shift} by {price_shift_value} resulting in a {price_shift_prct}.<br/>Your Friends at TRUEPrice </p></body></html>');
+        INSERT INTO trueprice.email_template_contents (template_id, language_id, subject_content, body_content)
+          VALUES (2, 1, 'Headroom Change Alert', '<html><body><p>We are here to inform you about the recent Headroom changes...</p></body></html>');
+
+        -- notification_events
+        INSERT INTO trueprice.notification_events (event_name, description)
+          VALUES ('PRICE_CHANGE', 'Notification sent when there is a PRICE change in monitored.');
+        INSERT INTO trueprice.notification_events (event_name, description)
+          VALUES ('HEADROOM_CHANGE', 'Notification sent when there is a HEDROOM change in monitored.');
+
+        --notification
+        INSERT INTO trueprice.notifications (user_id, event_id, template_id, type, is_global)
+          VALUES (NULL, 1, 1, 'SYSTEM', true);  --price drop
+        INSERT INTO trueprice.notifications (user_id, event_id, template_id, type, is_global)
+          VALUES (NULL, 2, 2, 'SYSTEM', true);  --price hike
+
+
+        --schedule the notification
+        INSERT INTO trueprice.schedule_patterns (notification_id, cron_pattern, schedule_description, next_notification_time)
+          VALUES (1, '0 8 * * MON', 'Every Monday at 8:00 AM', '2023-08-14 08:00:00');
+        INSERT INTO trueprice.schedule_patterns (notification_id, cron_pattern, schedule_description, next_notification_time)
+          VALUES (2, '0 8 * * MON', 'Every Monday at 8:00 AM', '2023-08-14 08:00:00');
+
+        --notification schema ends here
+
+        --graph view schema starts here
+
+        -- file uploads trigger
+
+        -- save the graphview table
+
+        CREATE TABLE trueprice.save_graphview(
+          change_id SERIAL PRIMARY KEY,
+          url varchar(255),
+          user_id INT REFERENCES trueprice.trueprice.users(id),
+          status varchar(255)
+        );
+
+        --graph view schema ends here
+
+        -- PTC schema starts from here
+
+          -- new data
+          CREATE TABLE trueprice.ptc (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            control_area_type varchar(100),
+            data NUMERIC(20,10), 
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            utility_name varchar(100),
+            profile_load varchar(100)
+          );
+          
+          -- old data
+          -- union old and new data for all data (versus is_current column)
+          CREATE TABLE trueprice.ptc_history (
+            id serial PRIMARY KEY,
+            curveStart TIMESTAMPTZ, -- per file name (sans tz)
+            curveEnd TIMESTAMPTZ, -- per file name (sans tz)
+            month TIMESTAMPTZ,
+            control_area_type varchar(100),
+            data NUMERIC(20,10),
+            control_area varchar(100),
+            state varchar(100),
+            load_zone varchar(100),
+            capacity_zone varchar(100),
+            utility varchar(100),
+            strip varchar(4),
+            cost_group varchar(100),
+            cost_component varchar(100),
+            utility_name varchar(100),
+            profile_load varchar(100)
+          );
+
+        -- PTC schema ends here
+
+        -- Matrix schema starts here
 
         CREATE TABLE trueprice.matrix (
         id serial PRIMARY KEY,
@@ -849,7 +849,7 @@ services:
       );
       -- Matrix schema ends here
 
-      -- headroom calculations schema starts from here
+        -- headroom calculations schema starts from here
 
       CREATE TABLE trueprice.headroom(
         id serial PRIMARY KEY,
@@ -903,15 +903,20 @@ services:
       
       -- headroom calculations schema ends here
 
-      -- cron job for Headroom calculations
-      CREATE TABLE trueprice.headroom_trigger(
-        change_id SERIAL PRIMARY KEY,
-        curvestart TIMESTAMPTZ,
-        filename varchar(255),
-        status varchar(255) Default 'waiting'
-      );
+        -- cron job for Headroom calculations
+        CREATE TABLE trueprice.headroom_trigger(
+          change_id SERIAL PRIMARY KEY,
+          curvestart TIMESTAMPTZ,
+          filename varchar(255),
+          status varchar(255) Default 'waiting'
+        );
 
-      EOSQL
+        --notifier v2 changes
+         -- email_template_content
+        UPDATE trueprice.email_template_contents set body_content = '<html><body><p>Dear {username},<br/> Energy in {location} has {price_shift} by {price_shift_value} resulting in a {price_shift_prct} gain.<br/>The TRUEPrice Team </p></body></html>'
+        WHERE template_id=1 and language_id=1 AND subject_content = 'Price Change Alert';
+
+        EOSQL
   # adminer: # for postgres, php admin interface
   #   image: adminer
   #   restart: always
@@ -945,13 +950,13 @@ services:
   #     - "0.0.0.0:5050:5000"
 
 
-# --- postgres
-# docker container run --name some-postgres -e POSTGRES_PASSWORD=postgres -p 0.0.0.0:5432:5432 -d postgres
-# create database trueprice;
-# \c trueprice;
-# create table data (id serial PRIMARY KEY, amount NUMERIC(12,8), hour TIMESTAMP);
-# insert into data (amount, hour) values (1.0, TO_TIMESTAMP('6/1/2022', 'MM/DD/YYYY'));
-# select * from data;
-# --- grafana
-# for grafana, use $${DATABASE}:5432
-# docker container run -p 3000:3000 grafana/grafana-oss     
+  # --- postgres
+  # docker container run --name some-postgres -e POSTGRES_PASSWORD=postgres -p 0.0.0.0:5432:5432 -d postgres
+  # create database trueprice;
+  # \c trueprice;
+  # create table data (id serial PRIMARY KEY, amount NUMERIC(12,8), hour TIMESTAMP);
+  # insert into data (amount, hour) values (1.0, TO_TIMESTAMP('6/1/2022', 'MM/DD/YYYY'));
+  # select * from data;
+  # --- grafana
+  # for grafana, use $${DATABASE}:5432
+  # docker container run -p 3000:3000 grafana/grafana-oss     
