@@ -14,38 +14,18 @@ class MatrixHelper:
         select the feature of importance
         """
 
-        df = df[[ 'Control Area', 'State', 'Load Zone', 'Capacity Zone',
-                'Utility', 'Block Type', 'Cost Group', 'Cost Component',
-                'Term (Months)', 'Beginning Date', 'Load Profile', 'Address', 'Energy',
-                'Variable Load Risk (VLR)', 'Line Losses', 'NCPC', 'DA Economic',
-                'DA LSCPR', 'RT Economic', 'RT LSCPR', 'Ancillaries', 'Regulation',
-                'Fwd Reserve', 'RT Reserve', 'Inadvertent Energy',
-                'Marginal Loss Revenue Fund', 'Price Responsive Demand',
-                'Schedule 2 - Energy Admin Svc', 'Schedule 3 - Reliability Admin Svc',
-                'GIS', 'ISO Fees', 'Capacity', 'ARR (Credit) ', 'RPS Charge',
-                'Renewable Power', 'Sleeve Fee', 'Utility Billing Surcharge ',
-                'Credit ', 'Other 1', 'Other 2', 'Total Full Requirements Price',
-                'cents/kWh', 'Margin ', 'Total Bundled Price ',
-                'Total Contract Load (kWh)']]
+        df = df[['Beginning Date', 'Control Area', 'State', 'Load Zone',
+                    'Capacity Zone','Utility', 'Block Type', 'Cost Group',
+                    'Cost Component', 'Load Profile', 'Term (Months)', 'Sub Cost Component', 'Data']]
         return df
 
     def renaming_columns(self, df):
         """
         rename the columns accordingly
         """
-        df.columns  = ['Control Area', 'State', 'Load Zone',
+        df.columns  = ['Beginning Date', 'Control Area', 'State', 'Load Zone',
                     'Capacity Zone','Utility', 'Block Type', 'Cost Group',
-                    'Cost Component', 'Term', 'Beginning Date', 'Load Profile',
-                    'Address', 'Energy', 'Variable Load Risk', 'Line Losses', 'NCPC',
-                    'DA Economic', 'DA LSCPR', 'RT Economic', 'RT LSCPR', 'Ancillaries',
-                    'Regulation', 'Fwd Reserve', 'RT Reserve', 'Inadvertent Energy',
-                    'Marginal Loss Revenue Fund', 'Price Responsive Demand',
-                    'Schedule 2 Energy Admin Svc', 'Schedule 3 Reliability Admin Svc',
-                    'GIS', 'ISO Fees', 'Capacity', 'ARR', 'RPS Charge',
-                    'Renewable Power', 'Sleeve Fee', 'Utility Billing Surcharge',
-                    'Credit', 'Other 1', 'Other 2', 'Total Full Requirements Price',
-                    'cents', 'Margin', 'Total Bundled Price',
-                    'Total Contract Load']
+                    'Cost Component', 'Load Profile', 'Term', 'Sub Cost Component', 'Data']
         
         return df
 
@@ -83,11 +63,28 @@ class MatrixHelper:
                 raise Exception("File Format Not Matched")
             
 
-            resultant_df = pd.concat([df_info, df_data], axis=1)
+            resultant_df = pd.DataFrame()
+
+            # Iterating over rows and columns, adding each column value to df_info
+            for index, row in df_info.iterrows():
+                for column in df_data.columns:
+                    # Creating a new row for each column value
+                    new_row = row.copy()
+                    new_row['Sub Cost Component'] = column
+                    new_row['Data'] = df_data.at[index, column]
+                    
+                    # Appending the new row to the temporary dataframe
+                    resultant_df = pd.concat([resultant_df, new_row.to_frame().T], ignore_index=True)
+
+            resultant_df['Data'].fillna(0, inplace=True)
+            resultant_df['Data'].replace('-', '0', regex=True, inplace=True)
+            resultant_df['Data'].replace(' ', '0', regex=True, inplace=True)
+            resultant_df['Data'].replace('', '0', regex=True, inplace=True)
+            resultant_df['Data'].replace('[\$,]', '', regex=True, inplace=True)
+            resultant_df['Data'].replace('[\%,]', '', regex=True, inplace=True)
+
             # column renaming
             resultant_df = self.feature_selection(resultant_df)
-            resultant_df = resultant_df.replace({'\$': ''}, regex=True)
-            resultant_df = resultant_df.replace({'\(|\)': ''}, regex=True)
             resultant_df = resultant_df.loc[:, ~resultant_df.columns.duplicated()]
             resultant_df = self.renaming_columns(resultant_df)
             resultant_df = resultant_df.rename(columns=lambda x: x.replace(' ', '_').lower())
