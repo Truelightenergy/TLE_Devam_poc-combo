@@ -53,7 +53,6 @@ class Extractor:
 
             # renaming columns
             flattened_df.columns.names =  ["Value", "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Strip", "Cost Group", "Cost Component", "Control Area Type", "Load Profile", "Term"]
-
             # returning dataframe
             return flattened_df
 
@@ -72,10 +71,10 @@ class Extractor:
 
             # Display the reshaped DataFrame
             reshaped_df = reshaped_df.transpose()
-            reshaped_df = reshaped_df.drop(0)
+            # reshaped_df = reshaped_df.drop(0)
 
             # If you want to reset the index after removing the row
-            reshaped_df = reshaped_df.reset_index(drop=True)
+            reshaped_df=reshaped_df.rename_axis(None)
             return reshaped_df
 
             

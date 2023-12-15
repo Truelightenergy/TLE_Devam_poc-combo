@@ -71,7 +71,7 @@ class HeadroomModel:
         try:
             results = self.engine.execute(query).fetchall()
             for row in results:
-                if row['sub_cost_component'] == 'Total Bundled Price ($/MWh)':
+                if row['sub_cost_component'] == 'Total Bundled Price ($/MWh)' or row['sub_cost_component'] == 'Total Contract Load (kWh)':
                     data.append({"control_area_type": row['control_area_type'], "control_area": row['control_area'],
                                 "state": row['state'], "load_zone": row['load_zone'],
                                 "capacity_zone": row['capacity_zone'], "utility": row['utility'],
