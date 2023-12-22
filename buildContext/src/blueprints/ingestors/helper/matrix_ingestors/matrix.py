@@ -48,6 +48,7 @@ class MATRIX:
             df['beginning_date'] = pd.to_datetime(df['beginning_date'])
             df['term'] = df['term'].astype(int)
             df.rename(inplace=True, columns={
+                'lookup_id1' : 'lookup_id',
                 'block_type' : 'strip'
             })
             
@@ -97,7 +98,7 @@ class MATRIX:
                             with current as (
                                 -- get the current rows in the database, all of them, not just things that will change
 
-                                select id, curvestart,control_area_type, control_area, state, load_zone, 
+                                select id, matching_id, lookup_id, curvestart,control_area_type, control_area, state, load_zone, 
                                         capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component,
                                         term, beginning_date, load_profile, data  
                                 from trueprice.matrix where curvestart>='{sod}' and curvestart<='{eod}' and control_area_type='{data.controlArea}'
@@ -105,11 +106,11 @@ class MATRIX:
                             backup as (
                                 -- take current rows and insert into database but with a new "curveend" timestamp
 
-                                insert into trueprice.matrix_history (curvestart, curveend, control_area_type, control_area, state, load_zone, 
+                                insert into trueprice.matrix_history ( matching_id, lookup_id, curvestart, curveend, control_area_type, control_area, state, load_zone, 
                                         capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component,
                                         term, beginning_date, load_profile, data) 
 
-                                select curvestart, '{curveend}' as curveend, control_area_type, control_area, state, load_zone, 
+                                select  matching_id, lookup_id, curvestart, '{curveend}' as curveend, control_area_type, control_area, state, load_zone, 
                                         capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component,
                                         term, beginning_date, load_profile, data 
                                 from current
@@ -128,11 +129,11 @@ class MATRIX:
                             ),
 
                             updation as (
-                            insert into trueprice.matrix (curvestart,control_area_type, control_area, state, load_zone, 
+                            insert into trueprice.matrix ( matching_id, lookup_id, curvestart,control_area_type, control_area, state, load_zone, 
                                         capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component,
                                         term, beginning_date, load_profile, data)
 
-                            select curvestart,control_area_type, control_area, state, load_zone, 
+                            select  matching_id, lookup_id, curvestart,control_area_type, control_area, state, load_zone, 
                                         capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component,
                                         term, beginning_date, load_profile, data
                                 from trueprice.{tmp_table_name}

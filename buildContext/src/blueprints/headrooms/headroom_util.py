@@ -38,29 +38,38 @@ class Util:
         try: 
             data = self.headroom_model.get_waiting_headrooms()
             for instance in data:
-                matrix_data = self.headroom_model.get_matrix_data(instance['curvestart'])
-                ptc_data = self.headroom_model.get_ptc_data()
+                control_areas = ['nyiso', 'pjm', 'ercot', 'miso', 'isone']
+                filename = next((region for region in control_areas if region in instance['filename']), None)
+                matrix_data = self.headroom_model.get_matrix_data(instance['curvestart'], filename)
+                ptc_data = self.headroom_model.get_ptc_data(filename)
 
                 # converting data to the dataframes
-                matrix_df = pd.DataFrame(matrix_data)
                 ptc_df = pd.DataFrame(ptc_data)
+                # ptc_df = ptc_df.drop(columns=['lookup_id']) 
+
+                
+                matrix_df = pd.DataFrame(matrix_data)
+                # matrix_df = matrix_df.drop(columns=['matching_id'])
 
                 # convert MWH to KWH in matrix df
                 matrix_df['total_bundled_price'] = matrix_df['total_bundled_price'] / 1000
                 ptc_df['data'] = ptc_df['data'].astype(float)
                 matrix_df['total_bundled_price'] = matrix_df['total_bundled_price'].astype(float)
 
-                # merging ptc and matrix dataframe on common characteristics
 
-                common_columns = ['control_area_type', 'control_area', 'state', 'load_zone',
-                                    'capacity_zone', 'utility', 'strip', 'cost_group', 'cost_component', 'load_profile']
-                
-                df = pd.merge(matrix_df, ptc_df, on=common_columns, how='inner')
+                # merging ptc and matrix dataframe on common characteristics
+                df = pd.merge(matrix_df, ptc_df, left_on='lookup_id', right_on='matching_id', how='inner')
+
                 df = df.rename(columns={'data': 'ptc'})
                 df['headroom'] = df['ptc'] - df['total_bundled_price']
                 df['headroom_prct'] = (df['headroom'] / df['ptc'])*100
                 df['headroom_prct'] = df['headroom_prct'].replace(-np.inf, -0.999)
                 df['curvestart'] = instance['curvestart']
+
+
+                df = df.drop([col for col in df.columns if '_y' in col], axis=1)
+                df.columns = [col.split('_x')[0] if '_x' in col else col for col in df.columns]
+
                 
 
                 # ingest calculated values

@@ -41,7 +41,7 @@ class Extractor:
         """
 
         if type == 'headroom':
-            pivoted_df = pd.pivot_table(df, values= ['headroom', 'headroom_prct'], index=['curvestart', 'month'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "control_area_type", "load_profile", "term"], aggfunc=list)
+            pivoted_df = pd.pivot_table(df, values= ['headroom', 'headroom_prct'], index=['curvestart', 'month'], columns=["matching_id", "lookup_id", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "control_area_type", "load_profile", "term"], aggfunc=list)
             pivoted_df.columns.name = None
             pivoted_df.index.name = None
             
@@ -49,10 +49,10 @@ class Extractor:
             flattened_df = pivoted_df.apply(lambda x: pd.Series(x).explode())
 
             # rename indexes
-            flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month"})
+            flattened_df = flattened_df.rename_axis(index={"matching_id": "Matching ID", "lookup_id": "Lookup ID", 'curvestart': 'Curve Update Date', 'month': "Curve Start Month"})
 
             # renaming columns
-            flattened_df.columns.names =  ["Value", "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Strip", "Cost Group", "Cost Component", "Control Area Type", "Load Profile", "Term"]
+            flattened_df.columns.names =  [" ","Matching ID", "Lookup ID", "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Strip", "Cost Group", "Cost Component", "Control Area Type", "Load Profile", "Term"]
             # returning dataframe
             return flattened_df
 
@@ -60,7 +60,7 @@ class Extractor:
 
             # Assuming df is your DataFrame
             # Using pivot_table to handle potential duplicate entries
-            pivot_df = df.pivot_table(index=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "term", "beginning_date", "load_profile"],
+            pivot_df = df.pivot_table(index=["matching_id", "lookup_id", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "term", "beginning_date", "load_profile"],
                                     columns="sub_cost_component",
                                     values="data",
                                     aggfunc="first",  # You can choose an appropriate aggregation function
@@ -79,7 +79,7 @@ class Extractor:
 
             
         elif type == 'ptc':
-            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "control_area_type", "utility_name", "profile_load"], aggfunc=list)
+            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month'], columns=["matching_id", "lookup_id", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "control_area_type", "utility_name", "profile_load"], aggfunc=list)
             pivoted_df.columns.name = None
             pivoted_df.index.name = None
             
@@ -87,10 +87,10 @@ class Extractor:
             flattened_df = pivoted_df.apply(lambda x: pd.Series(x).explode())
 
             # rename indexes
-            flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month"})
+            flattened_df = flattened_df.rename_axis(index={'matching_id' : 'Matching ID', 'lookup_id': 'Lookup ID', 'curvestart': 'Curve Update Date', 'month': "Curve Start Month"})
 
             # renaming columns
-            flattened_df.columns.names =  ["Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", "Control_area_type", "Utility_name", "Profile_load"]
+            flattened_df.columns.names =  ["Matching ID", "Lookup ID", "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", "Control_area_type", "Utility_name", "Profile_load"]
 
             # returning dataframe
             return flattened_df
