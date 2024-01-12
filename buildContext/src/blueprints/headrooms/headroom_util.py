@@ -11,7 +11,9 @@ import plotly.express as px
 import datetime
 import numpy as np
 from .headroom_model import HeadroomModel
+from utils.configs import read_config
 
+config = read_config()
 class Util:
     """
     handles the operation of the headrooms calculations
@@ -20,8 +22,8 @@ class Util:
         """
         setup files for headrooms
         """
-        secret_key = "super-scret-key"
-        secret_salt = "secret-salt"
+        secret_key = config['secret_key']
+        secret_salt = config['secret_salt']
         self.headroom_model = HeadroomModel(secret_key, secret_salt)
 
     def get_headroom_heatmap(self):

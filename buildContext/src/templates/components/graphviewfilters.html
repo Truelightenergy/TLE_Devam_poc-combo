@@ -1,6 +1,6 @@
 <div class="mb-3">
     <label for="data_type" class="form-label">Data Type</label>
-    <select name="data_type" id ="data_type" class="form-control mt-2 bg-dark text-white" >
+    <select name="data_type" id ="data_type" class="form-control mt-2 form-select " >
         <option value="Energy">Energy</option>
     
     </select>
@@ -8,7 +8,7 @@
 
 <div class="mb-3">
     <label for="control_table" class="form-label">ISO</label>
-    <select name="control_table" id ="control_table" class="form-control mt-2 bg-dark text-white" >
+    <select name="control_table" id ="control_table" class="form-control mt-2 form-select " >
         <option value="ercot_energy">ERCOT</option>
         <option value="nyiso_energy">NYISO</option>
         <option value="miso_energy">MISO</option>
@@ -21,18 +21,18 @@
 
 <div class="mb-3">
     <label for="loadZone" class="form-label">Load Zone</label>
-    <select name="loadZone" id="loadZone"  required class="form-control mt-2 bg-dark text-white" >                                        
+    <select name="loadZone" id="loadZone"  required class="form-control mt-2 form-select " >                                        
     </select>
 </div>
 
 <div class="mb-3">
     <label for="operating_day" class="form-label">Operating Day</label>
-    <input type="date" class="form-control mt-2 text-white" id="operating_day" name="operating_day" style="background-color: gray;" >
+    <input type="date" class="form-control mt-2 " id="operating_day" name="operating_day"  >
 </div>
 
 <div class="mb-3 operatin_day_timestamps" style="display: none;">
     <label for="operatin_day_timestamps" class="form-label">Intraday or Close of Business</label>
-    <select name="operatin_day_timestamps" id="operatin_day_timestamps"  required class="form-control mt-2 bg-dark text-white" >                                        
+    <select name="operatin_day_timestamps" id="operatin_day_timestamps"  required class="form-control mt-2  " >                                        
     </select>
     <input type="hidden" id="history" name="history" value=""/>
     <input type="hidden" id="cob" name="cob" value=""/>
@@ -42,7 +42,7 @@
     <div class="mb-3">
 
         <label for="start" class="form-label">Curve Start Date</label>
-        <input type="date" class="form-control mt-2 text-white" required id="start" name="start" style="background-color: gray;" >
+        <input type="date" class="form-control mt-2 " required id="start" name="start"  >
         
     </div>
 
@@ -51,7 +51,7 @@
     <div class="mb-3">
         <label for="end" class="form-label">Curve End Date</label>
         
-        <input type="date" class="form-control mt-2  text-white" required id="end" name="end" style="background-color: gray;" >
+        <input type="date" class="form-control mt-2  " required id="end" name="end"  >
     
         </div>
 </div>

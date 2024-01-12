@@ -11,6 +11,9 @@ from blueprints.headrooms.view import headrooms
 from utils.revoke_tokens import RevokedTokens
 from utils.roles import RolesDecorator
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
+from utils.configs import read_config
+
+config = read_config()
 
 
 
@@ -26,11 +29,11 @@ logger = logging.getLogger()
 consoleHandler = logging.StreamHandler()
 logger.addHandler(consoleHandler)
 
-LOG_FOLDER = './logs'
+LOG_FOLDER = config['logging_folder']
 if not os.path.exists(LOG_FOLDER):
     os.makedirs(LOG_FOLDER)
 
-logHandler = TimedRotatingFileHandler(f"{LOG_FOLDER}/time_log.log", when='D', interval=1)
+logHandler = TimedRotatingFileHandler(f"{LOG_FOLDER}{config['time_log']}", when='D', interval=1)
 logger.addHandler(logHandler)
 
 revoked_jwt = RevokedTokens()
@@ -43,8 +46,8 @@ def create_app():
     app = Flask(__name__)
     
 
-    app.config['SESSION_TYPE'] = 'filesystem'
-    app.secret_key = 'super secret key' 
+    app.config['SESSION_TYPE'] = config['app_session_type']
+    app.secret_key = config['app_secret_key']
     
     app.register_blueprint(auths)
     app.register_blueprint(admins)

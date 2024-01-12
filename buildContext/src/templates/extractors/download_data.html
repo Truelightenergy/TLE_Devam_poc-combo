@@ -27,10 +27,8 @@
     <link href="static/css/style.css" rel="stylesheet">
 
     <!-- scroll_bar -->
-    <script src="static/js/multiselect.js" ></script>
+    <!-- <script src="static/js/multiselect.js" ></script> -->
     
-    
-
 </head>
 
 <body>
@@ -64,25 +62,25 @@
             <div class="container-fluid pt-4 px-4">
                 <div class="row g-4 align-items-center justify-content-center mx-0  mt-5">
                     <div class="col-sm-12 col-xl-6">
-                        <div class="bg-secondary rounded h-100 p-4">
-                            <h6 class="mb-4">Downloads</h6>
+                        <div class="bg-light text-dark rounded h-100 p-4">
+                            <h6 class="mb-4 text-dark">Downloads</h6>
                             <form id="download_forms" enctype="multipart/form-data" method="post">
                                 
                                 <div class="mb-3">
-                                    <label for="curve_type" class="form-label">Curve</label>
-                                    <select name="curve_type" id ="curve_type" class="form-control mt-2 bg-dark text-white" >
+                                    <label for="curve_type" class="form-label">Data Type</label>
+                                    <select name="curve_type" id ="curve_type" class="form-select form-control mt-2  " >
                                         <option value="energy">Energy</option>
-                                        <option value="nonenergy">Non-energy</option>
-                                        <option value="rec">Rec</option>
+                                        <option value="nonenergy">Non-Energy</option>
+                                        <option value="rec">REC</option>
                                         <option value="ptc">PTC</option>
-                                        <option value="matrix">Matrix</option>
+                                        <option value="matrix">Matrix Pricing</option>
                                         <option value="headroom">Headroom</option>
                                     </select>
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label for="iso" class="form-label">ISO</label>
-                                    <select name="iso" id="iso" class="form-control mt-2 bg-dark text-white" >
+                                    <select name="iso" id="iso" class="form-select form-control mt-2" >
                                         <!-- <option value="ercot">ERCOT</option>
                                         <option value="isone">ISONE</option>
                                         <option value="miso">MISO</option>
@@ -96,26 +94,26 @@
 
                                 <div class="mb-3">
                                     <label for="strip" class="form-label">Strip</label>
-                                    <select name="strip" required id="strip" class=" col-md-12 form-control mt-2 bg-dark text-white chosen-select" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3" onchange="console.log(this.selectedOptions)">
-                                        <option selected value="strip_5x16">5x16</option>
-                                        <option value="strip_7x8">7x8</option>
-                                        <option value="strip_7x24">7x24</option>
-                                        <option value="strip_2x16">2x16</option>
+                                    <select name="strip" required id="strip" style="background-color: aliceblue;" class=" form-select col-md-12 form-control mt-2   chosen-select" multiple data-live-search="true" data-select-all="true"  >
+                                        <!-- <option id="5x16" hidden value="strip_5x16">5x16</option>
+                                        <option id="7x8" value="strip_7x8">7x8</option>
+                                        <option id ='7x24' value="strip_7x24">7x24</option>
+                                        <option id= '2x16' value="strip_2x16">2x16</option> -->
                                     </select>
                                 </div>
 
+
                                 <div class="mb-3">
-                                    <label for="type" class="form-label">Format</label>
-                                    <select name="type" class="form-control mt-2 bg-dark text-white " >
-                                        <option value="csv">csv</option>
-                                        <option value="json">JSON</option>
-                                    </select>
+
+                                    <label for="operating_day" class="form-label">Operating Day</label>
+                                    <input type="date"  readonly="readonly" required class="form-control mt-2" id="operating_day" name="operating_day"  >
+                                    
                                 </div>
 
                                 <div class="mb-3">
 
                                     <label for="start" class="form-label">Start</label>
-                                    <input type="date" class="form-control mt-2 text-white" required id="start" name="start" style="background-color: gray;" >
+                                    <input type="date" class="form-control mt-2 " required id="start" name="start"  >
                                     
                                 </div>
 
@@ -124,35 +122,45 @@
                                 <div class="mb-3">
                                     <label for="end" class="form-label">End</label>
                                     
-                                    <input type="date" class="form-control mt-2  text-white" required id="end" name="end" style="background-color: gray;" >
+                                    <input type="date" class="form-control mt-2  " required id="end" name="end"  >
                                    
                                 </div>
 
+                                <div class="row">
+                                    <div class="col-md-4"></div>
+                                    <div class="col-md-8">
 
-                                <div class="mb-3">
+                                        <div class="mb-3 form-radio">
+                                            <input type="radio" class="form-radio-input" value="all" id="all" name="history">
+                                            <label class="form-radio-label" for="all">All Curves</label>
+        
+                                            <input type="radio" class="form-radio-input" value="cob" id="cob" name="history">
+                                            <label class="form-radio-label" for="cob">COB Only</label>
+                                        </div>
+                                    </div>
 
-                                    <label for="operating_day" class="form-label">Operating Day</label>
-                                    <input type="date" class="form-control mt-2 text-white" id="operating_day" name="operating_day" style="background-color: gray;" >
-                                    
+                                </div>
+
+
+                                <div class="row">
+                                    <div class="col-md-4"></div>
+                                    <div class="col-md-8">
+                                        <div class="mb-3 form-radio">
+                                            <input type="radio" checked class="form-radio-input" value="csv" id="csv" name="type">
+                                            <label class="form-radio-label" for="csv">CSV</label>
+        
+                                            <input type="radio" class="form-radio-input" value="json" id="json" name="type">
+                                            <label class="form-radio-label" for="json">JSON</label>
+                                        </div>
+                                        
+                                    </div>
+
                                 </div>
 
                                 
-
-                                <div class="mb-3">
-                                    <label for="offset" class="form-label">Working Days Offset prior to Operating Day </label>
-                                    
-                                    <input type="number" value="0" class="form-control mt-2  text-white" id="offset" name="offset" >
-                                   
-                                </div>
-
-
-                                <div class="mb-3 form-check">
-                                    <input type="checkbox" class="form-check-input" id="history" name="history">
-                                    <label class="form-check-label" for="history">History</label>
-                                </div>
                                 
                                 <div class="mb-3">
-                                    <input type="submit" value="Download" id="save" class="btn btn-outline-primary w-100 m-2">
+                                    <input type="submit" value="Download" id="save" class="btn btn-primary w-100 m-2">
                                 </div>
                             </form>
                         </div>
@@ -181,71 +189,25 @@
     <script src="static/lib/waypoints/waypoints.min.js"></script>
 
     <!-- Template Javascript -->
+    <script type='text/javascript'>
+        var token = "{{session.get('jwt_token')}}";
+    </script>
+    
     <script src="static/js/main.js"></script>
-    <script>
-        function currennt_date(){
-            // Get the current date
-            var currentDate = new Date();
-        
-            // Format the date as YYYY-MM-DD
-            var year = currentDate.getFullYear();
-            var month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-            var day = currentDate.getDate().toString().padStart(2, '0');
-            var formattedDate = year + '-' + month + '-' + day;
-            return formattedDate;
-            
-        }
+    <script src="static/js/download_page.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-        function next_date(){
-            var currentDate = new Date();
-            // Subtract five years from the current date
-            var fiveYearsAgo = new Date(currentDate.getFullYear() - 5, currentDate.getMonth(), currentDate.getDate());
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.css">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
 
-            // Format the date as YYYY-MM-DD
-            var year = fiveYearsAgo.getFullYear();
-            var month = (fiveYearsAgo.getMonth() + 1).toString().padStart(2, '0');
-            var day = fiveYearsAgo.getDate().toString().padStart(2, '0');
-            var formattedDate = year + '-' + month + '-' + day;
-            return formattedDate;
-        }
+  
+  
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.js"></script>
 
-        end = currennt_date();
-        start = next_date();
-
-        // Set the value of the input field
-        document.getElementById('start').value= start;
-        document.getElementById('end').value= end;
-
-
-      </script>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script>
-            $(document).ready(function() {
-            // Define the change event handler for curve type dropdown
-            $('#curve_type').change(function() {
-                var selectedcurve = $(this).val();
-                $.ajax({
-                    url: '/get_options',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ 'curve': selectedcurve }),
-                    headers: {
-                        'Authorization': "Bearer {{session.get('jwt_token')}}"
-                    },
-                    success: function(response) {
-                        $('#iso').empty();
-                        $.each(response, function(index, value) {
-                            var html = '<option value="' + value.toLowerCase() + '">' + value + '</option>';
-                            $('#iso').append(html);
-                        });
-                    }
-                });
-            });
-
-            // Trigger the change event on curve type dropdown to populate ISO dropdown initially
-            $('#curve_type').trigger('change');
-        });
-        </script>
+  
 </body>
 
 </html>

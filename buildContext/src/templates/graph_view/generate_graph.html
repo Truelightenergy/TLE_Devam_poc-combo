@@ -64,16 +64,17 @@
             {% include 'notification.html'%}
 
             <!-- Blank Start -->
+            {%if session["level"]=="admin"%}
             <div class="container-fluid pt-4 px-4">
                 <div class="row g-4 align-items-center justify-content-center mx-0  mt-5">
                     <div class="col-sm-12 col-xl-6">
-                        <div class="bg-secondary rounded h-100 p-4">
-                            <h6 class="mb-4">Graph Parameters</h6>
+                        <div class="bg-light text-dark rounded h-100 p-4">
+                            <h6 class="mb-4 text-dark">Graph Parameters</h6>
                             <form id="download_forms" enctype="multipart/form-data" method="POST">
                                 {% include 'components/graphviewfilters.html'%}
                                 <div class="mb-3">
                                     <input type="button" value="Generate Graph Veiw" id="save"
-                                        class="btn btn-outline-primary w-100 m-2" />
+                                        class="btn btn-primary w-100 m-2" />
                                 </div>
                             </form>
                         </div>
@@ -84,6 +85,11 @@
 
             </div>
             <!-- Blank End -->
+            {%endif%}
+
+            {%if session["level"]!="admin"%}
+            <div style="margin-bottom: 70%;"><h1 class="text-dark">graphview will be shown soon</h1></div>
+            {%endif%}
 
 
             <!-- Footer Start -->
@@ -98,7 +104,7 @@
 
 
     </div>
-
+    {%if session["level"]=="admin"%}
     <script>
         function currennt_date() {
             // Get the current date
@@ -135,6 +141,7 @@
 
 
     </script>
+    {%endif%}
 
     <!-- JavaScript Libraries -->
     <script src="/static/external_cdns/js/jquery-3.4.1.min.js"></script>

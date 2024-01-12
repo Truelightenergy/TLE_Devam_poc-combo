@@ -5,6 +5,9 @@ import jwt
 import datetime
 import hashlib
 from utils.database_connection import ConnectDatabase
+from utils.configs import read_config
+
+config = read_config()
 
 class DataBaseUtils:
     """
@@ -72,7 +75,7 @@ class DataBaseUtils:
         """
         try:
             response = jwt.decode(
-                        auth_token, self.secret_key, algorithms=["HS256"])
+                        auth_token, self.secret_key, algorithms=[config['hash_algo']])
             return True, response
         except:
             return False, None

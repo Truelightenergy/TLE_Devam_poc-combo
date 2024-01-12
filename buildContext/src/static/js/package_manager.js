@@ -566,7 +566,7 @@ $(document).ready(function() {
             // closeButton.textContent = 'X';
             closeButton.classList.add('close-button');
             closeButton.classList.add('btn-close');
-            closeButton.classList.add('btn-close-white');
+            closeButton.classList.add('btn-close-dark');
             closeButton.classList.add('btn');
             buttonContainer.appendChild(closeButton);
     

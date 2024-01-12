@@ -5,16 +5,17 @@ from .util import Util
 from .graphview_model import GraphView_Util
 from utils.revoke_tokens import RevokedTokens
 from utils.roles import RolesDecorator
-from utils.keys import secret_key, secret_salt
+from utils.configs import read_config
 from utils.blocked_tokens import revoked_jwt
 
+config = read_config()
 
+graph_view = Blueprint(config['graph_view_path'], __name__,
+                    template_folder=config['template_path'],
+                    static_folder=config['static_path'])
 
-graph_view = Blueprint('graph_view', __name__,
-                    template_folder="../templates/",
-                    static_folder='static')
-
-
+secret_key = config['secret_key']
+secret_salt = config['secret_salt']
 db_obj = GraphView_Util(secret_key, secret_salt)
 api_util = Util()
 roles = RolesDecorator(revoked_jwt)
@@ -30,7 +31,7 @@ def setup_session(auth_token):
     session["level"] = payload["role"]
 
 @graph_view.route('/get_locations', methods=['GET', 'POST'])
-@roles.admin_token_required
+@roles.readonly_token_required
 def get_locations():
 
     """
@@ -46,7 +47,7 @@ def get_locations():
     
     
 @graph_view.route('/generate_garph_view', methods=['GET', 'POST'])
-@roles.admin_token_required
+@roles.readonly_token_required
 def generate_garph_view():
 
     """
@@ -116,7 +117,7 @@ def generate_garph_view():
       return render_template('graph_view/generate_graph.html')
 
 @graph_view.route('/load_zones', methods=['GET'])
-@roles.admin_token_required
+@roles.readonly_token_required
 def load_zones():
     """
     returns the load zones
@@ -127,7 +128,7 @@ def load_zones():
     return jsonify(load_zones)
 
 @graph_view.route('/intraday_timestamps', methods=['GET'])
-@roles.admin_token_required
+@roles.readonly_token_required
 def intraday_timestamps():
     """
     returns the intraday timestamps
@@ -141,7 +142,7 @@ def intraday_timestamps():
 
 @graph_view.route('/graph', defaults={'graph_id': None})
 @graph_view.route('/graph/<graph_id>', methods=['GET'])
-@roles.admin_token_required
+@roles.readonly_token_required
 def graphs(graph_id):
   """
   generates the graph
@@ -154,7 +155,7 @@ def graphs(graph_id):
     
   
 @graph_view.route('/graphs', methods=[ 'POST'])
-@roles.admin_token_required
+@roles.readonly_token_required
 def graphsMultiLine():
   """
   Generates the graph based on posted parameters.
@@ -177,7 +178,7 @@ def graphsMultiLine():
       return render_template('graph_view/graph.html', graphJSON=graph)  # Render a page for browsers
 
 @graph_view.route('/save_graph', methods=['GET', 'POST'])
-@roles.admin_token_required
+@roles.readonly_token_required
 def save_graph():
   """
   saves the graph 
@@ -194,7 +195,7 @@ def save_graph():
   return jsonify("unable to save graph"), 200  
 
 @graph_view.route('/update_graph_filters/<graph_id>', methods=['PUT'])
-@roles.admin_token_required
+@roles.readonly_token_required
 def update_graph_filters(graph_id):
   """
   update graph filters
@@ -212,7 +213,7 @@ def update_graph_filters(graph_id):
   
 
 @graph_view.route('/remove_graph', methods=['GET', 'POST'])
-@roles.admin_token_required
+@roles.readonly_token_required
 def remove_graph():
   """
   removes the graph 
@@ -238,7 +239,7 @@ def remove_graph():
       return render_template("graph_view/graphview_data.html", data=data, flash_message=True, message_toast = "unable to remove graph", message_flag = "error")
   
 @graph_view.route('/available_graphs', methods=['GET', 'POST'])
-@roles.admin_token_required
+@roles.readonly_token_required
 def available_graphs():
   """
   view graphs
@@ -252,7 +253,7 @@ def available_graphs():
 
 
 @graph_view.route('/share_graphs', methods=['GET', 'POST'])
-@roles.admin_token_required
+@roles.readonly_token_required
 def share_graphs():
   """
   share graphs

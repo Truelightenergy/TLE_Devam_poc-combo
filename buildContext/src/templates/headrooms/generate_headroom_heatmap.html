@@ -65,17 +65,18 @@
             {% include 'notification.html'%}
 
             <!-- Blank Start -->
+            {%if session["level"]=="admin"%}
             <div class="container-fluid pt-4 px-4">
                 <div class="row g-4 align-items-center justify-content-center mx-0  mt-5">
                     <div class="col-sm-12 col-xl-12">
-                        <div class="bg-secondary rounded h-100 p-4">
-                            <h6 class="mb-4">Hearoom Heatmaps</h6>
+                        <div class="bg-light text-dark rounded h-100 p-4">
+                            <h6 class="mb-4 text-dark">Headroom Heatmaps</h6>
                             <div style="height: 700px;" id='chart' class='chart'></div>
                         </div>
                     </div>                
             </div>
             <div id='chart' class='chart'”></div>
-            <table id="data-table" class="table-dark table-hover table">
+            <table id="data-table" class=" text-dark table-hover table">
                 <!-- Table headers will be added dynamically using JavaScript -->
                 <thead>
                     <tr>
@@ -87,6 +88,12 @@
                 </tbody>
             </table>
             </div>
+            {%endif%}
+
+            {%if session["level"]!="admin"%}
+            <div style="margin-bottom: 70%;"><h1 class="text-dark">heatmaps will be shown soon</h1></div>
+            {%endif%}
+
             <!-- Blank End -->
 
 
@@ -123,11 +130,16 @@ var json_data = {{ data | tojson }};
 
     <!-- Template Javascript -->
     <!-- <script src="static/js/main.js"></script> -->
+    {%if session["level"]=="admin"%}
+    
     <script  src="{{ url_for('static', filename='js/heatmap_mapper.js')}}"></script>
+    {%endif%}
     <script  src="{{ url_for('static', filename='js/main.js')}}"></script>
     <script  src="{{ url_for('static', filename='js/data_loader_graph_view.js')}}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
     <script>
+    
 
         var token = "{{session.get('jwt_token')}}";
     </script>

@@ -20,6 +20,8 @@ import logging
 from utils.db_utils import DataBaseUtils
 from blueprints.admins.admin_model import AdminUtil
 from blueprints.auths.auth_model import AuthUtil
+from utils.configs import read_config
+config = read_config()
 
 logging.basicConfig(level=logging.INFO)
 
@@ -38,7 +40,7 @@ LOG_FOLDER = './logs'
 if not os.path.exists(LOG_FOLDER):
     os.makedirs(LOG_FOLDER)
 
-logHandler = TimedRotatingFileHandler(f"{LOG_FOLDER}/time_log.log", when='D', interval=1)
+logHandler = TimedRotatingFileHandler(f"{LOG_FOLDER}{config['time_log']}", when='D', interval=1)
 logger.addHandler(logHandler)
 
 
@@ -52,8 +54,8 @@ class Util:
         """
         all the intializers will be handled here
         """
-        self.UPLOAD_FOLDER = './flask_file_upload'
-        self.ERROR_UPLOAD_FOLDER = './defaulted_file_upload'
+        self.UPLOAD_FOLDER = config['upload_folder']
+        self.ERROR_UPLOAD_FOLDER = config['defaulted_folder']
         
         self.ALLOWED_EXTENSIONS = set(['zip','csv'])
         self.create_storage_folder()
@@ -417,7 +419,7 @@ class Util:
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(self.UPLOAD_FOLDER, filename))
                 zip_ref = zipfile.ZipFile(os.path.join(self.UPLOAD_FOLDER, filename), 'r')
-                zip_ref.extractall(self.UPLOAD_FOLDER + "/unzipped/")
+                zip_ref.extractall(self.UPLOAD_FOLDER + config['unzipped_folder'])
                 zip_ref.close()
                 # todo - ingestion
                 return redirect(url_for('admins.upload_zip'))
@@ -484,7 +486,7 @@ class Util:
     
     def app_logging(self):
         """creates logging information"""
-        with open(f"{LOG_FOLDER}/time_log.log") as file:
+        with open(f"{LOG_FOLDER}{config['time_log']}") as file:
             file = list(file)
             file = file[::-1]
             for line in file:
@@ -496,7 +498,7 @@ class Util:
     def app_logging_api(self):
         """creates logging information"""
         logs = ""
-        with open(f"{LOG_FOLDER}/time_log.log") as file:
+        with open(f"{LOG_FOLDER}{config['time_log']}") as file:
             file = list(file)
             file = file[::-1]
             for i, line in enumerate(file):

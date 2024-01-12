@@ -16,10 +16,12 @@ from flask import render_template
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 import logging
 from .admin_model import AdminUtil
+from utils.configs import read_config
 
 
+config = read_config()
 
-LOG_FOLDER = './logs'
+LOG_FOLDER = config['logging_folder']
 if not os.path.exists(LOG_FOLDER):
     os.makedirs(LOG_FOLDER)
 
@@ -36,8 +38,8 @@ class Util:
         """
         all the intializers will be handled here
         """
-        self.secret_key = "super-scret-key" #env variable
-        self.secret_salt = "secret-salt" #env variable
+        self.secret_key = config['secret_key']
+        self.secret_salt = config['secret_salt']
         self.admin_util = AdminUtil(self.secret_key, self.secret_salt)
 
     def stream_logger(self):

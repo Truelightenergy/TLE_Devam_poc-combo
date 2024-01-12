@@ -59,35 +59,58 @@
 
             <!-- Blank Start -->
             <div class="container-fluid pt-4 px-4">
-                <div class="row g-4">
-                    {%if session["level"]=="admin" or session["level"]=="read_write_user"%} 
-                        <div class="col-sm-12 col-xl-6">
-                            <div class="bg-secondary rounded h-100 p-4">
-                                <h6 class="mb-4">Upload CSV</h6>
-                                <div class="m-n2">
-                                    <a href="{{ url_for('ingestors.upload_csv')}}" class="btn btn-outline-primary w-100 m-2" type="button">CSVs</a>
+                <div >
+                    <div class="row">
+                      <div class="col-md-7 bg-light text-dark">
+                            
+                            <!-- heatmap -->
+                            <div class="col-md-12 mb-5">
+                                <div class="bg-light text-dark rounded h-100 p-4">
+                                    <h6 class="mb-4 text-dark">Heatmap</h6>
+                                    <div class="row">
+                                    <div class="col-md-8">
+                                    <div id='chart_heatmap' class='chart'”></div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <table id="data-table" class= "text-dark table-hover table">
+                                            <!-- Table headers will be added dynamically using JavaScript -->
+                                            <thead>
+                                                <tr>
+                                                    <!-- Headers go here -->
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Data rows will be added dynamically using JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="col-sm-12 col-xl-6">
-                            <div class="bg-secondary rounded h-100 p-4">
-                                <h6 class="mb-4">Upload ZIP</h6>
-                                <div class="m-n2">
-                                    <a href="{{ url_for('ingestors.upload_zip')}}" class="btn btn-outline-primary w-100 m-2 disabled" type="button">ZIPs</a>
+                            <br>
+                            <!-- graph view -->
+                            <div class="mt-5 col-md-12">
+                                <div class="bg-light rounded h-100 p-4">
+                                    <h6 class="mb-4 text-dark">Graph View</h6>
+                                    
                                 </div>
                             </div>
-                        </div>
-                    {%endif%}
+                            <br/>
 
-                    <div class="col-sm-12 col-xl-6">
-                        <div class="bg-secondary rounded h-100 p-4">
-                            <h6 class="mb-4">Download Data</h6>
-                            <div class="m-n2">
-                                <a href="{{ url_for('extractors.download_data')}}" class="btn btn-outline-primary w-100 m-2" type="button">Downloads</a>
+
+                          </div>  
+                          <!-- empty space -->
+                          <div class="col-md-1 "></div>
+                        <!-- Vertical space (4 columns) -->
+                        <div class="col-md-4 bg-light text">
+                            <div class="col-md-12 mb-5">
+                                <div class="bg-secondary rounded h-100 p-4">
+                                    <h6 class="mb-4">Notifications</h6>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                          </div>                       
+                        
+                      </div>
                 
             </div>
 
@@ -109,10 +132,23 @@
          
     </div>
 
-    <!-- JavaScript Libraries -->
-    <script src="/static/external_cdns/js/jquery-3.4.1.min.js"></script>
-    <script src="/static/external_cdns/js/bootstrap.bundle.min.js"></script>
-    <script src="static/lib/waypoints/waypoints.min.js"></script>
+    <!-- <script type='text/javascript'>
+        var json_data = {{ data_heatmap | tojson }}; 
+        var token = "{{session.get('jwt_token')}}";
+    </script> -->
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+
+    <script  src="{{ url_for('static', filename='external_cdns/js/jquery-3.4.1.min.js')}}"></script>
+    <!-- <script src="/static/external_cdns/js/bootstrap.bundle.min.js"></script> -->
+    <script  src="{{ url_for('static', filename='external_cdns/js/bootstrap.bundle.min.js')}}"></script>
+    <!-- <script src="static/lib/waypoints/waypoints.min.js"></script> -->
+    <script  src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js')}}"></script>
+
+    <!-- <script  src="{{ url_for('static', filename='js/heatmap_mapper_home.js')}}"></script> -->
+    <script  src="{{ url_for('static', filename='js/main.js')}}"></script>
+    
+
+    
 
     <!-- Template Javascript -->
     <script src="static/js/main.js"></script>

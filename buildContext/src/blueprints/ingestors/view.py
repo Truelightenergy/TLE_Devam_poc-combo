@@ -5,16 +5,18 @@ from .util import Util
 from .ingestor_model import IngestorUtil
 from utils.revoke_tokens import RevokedTokens
 from utils.roles import RolesDecorator
-from utils.keys import secret_key, secret_salt
+from utils.configs import read_config
 from utils.blocked_tokens import revoked_jwt
 
 
-ingestors = Blueprint('ingestors', __name__,
-                    template_folder="../templates/",
-                    static_folder='static')
+config = read_config()
+ingestors = Blueprint(config['ingestors_path'], __name__,
+                    template_folder=config['template_path'],
+                    static_folder=config['static_path'])
 
 
-
+secret_key = config['secret_key']
+secret_salt = config['secret_salt']
 db_obj = IngestorUtil(secret_key, secret_salt)
 api_util = Util(secret_key, secret_salt)
 roles = RolesDecorator(revoked_jwt)

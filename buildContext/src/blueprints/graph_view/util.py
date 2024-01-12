@@ -11,9 +11,10 @@ import plotly.express as px
 import random
 from .graphview_model import GraphView_Util
 from datetime import datetime
+from utils.configs import read_config
 
 
-
+config = read_config()
 class Util:
     """
     handles the operations of the garph view utility
@@ -24,8 +25,8 @@ class Util:
         loads the models
         """
 
-        secret_key = "super-scret-key"
-        secret_salt = "secret-salt"
+        secret_key = config['secret_key']
+        secret_salt = config['secret_salt']
         self.db_model = GraphView_Util(secret_key, secret_salt)
 
     def generate_random_color(self):

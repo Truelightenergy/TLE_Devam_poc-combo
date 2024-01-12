@@ -137,6 +137,10 @@ class Energy:
                 psql_query = f"""
                             {psql_query} and curvestart::date >= '{curve_start}' and curvestart::date <= '{curve_end}'
                             """
+                
+            if 'cob' in query_strings:
+                psql_query = f"""{psql_query} and cob='{query_strings['cob']}'"""
+
             # end up the query
             psql_query =    f"""
                             {psql_query} order by curvestart desc,strip;

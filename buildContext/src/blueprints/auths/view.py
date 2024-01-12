@@ -5,19 +5,25 @@ from .util import Util
 from .auth_model import AuthUtil
 from utils.revoke_tokens import RevokedTokens
 from utils.roles import RolesDecorator
-from utils.keys import secret_key, secret_salt
+from utils.configs import read_config
 from utils.blocked_tokens import revoked_jwt
+from ..headrooms.headroom_util import Util as head_util
+from ..graph_view.util import Util as gv_util
+
+config = read_config()
+auths = Blueprint(config['auths_path'], __name__,
+                    template_folder=config['template_path'],
+                    static_folder=config['static_path'])
 
 
-auths = Blueprint('auths', __name__,
-                    template_folder="../templates/",
-                    static_folder='static')
-
-
+secret_key = config['secret_key']
+secret_salt = config['secret_salt']
 
 db_obj = AuthUtil(secret_key, secret_salt)
 api_util = Util(secret_key, secret_salt)
 roles = RolesDecorator(revoked_jwt)
+headroom_util = head_util()
+graph_view_util = gv_util()
 
 
 def setup_session(auth_token):
@@ -157,6 +163,25 @@ def logout():
         return redirect(url_for("auths.login"))
     
 
+@auths.route('/contact', methods=['GET', 'POST'])
+@roles.readonly_token_required
+def contact():
+    """
+    contact us from the application.
+    ---
+    tags:
+      - Authentication
+    security:
+        - Bearer: []
+    responses:
+      200:
+        description: contact successful
+      302:
+        description: Redirect to login page
+    """
+    return render_template("auths/contact.html")
+    
+
 @auths.route('/', methods=['GET', 'POST'])
 @roles.readonly_token_required
 def index():
@@ -178,7 +203,9 @@ def home():
     """
     start up aplications
     """
-    return render_template("auths/index.html")
+    heatmap = headroom_util.get_headroom_heatmap()
+    # graph = gv_util.generate_line_chart()
+    return render_template("auths/index.html",data_heatmap=heatmap)
 
 @auths.route('/create_user', methods=['GET', 'POST'])
 @roles.admin_token_required

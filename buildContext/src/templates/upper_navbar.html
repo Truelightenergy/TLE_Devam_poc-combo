@@ -6,6 +6,39 @@
         <i class="fa fa-bars"></i>
     </a>
     
+    {%if request.path == '/home' %}
+    <div class="align-items-center" style="margin-left: 40%;"><strong>Welcome Back! {{session['user'].split('@')[0]}}</strong></div>
+    {%endif%}
+
+    {%if request.path == '/download_data' %}
+    <div class="align-items-center" style="margin-left: 40%;"><strong>Download Data</strong></div>
+    {%endif%}
+
+    {% if request.path == '/add_filter' or request.path == '/package_mgmt' %}
+    <div class="align-items-center" style="margin-left: 40%;"><strong>Package Mgmt</strong></div>
+    {%endif%}
+
+    {% if request.path == '/get_logs' %}
+    <div class="align-items-center" style="margin-left: 40%;"><strong>Logs</strong></div>
+    {%endif%}
+
+
+    {% if request.path == '/create_user' or request.path == '/view_user' %}
+    <div class="align-items-center" style="margin-left: 40%;"><strong>User Mgmt</strong></div>
+    {%endif%}
+
+    {% if request.path == '/generate_garph_view' or request.path == '/graph'  %}
+    <div class="align-items-center" style="margin-left: 40%;"><strong>Graph View</strong></div>
+    {%endif%}
+
+    {% if request.path == '/generate_headroom_heatmap' %}
+    <div class="align-items-center" style="margin-left: 40%;"><strong>Heatmaps</strong></div>
+    {%endif%}
+
+    {% if request.path == '/contact' %}
+    <div class="align-items-center" style="margin-left: 40%;"><strong>Contact Us</strong></div>
+    {%endif%}
+
     <div class="navbar-nav align-items-center ms-auto">
        
         
