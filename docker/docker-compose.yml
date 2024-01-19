@@ -1010,6 +1010,9 @@ services:
             ADD COLUMN matching_id TEXT,
             ADD COLUMN lookup_id TEXT;
 
+          ALTER TABLE  trueprice.price_changes_notifications
+            ADD notification_date TIMESTAMPTZ DEFAULT '2023-12-12'::TIMESTAMPTZ;
+
         EOSQL
   # adminer: # for postgres, php admin interface
   #   image: adminer

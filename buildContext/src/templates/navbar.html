@@ -49,7 +49,7 @@
             {%endif%}
 
         <a href="{{ url_for('graph_view.generate_garph_view')}}" onclick="sessionHandler();" class="nav-item nav-link {% if request.path == '/generate_garph_view' or request.path == '/graph'  %}active{% endif %} "><i class="far fa-chart-bar me-2"></i>Graph View</a>
-        <a href="{{ url_for('headrooms.generate_headroom_heatmap')}}" class="nav-item nav-link {% if request.path == '/generate_headroom_heatmap' %}active{% endif %} "><i class="fa fa-globe me-2"></i><span>Headroom Heatmaps</span></Headroom></a>
+        <a href="{{ url_for('headrooms.generate_headroom_heatmap')}}" class="nav-item nav-link {% if request.path == '/generate_headroom_heatmap' %}active{% endif %} "><i class="fa fa-globe me-2"></i><span>Headroom Heatmap</span></Headroom></a>
 
         {%if session["level"]=="read_only_user"%}
         <a href="{{ url_for('auths.contact')}}" class="nav-item nav-link {% if request.path == '/contact' %}active{% endif %} "><i class="fa fa-address-book me-2"></i>My Account</a>

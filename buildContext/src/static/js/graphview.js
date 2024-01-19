@@ -27,7 +27,16 @@ truelight.graphview.view = {
         graphview.onload();
         self.initHandlers();
 
-        self.initGraphViewFilters(JSON.parse(localStorage.getItem('graph_data')));
+        if (localStorage.getItem('dashboard_flow')){
+            self.dashboard_filters();
+            localStorage.removeItem('dashboard_flow');
+            localStorage.removeItem('dashboard_filters');
+            localStorage.removeItem('dashboard_extra_filters');
+        }
+        else{
+            self.initGraphViewFilters(JSON.parse(localStorage.getItem('graph_data')));
+        }
+        
         self.populateGraph();
     },
     initGraphViewFilters: function (filters) {
@@ -35,6 +44,15 @@ truelight.graphview.view = {
 
         if (filters)
             self.cache.defaultFilters = filters;
+    },
+    dashboard_filters: () => {
+        let self = truelight.graphview.view;
+        let filters = localStorage.getItem('dashboard_filters');
+        let extraFilters = localStorage.getItem('dashboard_extra_filters');
+        if (filters)
+            self.cache.defaultFilters = JSON.parse(filters);
+        if (extraFilters)
+            self.cache.extraFilters = [JSON.parse(extraFilters)];
     },
     populateGraph: (data) => {
         let self = truelight.graphview.view;

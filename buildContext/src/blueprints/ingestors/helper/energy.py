@@ -48,7 +48,7 @@ class Energy:
         elif data.controlArea == "isone":
             result = self.isone_ingestor.ingestion(data)
         
-        if "data inserted" in result.lower():
+        if "data inserted" in result.lower() or "data updated" in result.lower():
             # logging the trigger
             self.db_util.event_for_notification(data.curveStart, data.controlArea+"_energy")
         return result

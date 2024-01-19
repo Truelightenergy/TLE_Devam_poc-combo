@@ -23,7 +23,8 @@ truelight.graphview = {
     },
     cache: {
         loadZones: [],
-        intradayTimestamps: []
+        intradayTimestamps: [],
+        availableDates: ["2000-01-01"]
     },
     initControls: () => {
         let self = truelight.graphview;
@@ -66,6 +67,8 @@ truelight.graphview = {
         controls.operating_day.change(function () { self.operatinDayChangeHnalder(); });
         controls.operatin_day_timestamps.change(function (event) { self.operatinDayTimestampChangeHnalder(event); });
         controls.btnGenerateGraph.click(function () { self.generateGraphHandler(); });
+        controls.operating_day.change(function () { self.date_updates(); });
+        controls.loadZone.change(function () { self.get_operating_day(); });
     },
     onload: function () {
         let self = truelight.graphview;
@@ -80,7 +83,7 @@ truelight.graphview = {
 
         let options = '';
 
-        $.each(timestamps.sort(), function (index, value) {
+        $.each(timestamps, function (index, value) {
             if (value.cob === true)
                 options += `<option value="${operatingDate}">Close of Business: ${operatingDate}</option>`;
             else
@@ -103,14 +106,14 @@ truelight.graphview = {
         let selectedTimestamp = controls.operatin_day_timestamps.val();
         let selectedTimestampText = controls.operatin_day_timestamps.find("option:selected").text();
 
-        // if (selectedTimestampText.indexOf('Close of Business') > -1) {
-        //     controls.cob.val('true');
-        // }
-        // else {
+        if (selectedTimestampText.indexOf('Close of Business') > -1) {
+            controls.cob.val('true');
+        }
+        else {
             let timeStamp = self.cache.intradayTimestamps.find(x => x.timestamp == selectedTimestamp);
-            controls.cob.val(timeStamp.cob);
+            // controls.cob.val(timeStamp.cob);
             controls.history.val(timeStamp ? timeStamp.history : 'false');
-        // }
+        }
     },
     operatinDayChangeHnalder: () => {
         let self = truelight.graphview;
@@ -168,7 +171,103 @@ truelight.graphview = {
         localStorage.setItem('graph_data', JSON.stringify(data));
         document.location.href = '/graph';
         return true;
+    },
+    get_operating_day: () =>{
+        let self = truelight.graphview;
+        $.ajax({
+            url: '/get_operating_days',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ 'table': self.controls.control_table.val(), 'load_zone': self.controls.loadZone.val() }),
+            headers: {
+                'Authorization': "Bearer " + token
+            },
+            success: function (response) {
+                self.cache.availableDates = response;
+                self.load_operating_day_calender();
+                
+                if(response[0]!= undefined){
+                    self.controls.operating_day.datepicker("setDate", new Date(response[0]) );
+                }
+                else{
+                    self.controls.operating_day.datepicker('refresh'); 
+                    self.controls.operating_day.datepicker("setDate", null);  
+                }
+                self.controls.operating_day.trigger('change');
+            }
+        });
+        
+    },
+    load_operating_day_calender(){
+        let self = truelight.graphview;
+        self.controls.operating_day.datepicker({
+            todayHighlight: true,
+            format: 'yyyy-mm-dd',
+            multidate: false,
+            beforeShowDay: self.available,
+            
+          });
+    },
+
+    date_updates: ()=>{
+        let self = truelight.graphview;
+        var selected_date = self.controls.operating_day.val();
+        if (selected_date!=null){
+            self.filling_dates(selected_date);
+            
+        }
+    },
+    filling_dates: (selected_date)=>{
+        let self = truelight.graphview;
+
+        response = self.calculateDates(selected_date);
+        start = response["oneMonthLater"];
+        end = response["sixtyOneMonthsLater"];
+        document.getElementById('start').value= start;
+        document.getElementById('end').value= end;
+    },
+
+    format_date: (currentDate)=> {
+        // Format the date as YYYY-MM-DD
+        var year = currentDate.getFullYear();
+        var month = ('0' + (currentDate.getMonth() + 1)).slice(-2); // Adding 1 to month as it is zero-based
+        var day = ('0' + currentDate.getDate()).slice(-2);
+        var formattedDate = year + '-' + month + '-' + day;
+        return formattedDate;
+    },
+    
+    calculateDates:(inputDate)=> {
+        let self = truelight.graphview;
+        const currentDate = new Date(inputDate);
+    
+        const oneMonthLater = new Date(currentDate);
+        oneMonthLater.setDate(1);
+        oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+    
+        const sixtyOneMonthsLater = new Date(currentDate);
+        sixtyOneMonthsLater.setDate(1);
+        sixtyOneMonthsLater.setMonth(sixtyOneMonthsLater.getMonth() + 61);
+    
+        return {
+            oneMonthLater: self.format_date(oneMonthLater),
+            sixtyOneMonthsLater: self.format_date(sixtyOneMonthsLater)
+        };
+    },
+
+    available:(date)=> {
+        let self = truelight.graphview;
+        var sdate = moment(date).format('YYYY-MM-DD');
+        if ($.inArray(sdate, self.cache.availableDates) !== -1) {
+        return {
+            enabled: true,
+        }
+        } else {
+        return {
+            enabled: false
+        }
+        }
     }
+
 };
 
 

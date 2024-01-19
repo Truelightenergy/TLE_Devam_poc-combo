@@ -70,10 +70,10 @@ class Process_Notifier:
 
             success_flag = self.send_notificaions(data)
             if success_flag:
-                success_flag = self.setup_next_schdule(row["notification_id"], row['cron_pattern'])
-                self. db_util.update_status(row["change_id"], "processed")
+                # success_flag = self.setup_next_schdule(row["notification_id"], row['cron_pattern'])
+                self. db_util.update_status(row["event_id"], "processed")
             else:
-                self. db_util.update_retries(row["change_id"], row["retries"]+1)
+                self. db_util.update_retries(row["event_id"], row["retries"]+1)
             if success_flag:
                 print("Pending Notifications are done")
             else:

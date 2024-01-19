@@ -89,7 +89,7 @@ class NotifierUtil:
             results = self.engine.execute(query).fetchall()
             for row in results:
                 data.append({"notification_id": row["notification_id"], "user_id": row["user_id"], "subject_content" :row["subject_content"], "body_content": row["body_content"], "cron_pattern": row["cron_pattern"], 
-                             "change_id": row["change_id"], "price_shift": row["price_shift"], "price_shift_value": row["price_shift_value"], "price_shift_prct": row["price_shift_prct"], "location": row["location"], "curvestart": row["curvestart"], "status": row["status"], "retries": ["retries"]
+                             "event_id": row["event_id"], "price_shift": row["price_shift"], "price_shift_value": row["price_shift_value"], "price_shift_prct": row["price_shift_prct"], "location": row["location"], "curvestart": row["curvestart"], "status": row["status"], "retries": ["retries"]
                              })
 
             return data
@@ -192,11 +192,11 @@ class NotifierUtil:
         except:
             return False
         
-    def update_status(self, change_id, status):
+    def update_status(self, event_id, status):
         """
         update the status of the notifications
         """
-        query = f"update trueprice.price_changes_notifications set status ='{status}' where change_id = {change_id};"
+        query = f"update trueprice.price_changes_notifications set status ='{status}', notification_date='{datetime.datetime.now()}'  where event_id = {event_id} and status='waiting'; "
         try:
             result = self.engine.execute(query)
             if result.rowcount > 0:
@@ -217,6 +217,37 @@ class NotifierUtil:
             return False
         except:
             return False
+        
+    def extract_latest_notifications(self):
+        """
+        extracts all latest notifications
+        """
+
+        query = "select * from trueprice.price_changes_notifications where notification_date=(select MAX(DISTINCT(notification_date)) as date  from trueprice.price_changes_notifications);"
+        data = []
+        try:
+            results = self.engine.execute(query).fetchall()
+            for row in results:
+                data.append({"price_shift_value": row['price_shift_value'], "price_shift_prct": row['price_shift_prct'],
+                             "price_shift": row['price_shift'], "location": row['location']
+                             })
+
+            return data
+        except:
+            return data
+        
+    def fetch_latest_curve_date(self):
+        query = "select MAX(DISTINCT(curvestart)) as curvestart from trueprice.ercot_energy;"
+        date = None
+        try:
+            results = self.engine.execute(query).fetchall()
+            for row in results:
+                date = row['curvestart']
+                break
+            return date
+        except:
+            return date
+
 
 
 

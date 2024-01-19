@@ -64,7 +64,7 @@
             {% include 'notification.html'%}
 
             <!-- Blank Start -->
-            {%if session["level"]=="admin"%}
+            
             <div class="container-fluid pt-4 px-4">
                 <div class="row g-4 align-items-center justify-content-center mx-0  mt-5">
                     <div class="col-sm-12 col-xl-6">
@@ -81,17 +81,11 @@
                     </div>
                 </div>
 
-                <div id='chart' class='chart' ”></div>
+                <div id='chart' class='chart' ></div>
 
             </div>
             <!-- Blank End -->
-            {%endif%}
-
-            {%if session["level"]!="admin"%}
-            <div style="margin-bottom: 70%;"><h1 class="text-dark">graphview will be shown soon</h1></div>
-            {%endif%}
-
-
+        
             <!-- Footer Start -->
             {% include 'footer.html'%}
             <!-- Footer End -->
@@ -104,44 +98,9 @@
 
 
     </div>
-    {%if session["level"]=="admin"%}
-    <script>
-        function currennt_date() {
-            // Get the current date
-            var currentDate = new Date();
-
-            // Format the date as YYYY-MM-DD
-            var year = currentDate.getFullYear();
-            var month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-            var day = currentDate.getDate().toString().padStart(2, '0');
-            var formattedDate = year + '-' + month + '-' + day;
-            return formattedDate;
-
-        }
-
-        function next_date() {
-            var currentDate = new Date();
-            // Subtract five years from the current date
-            var fiveYearsAgo = new Date(currentDate.getFullYear() - 5, currentDate.getMonth(), currentDate.getDate());
-
-            // Format the date as YYYY-MM-DD
-            var year = fiveYearsAgo.getFullYear();
-            var month = (fiveYearsAgo.getMonth() + 1).toString().padStart(2, '0');
-            var day = fiveYearsAgo.getDate().toString().padStart(2, '0');
-            var formattedDate = year + '-' + month + '-' + day;
-            return formattedDate;
-        }
-
-        end = currennt_date();
-        start = next_date();
-
-        // Set the value of the input field
-        document.getElementById('start').value = start;
-        document.getElementById('end').value = end;
-
-
-    </script>
-    {%endif%}
+    
+    
+   
 
     <!-- JavaScript Libraries -->
     <script src="/static/external_cdns/js/jquery-3.4.1.min.js"></script>
@@ -150,8 +109,11 @@
 
     <!-- Template Javascript -->
     <script src="static/js/main.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
     <script src="static/js/data_loader_graph_view.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.js"></script>
     <script>
 
         var token = "{{session.get('jwt_token')}}";

@@ -235,7 +235,7 @@ class HeadroomModel:
             results = self.engine.execute(final_query).fetchall()
             for row in results:
                 data.append({"state": row['state'], "load_zone": row['load_zone'], "utility": row['utility'],
-                             "headroom": row['headroom'], "headroom_prct": row['headroom_prct']
+                             "headroom": round(float(row['headroom']),2), "headroom_prct": round(float(row['headroom_prct']),2)
                              })
             return data
         except:

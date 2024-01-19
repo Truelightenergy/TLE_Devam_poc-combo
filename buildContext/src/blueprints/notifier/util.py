@@ -74,3 +74,23 @@ class Util:
         for row in results:
             self.calculate_price_change(row['curvestart'], row['filename'])
         return None
+    
+    def fetch_todays_notifications(self):
+        """
+        extracts all latest notifications
+        """
+
+        notification_data = self.db_util.extract_latest_notifications()
+        notification_data = sorted(notification_data, key=lambda x: x['price_shift_prct'],  reverse=True)[:9]
+        processed_notifications = []
+        for notification in notification_data:
+            processed_notifications.append(f"Energy in {notification['location']} has {notification['price_shift']} by ${round(notification['price_shift_value'], 2)} resulting in a {round(notification['price_shift_prct'], 2)}% gain.")
+
+
+        return processed_notifications
+    
+    def fetch_latest_time_stamp(self):
+        """
+        fetch latest curvestart from the ingestion
+        """
+        return self.db_util.fetch_latest_curve_date()

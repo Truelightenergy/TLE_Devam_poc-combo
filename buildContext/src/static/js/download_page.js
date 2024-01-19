@@ -13,9 +13,11 @@ function calculateDates(inputDate) {
     const currentDate = new Date(inputDate);
 
     const oneMonthLater = new Date(currentDate);
+    oneMonthLater.setDate(1);
     oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
 
     const sixtyOneMonthsLater = new Date(currentDate);
+    sixtyOneMonthsLater.setDate(1);
     sixtyOneMonthsLater.setMonth(sixtyOneMonthsLater.getMonth() + 61);
 
     return {
@@ -59,13 +61,8 @@ function data_loader(){
             success: function(response) {
                 $('#strip').empty();
                 $.each(response, function(index, value) {
-                    if((value=='7x24') || (value=='5x16')){
+                   
                         var html = '<option selected value="' + "strip_"+value.toLowerCase() + '">' + value + '</option>';
-                    }
-                    else{
-                        var html = '<option value="' + "strip_"+value.toLowerCase() + '">' + value + '</option>';
-                    
-                    }
                     $('#strip').append(html);
                     
                 });

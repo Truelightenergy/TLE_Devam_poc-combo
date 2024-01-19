@@ -98,7 +98,7 @@ class Util:
         """
         generates line charts for each set of parameters in the array
         """
-        pio.templates.default = "plotly_dark"
+        pio.templates.default = "plotly"
         fig = go.Figure()
 
 
@@ -149,7 +149,7 @@ class Util:
             ))
 
         fig.update_layout(
-            template="plotly_dark",
+            template="plotly",
             title="Energy prices over time",
             title_x=0.5,
             xaxis_title="Date",
@@ -160,6 +160,20 @@ class Util:
 
         graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
         return graphJSON
+    
+    def generate_graph_view_for_home_screen(self, raw_params, operating_day, operating_day_ts, prev_day, start, end):
+        """
+        creates the graphview based on the raw parameters
+        """
+        control_table = ((raw_params.split(',')[0]).split('in')[-1]).strip()
+        load_zone = ((raw_params.split(',')[1]).split('(5x16)')[0]).strip()
+
+        params= [{'data_type': 'Energy', 'control_table': f'{control_table.lower()}_energy', 'loadZone': load_zone, 'operating_day': operating_day, 'operatin_day_timestamps': operating_day_ts, 'history': 'false', 'cob': 'false', 'start': start, 'end': end}, 
+         {'data_type': 'Energy', 'control_table': f'{control_table.lower()}_energy', 'loadZone': load_zone, 'operating_day': prev_day, 'operatin_day_timestamps': prev_day, 'history': 'false', 'cob': 'false', 'start': start, 'end': end}]
+        
+        graph = self.generate_line_charts(params)
+        
+        return graph, params
 
     def get_email(self, token):
         """
@@ -181,3 +195,6 @@ class Util:
         """
 
         return self.db_model.get_graph_data(garph_id)
+    
+    
+    

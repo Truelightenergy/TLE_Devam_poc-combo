@@ -12,22 +12,47 @@ function top_entries_extractor(data, clickedState){
     return top10Entries
 
 }
+
+function top_entries_extractor_global(data){
+    data.forEach(entry => {
+    entry.headroom = parseFloat(entry.headroom);
+    });
+
+    // Sort the data by headroom in descending order
+    data.sort((a, b) => b.headroom - a.headroom);
+
+    // Get the top 5 entries
+    let top10Entries = data.slice(0, 10);
+    return top10Entries
+
+}
 function populate_table(data){
     // Get a reference to the table
     const table = document.getElementById('data-table');
     
 
     // Add table headers
-    const headers = Object.keys(data[0]);
+    // const headers = Object.keys(data[0]);
+    const headers = [
+        "state",
+        "utility",
+        "load_zone",
+        "headroom",
+        "headroom_prct",
+        
+        
+    ]
+    
     const headerRow = table.querySelector('thead tr');
     headerRow.innerHTML = '';
+    
     headers.forEach(header => {
         const th = document.createElement('th');
         if( header=='headroom'){
-            header = 'Headroom'
+            header = 'Headroom ($/MWh)'
         }
         else if( header=='headroom_prct'){
-            header = 'Headroom as a Prct'
+            header = 'Headroom (%)'
         }
         else if( header=='utility'){
             header = 'Utility'
@@ -46,16 +71,19 @@ function populate_table(data){
     const tbody = table.querySelector('tbody');
     tbody.innerHTML='';
     data.forEach(item => {
-        const tr = document.createElement('tr');
+        var tr = document.createElement('tr');
         headers.forEach(header => {
             const td = document.createElement('td');
+            var value = item[header];
             if (header=='headroom'){
-                item[header]= "$"+ String(Math.round(item[header] * 100) / 100);
+                // item[header]= " $"+(Math.round(item[header]* 100) / 100).toString();
+                value= "$"+ item[header];
             }
             if (header=='headroom_prct'){
-                item[header]= String(Math.round(item[header] * 100) / 100) +"%";
+                // item[header]= (Math.round(item[header] * 100) / 100).toString()+"% ";
+                value= item[header]+"%";
             }
-            td.textContent = item[header];
+            td.textContent = value;
             tr.appendChild(td);
         });
         tbody.appendChild(tr);
@@ -107,7 +135,7 @@ var trace = {
     z: Object.values(stateMeanHeadroom).map(item => item.mean),
     text: Object.keys(stateMeanHeadroom),  // Array of state names
     hoverinfo: 'location+z+text',  // Display location, z value, and text (state name)
-    colorscale: 'YlGnBu',  // Custom color scale
+    colorscale: 'BuGn',  // Custom color scale
     colorbar: { title: 'Headroom Mean' }
 };
 
@@ -121,12 +149,16 @@ var layout = {
         traceorder: 'reversed',
         font: { size: 10 }
     },
-    margin: { l: 0, r: 0, b: 0, t: 0 }  // Adjust margin for a cleaner look
+    margin: { l: 0, r: 0, b: 0, t: 0 },  // Adjust margin for a cleaner look
+    
 };
 
 var data = [trace];
 
 Plotly.newPlot('chart', data, layout);
+top_entries = top_entries_extractor_global(json_data);
+populate_table(top_entries);
+
 
 // Add event listener to trace
 document.getElementById('chart').on('plotly_click', function(data){

@@ -68,6 +68,24 @@ class ExtractorUtil:
         except:
             return operating_days
         
+    def get_all_operating_days_with_load_zone(self, table, load_zone):
+        """
+        fetches the latest operating day from table
+        """
+        operating_days = []
+        query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table} WHERE load_zone = '{load_zone}';"
+        
+        try:
+            operating_days = []
+            result = self.engine.execute(query)
+            if result.rowcount >0:
+                for row in result:
+                    result = row
+                    operating_days.append(result[0].strftime('%Y-%m-%d'))
+            return operating_days
+        except:
+            return operating_days
+        
     def cob_availability(self, table, date):
         """
         availability check for cob

@@ -156,6 +156,13 @@ class Util:
 
         return self.db_model.get_all_operating_days(curve, iso)
     
+    def extract_operating_day_with_load_zone(self, table, load_zone):
+        """
+        extracts the operating days with load_zone
+        """
+
+        return self.db_model.get_all_operating_days_with_load_zone(table, load_zone)
+    
     def cob_availability_check(self, table, date):
         """
         finds the availability check for cob
