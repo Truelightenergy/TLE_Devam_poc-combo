@@ -196,7 +196,16 @@ class NotifierUtil:
         """
         update the status of the notifications
         """
-        query = f"update trueprice.price_changes_notifications set status ='{status}', notification_date='{datetime.datetime.now()}'  where event_id = {event_id} and status='waiting'; "
+
+
+        # Get the current date
+        current_date = datetime.datetime.now().date()
+
+        # Create a new datetime object with time set to 00:00:00
+        todays_date = datetime.datetime.combine(current_date, datetime.time(0, 0, 0))
+
+
+        query = f"update trueprice.price_changes_notifications set status ='{status}', notification_date='{todays_date}'  where event_id = {event_id} and status='waiting'; "
         try:
             result = self.engine.execute(query)
             if result.rowcount > 0:
@@ -223,7 +232,7 @@ class NotifierUtil:
         extracts all latest notifications
         """
 
-        query = "select * from trueprice.price_changes_notifications where notification_date=(select MAX(DISTINCT(notification_date)) as date  from trueprice.price_changes_notifications);"
+        query = "select DISTINCT ON (location) change_id, price_shift_value, price_shift_prct, price_shift, location from trueprice.price_changes_notifications where notification_date=(select MAX(DISTINCT(notification_date)) as date  from trueprice.price_changes_notifications) ORDER BY location, change_id DESC;"
         data = []
         try:
             results = self.engine.execute(query).fetchall()

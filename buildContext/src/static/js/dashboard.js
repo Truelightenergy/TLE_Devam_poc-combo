@@ -22,36 +22,32 @@ function populate_table(data){
     
 
     // Add table headers
-    const headers = ['utility', 'headroom'];
-    const headerRow = table.querySelector('thead tr');
-    headerRow.innerHTML = '';
-    headers.forEach(header => {
-        const th = document.createElement('th');
-        if( header=='utility'){
-            header = 'Utility'
-        } 
-        else if( header=='headroom'){
-            header = 'Headroom'
-        }
-        
-        
-        th.textContent = header;
-        headerRow.appendChild(th);
-    });
+    const headers = ['utility', 'load_zone', 'headroom'];
 
     // Add data rows
     const tbody = table.querySelector('tbody');
     tbody.innerHTML='';
-    data.forEach(item => {
+    
+    data.forEach((item, itr) => {
+        itr++;
         const tr = document.createElement('tr');
         headers.forEach(header => {
             const td = document.createElement('td');
-            if (header=='headroom'){
-                item[header]= "$"+ String(Math.round(item[header] * 100) / 100);
-            }
+                if(header=='utility'){
+                    item[header]=  itr+"-"+item['utility'];
+                }
+                if(header=='load_zone'){
+                    item[header]=  '('+item['load_zone']+')';
+                }
+                if(header=='headroom'){
+                    item[header]=  "=$"+ String(Math.round(item[header] * 100) / 100);
+                }
+
+            
             td.textContent = item[header];
             tr.appendChild(td);
         });
+        tr.style.fontWeight = 'bold';
         tbody.appendChild(tr);
     });
 }
@@ -250,10 +246,10 @@ function listners(){
 
 $(document).ready(function() {
 
-    // truelight.loader.show();
-    // load_data();
-    // truelight.loader.hide();
-    // listners();
+    truelight.loader.show();
+    load_data();
+    truelight.loader.hide();
+    listners();
     
 });
 

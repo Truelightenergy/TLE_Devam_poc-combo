@@ -78,14 +78,14 @@
                                     <div id='chart_heatmap' class='chart'”></div>
                                     </div>
                                     <div class="col-md-4">
-                                        <table id="data-table" class= "text-dark table-hover table">
+                                        <table id="data-table" class= "text-dark table-borderless table">
                                             <!-- Table headers will be added dynamically using JavaScript -->
-                                            <thead>
-                                                <tr>
-                                                    <!-- Headers go here -->
-                                                </tr>
+                                            <thead style="border: 1px solid black;">
+                                                <th colspan="3">
+                                                    Top 5 Utilities by Headroom Nationwide
+                                                </th>
                                             </thead>
-                                            <tbody>
+                                            <tbody style="margin-top: 2px; border: 1px solid black;">
                                                 <!-- Data rows will be added dynamically using JavaScript -->
                                             </tbody>
                                         </table>
@@ -159,11 +159,12 @@
     <script  src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js')}}"></script>
 
     <script  src="{{ url_for('static', filename='js/dashboard.js')}}"></script>
-    <script  src="{{ url_for('static', filename='js/main.js')}}"></script>
+    <!-- <script  src="{{ url_for('static', filename='js/main.js')}}"></script> -->
     <script src="{{ url_for('static', filename='js/loader.js')}}"></script>
-    
 
     
+    
+
 
     <!-- Template Javascript -->
     <script src="static/js/main.js"></script>

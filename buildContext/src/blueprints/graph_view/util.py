@@ -145,15 +145,15 @@ class Util:
                 mode="markers+lines",
                 name=params.get("label", f"{params['loadZone']}: {params['operating_day']}"),  # You can pass a label for each line
                 line_shape='linear',
-                line=dict(color=color),  # Set the line color here if it's the same for all
+                # line=dict(color=color),  # Set the line color here if it's the same for all
             ))
 
         fig.update_layout(
             template="plotly",
-            title="Energy prices over time",
+            title="Energy Prices Over Time",
             title_x=0.5,
             xaxis_title="Date",
-            yaxis_title="Energy",
+            yaxis_title="Price ($)",
             xaxis=dict(showgrid=False),
             hovermode="x unified",
         )
@@ -167,6 +167,7 @@ class Util:
         """
         control_table = ((raw_params.split(',')[0]).split('in')[-1]).strip()
         load_zone = ((raw_params.split(',')[1]).split('(5x16)')[0]).strip()
+        prev_day = self.db_model.get_previous_day(load_zone, control_table).strftime('%Y-%m-%d')
 
         params= [{'data_type': 'Energy', 'control_table': f'{control_table.lower()}_energy', 'loadZone': load_zone, 'operating_day': operating_day, 'operatin_day_timestamps': operating_day_ts, 'history': 'false', 'cob': 'false', 'start': start, 'end': end}, 
          {'data_type': 'Energy', 'control_table': f'{control_table.lower()}_energy', 'loadZone': load_zone, 'operating_day': prev_day, 'operatin_day_timestamps': prev_day, 'history': 'false', 'cob': 'false', 'start': start, 'end': end}]

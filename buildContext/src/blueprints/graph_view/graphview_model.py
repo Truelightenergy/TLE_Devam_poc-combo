@@ -211,5 +211,26 @@ class GraphView_Util:
             return {"graph_id": row['change_id'], "filters": row['filters'], "user_id": row['user_id'], "status": row['status']}            
         except :
             return None
+        
+    def get_previous_day(self, load_zone, control_table):
+        """
+        fetches the data for last day
+        """
+
+        query = f"""
+            SELECT DISTINCT(curvestart)
+                FROM trueprice.{control_table.lower()}_energy where load_zone='{load_zone}'
+                ORDER BY curvestart DESC
+                LIMIT 2;
+        """
+        try:
+            date = None
+            results = self.engine.execute(query).fetchall()
+            for row in results[::-1]:
+                date = row['curvestart']
+                break
+            return date
+        except:
+            return date
 
 

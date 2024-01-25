@@ -36,7 +36,8 @@ function populate_table(data){
     const headers = [
         "state",
         "utility",
-        "load_zone",
+        "retail_price",
+        "utility_price",
         "headroom",
         "headroom_prct",
         
@@ -63,6 +64,12 @@ function populate_table(data){
         else if( header=='load_zone'){
             header = 'Load Zone'
         }
+        else if( header=='utility_price'){
+            header = 'Utility Price'
+        }
+        else if( header=='retail_price'){
+            header = 'TLE Retail Price'
+        }
         th.textContent = header;
         headerRow.appendChild(th);
     });
@@ -75,7 +82,7 @@ function populate_table(data){
         headers.forEach(header => {
             const td = document.createElement('td');
             var value = item[header];
-            if (header=='headroom'){
+            if ((header=='headroom')|| (header=='retail_price')|| (header=='utility_price')){
                 // item[header]= " $"+(Math.round(item[header]* 100) / 100).toString();
                 value= "$"+ item[header];
             }
@@ -143,14 +150,16 @@ var layout = {
     geo: {
         scope: 'usa',
         showland: true,  // Display land mass
-        landcolor: 'rgb(217, 217, 217)'  // Land color
+        landcolor: 'rgb(217, 217, 217)',  // Land color
+
+        
     },
     legend: {
         traceorder: 'reversed',
         font: { size: 10 }
     },
     margin: { l: 0, r: 0, b: 0, t: 0 },  // Adjust margin for a cleaner look
-    
+    dragmode:false
 };
 
 var data = [trace];
@@ -159,14 +168,38 @@ Plotly.newPlot('chart', data, layout);
 top_entries = top_entries_extractor_global(json_data);
 populate_table(top_entries);
 
-
 // Add event listener to trace
 document.getElementById('chart').on('plotly_click', function(data){
     var clickedState = data.points[0].text;
-    
-    
     top_entries = top_entries_extractor(json_data, clickedState);
     populate_table(top_entries);
-    
+
+});
+
+function downloadAsPDF() {
+    var element = document.getElementById('chart');
+
+    domtoimage.toPng(element)
+        .then(function (dataUrl) {
+            var pdf = new window.jspdf.jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: [element.clientWidth * 0.75, element.clientHeight * 0.75], // Adjust scale as needed
+            });
+
+            pdf.addImage(dataUrl, 'PNG', 0, 0, element.clientWidth * 0.75, element.clientHeight * 0.75); // Adjust scale here as well
+
+            pdf.save('heatmap.pdf');
+        })
+        .catch(function (error) {
+            console.error('Error capturing heatmap:', error);
+        });
+}
+
+
+$(document).ready(function() {
+$("#download_heatmap").click(function() {
+    downloadAsPDF();
+    });
 
 });

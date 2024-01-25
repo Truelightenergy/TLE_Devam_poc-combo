@@ -175,7 +175,7 @@ def get_options_for_strips():
     """
     curve = request.json['curve']
     if curve.lower() == "nonenergy":
-        option = ["7x24","5x16", "7x8", "2x16"]
+        option = ["7x24","5x16", "7x8", "2x16", "WD", "WE"]
     elif curve.lower() == "energy":
         option = ["5x16", "7x8", "2x16"]
     else:

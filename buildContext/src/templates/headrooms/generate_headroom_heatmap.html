@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Headroom Heatmaps</title>
+    <title>Headroom Heatmap</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -68,14 +68,22 @@
             
             <div class="container-fluid pt-4 px-4">
                 <div class="row g-4 align-items-center justify-content-center mx-0  mt-5">
-                    <div class="col-sm-12 col-xl-12">
+                    <div class="col-md-10"></div>
+                    <div class="col-md-2">
+                        <button id ='download_heatmap' class="btn btn-primary"> Download Heatmap</button>
+                    </div>
+                    <div class="col-md-12 col-xl-12">
                         <div class="bg-light text-dark rounded h-100 p-4">
                             <h6 class="mb-4 text-dark">Headroom Heatmaps</h6>
+                              
+                            
                             <div style="height: 700px;" id='chart' class='chart'></div>
                         </div>
                     </div>                
             </div>
-            <div id='chart' class='chart'”></div>
+            
+            <div id='chart' class='chart'></div>
+            
             <table id="data-table" class=" text-dark table-hover table">
                 <!-- Table headers will be added dynamically using JavaScript -->
                 <thead>
@@ -88,6 +96,7 @@
                 </tbody>
             </table>
             </div>
+                      
             
             <!-- Blank End -->
 
@@ -106,9 +115,15 @@
     </div>
 
 <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+
+
 <script type='text/javascript'>
 var json_data = {{ data | tojson }}; 
-    
+
 </script>
 
 

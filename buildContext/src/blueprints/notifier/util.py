@@ -51,6 +51,8 @@ class Util:
         if (latest_curve_data is None) or (prev_curve_data is None):
             self.db_util.update_notification_status(curvestart, filename)
             return
+        latest_curve_data = self.key_nodals(latest_curve_data, filename)
+        prev_curve_data = self.key_nodals(prev_curve_data, filename)
         # increase volume
         increased_data = self.notifications_item_calculations(latest_curve_data, prev_curve_data, "increase")
         # decrease volume
@@ -65,6 +67,29 @@ class Util:
             print(f"Unable to add notifciations for upload {filename}_{curvestart}")
 
         return
+    
+    def key_nodals(self, dataframe, filename):
+        """
+        filters only key nodals point
+        """
+
+        # for ercot
+        if 'ercot' in filename.lower():
+            filters = ['NORTH ZONE']
+        # for nyiso
+        elif 'nyiso' in filename.lower():
+            filters = ['ZONE A', 'ZONE G', 'ZONE J']
+        # for pjm
+        elif 'pjm' in filename.lower():
+            filters = ['AD HUB', 'WEST HUB', 'EAST HUB', 'NI HUB']
+        # for isone
+        elif 'isone' in filename.lower():
+            filters = ['MASS HUB']
+        else:
+            filters = ['NoneValue']
+
+        dataframe = dataframe[dataframe['load_zone'].isin(filt for filt in filters)]
+        return dataframe
 
     def setup_notifications(self):
         """
