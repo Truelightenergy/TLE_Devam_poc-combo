@@ -167,7 +167,9 @@ class Util:
         """
         control_table = ((raw_params.split(',')[0]).split('in')[-1]).strip()
         load_zone = ((raw_params.split(',')[1]).split('(5x16)')[0]).strip()
-        prev_day = self.db_model.get_previous_day(load_zone, control_table).strftime('%Y-%m-%d')
+        previous_day = self.db_model.get_previous_day(load_zone, control_table)
+        if previous_day is not None:
+            prev_day = previous_day.strftime('%Y-%m-%d')
 
         params= [{'data_type': 'Energy', 'control_table': f'{control_table.lower()}_energy', 'loadZone': load_zone, 'operating_day': operating_day, 'operatin_day_timestamps': operating_day_ts, 'history': 'false', 'cob': 'false', 'start': start, 'end': end}, 
          {'data_type': 'Energy', 'control_table': f'{control_table.lower()}_energy', 'loadZone': load_zone, 'operating_day': prev_day, 'operatin_day_timestamps': prev_day, 'history': 'false', 'cob': 'false', 'start': start, 'end': end}]

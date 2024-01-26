@@ -222,6 +222,8 @@ class GraphView_Util:
                 FROM trueprice.{control_table.lower()}_energy where load_zone='{load_zone}'
                 ORDER BY curvestart DESC
                 LIMIT 2;
+
+            
         """
         try:
             date = None

@@ -48,6 +48,11 @@ class Process_Notifier:
 
         try:
             results = self.db_util.fetch_pending_notifications()
+            results = sorted(results, key=lambda x: x['price_shift_prct'],  reverse=True)
+            # Use a set to store unique locations and a dictionary comprehension to filter unique dicts
+            unique_locations = set()
+            results = [unique_locations.add(d['location']) or d for d in results if d['location'] not in unique_locations]
+            results = results[:9]
             data = {
                 "notification_id" : list(),
                 "body_content": ""
