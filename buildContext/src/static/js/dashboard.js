@@ -22,7 +22,7 @@ function populate_table(data){
     
 
     // Add table headers
-    const headers = ['utility', 'load_zone', 'headroom'];
+    const headers = ['utility', 'headroom'];
 
     // Add data rows
     const tbody = table.querySelector('tbody');
@@ -34,10 +34,7 @@ function populate_table(data){
         headers.forEach(header => {
             const td = document.createElement('td');
                 if(header=='utility'){
-                    item[header]=  itr+"-"+item['utility'];
-                }
-                if(header=='load_zone'){
-                    item[header]=  '('+item['load_zone']+')';
+                    item[header]=  itr+"-"+item['utility']+" "+'('+item['load_zone']+')';
                 }
                 if(header=='headroom'){
                     item[header]=  "=$"+ String(Math.round(item[header] * 100) / 100);
@@ -47,7 +44,6 @@ function populate_table(data){
             td.textContent = item[header];
             tr.appendChild(td);
         });
-        tr.style.fontWeight = 'bold';
         tbody.appendChild(tr);
     });
 }
@@ -100,7 +96,7 @@ var trace = {
     hoverinfo: 'location+z+text',  // Display location, z value, and text (state name)
     colorscale: 'BuGn',  // Custom color scale
     colorbar: { title: 'Headroom Mean' },
-    showscale:false
+    showscale:false,
 };
 
 
@@ -115,12 +111,13 @@ var trace = {
             font: { size: 10 }
         },
         margin: { l: 0, r: 0, b: 0, t: 0 },  // Adjust margin for a cleaner look
-        showcolorbar: false
+        showcolorbar: false,
+        dragmode:false
     };
 
     var data = [trace];
 
-    Plotly.newPlot('chart_heatmap', data, layout);
+    Plotly.newPlot('chart_heatmap', data, layout, {responsive: true});
 
 
     top_entries = top_entries_extractor(json_data);
@@ -142,7 +139,7 @@ function load_notifications(){
 }
 
 function load_graph_view(){
-    Plotly.newPlot('graphview', graphview_data);
+    Plotly.newPlot('graphview', graphview_data['data'], graphview_data['layout'], {responsive: true});
 }
 
 function load_data(){

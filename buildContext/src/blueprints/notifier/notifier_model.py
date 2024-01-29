@@ -146,7 +146,7 @@ class NotifierUtil:
             query =f"""
                     SELECT MAX(curvestart) AS most_recent_date
                     FROM trueprice.{filename}
-                    WHERE curvestart <= '{date}';
+                    WHERE curvestart < '{date}';
                     """
             result = self.engine.execute(query)
             
@@ -232,7 +232,15 @@ class NotifierUtil:
         extracts all latest notifications
         """
 
-        query = "select DISTINCT ON (location) change_id, price_shift_value, price_shift_prct, price_shift, location from trueprice.price_changes_notifications where notification_date=(select MAX(DISTINCT(notification_date)) as date  from trueprice.price_changes_notifications) ORDER BY location, change_id DESC;"
+        query = """
+                SELECT DISTINCT ON (location) change_id, price_shift_value, price_shift_prct, price_shift, location
+                FROM (                                        
+                    SELECT change_id, price_shift_value, price_shift_prct, price_shift, location
+                    FROM trueprice.price_changes_notifications
+                    ORDER BY change_id DESC
+                ) AS bottom_9
+                ORDER BY location, change_id DESC;
+                """
         data = []
         try:
             results = self.engine.execute(query).fetchall()

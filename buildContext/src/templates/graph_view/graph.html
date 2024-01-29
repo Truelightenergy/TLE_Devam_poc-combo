@@ -96,6 +96,10 @@
                             </div> -->
                         </div>
                     </div>
+                    <div class="col-md-10"></div>
+                    <div class="col-md-2">
+                        <input id ='btnDownload' value="Export Graph" class="btn btn-primary btn-sm m-2"> 
+                    </div>
                 </div>
                 <div id='chart' class='chart' ”></div>
                 {% include 'components/graphviewfiltersmodal.html'%}
@@ -116,6 +120,10 @@
         </div>
 
         <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+        <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+        
         <!-- <script type='text/javascript'>
       var graphs = {{graphJSON | safe}};
       Plotly.plot('chart',graphs,{});

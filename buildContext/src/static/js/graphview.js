@@ -12,7 +12,7 @@ truelight.graphview.view = {
         let graphview = truelight.graphview;
         let controls = graphview.controls;
 
-
+        controls.btnDownload.click(function() {self.downloads();});
         controls.btnDayOverDay.click(function () { self.getDayOverDay(); });
         controls.btnWeekOverWeek.click(function () { self.getWeekOverWeek(); });
         controls.btnMonthOverMonth.click(function () { self.getMonthOverMonth(); });
@@ -71,7 +71,7 @@ truelight.graphview.view = {
             data: JSON.stringify(payload),
             success: function (response) {
                 truelight.loader.hide();
-                Plotly.react('chart', response, {});
+                Plotly.newPlot('chart', response['data'], response['layout'], {responsive: true});
             },
             error: function (xhr, status, error) {
                 truelight.loader.hide();
@@ -91,6 +91,25 @@ truelight.graphview.view = {
         date.setDate(date.getDate() - noOfDays);
         return date.toISOString().replace('T', ' ').substring(0, 16);
     },
+    downloads:() =>{   
+        var element = document.getElementById('chart');
+        domtoimage.toPng(element)
+            .then(function (dataUrl) {
+                var pdf = new window.jspdf.jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: [element.clientWidth * 0.75, element.clientHeight * 0.75], // Adjust scale as needed
+                });
+
+                pdf.addImage(dataUrl, 'PNG', 0, 0, element.clientWidth * 0.75, element.clientHeight * 0.75); // Adjust scale here as well
+
+                pdf.save('heatmap.pdf');
+            })
+            .catch(function (error) {
+                console.error('Error capturing heatmap:', error);
+            });
+    },
+
     getDayOverDay: () => {
         let self = truelight.graphview.view;
         let defaultFilter = self.cache.defaultFilters;

@@ -68,13 +68,9 @@
             
             <div class="container-fluid pt-4 px-4">
                 <div class="row g-4 align-items-center justify-content-center mx-0  mt-5">
-                    <div class="col-md-10"></div>
-                    <div class="col-md-2">
-                        <button id ='download_heatmap' class="btn btn-primary"> Download Heatmap</button>
-                    </div>
                     <div class="col-md-12 col-xl-12">
                         <div class="bg-light text-dark rounded h-100 p-4">
-                            <h6 class="mb-4 text-dark">Headroom Heatmaps</h6>
+                            <h6 class="mb-4 text-dark">Headroom Heatmap</h6>
                               
                             
                             <div style="height: 700px;" id='chart' class='chart'></div>
@@ -115,11 +111,6 @@
     </div>
 
 <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
-
 
 <script type='text/javascript'>
 var json_data = {{ data | tojson }}; 

@@ -36,6 +36,7 @@ function populate_table(data){
     const headers = [
         "state",
         "utility",
+        "customer_type",
         "retail_price",
         "utility_price",
         "headroom",
@@ -50,13 +51,16 @@ function populate_table(data){
     headers.forEach(header => {
         const th = document.createElement('th');
         if( header=='headroom'){
-            header = 'Headroom ($/MWh)'
+            header = 'Headroom ($/KWh)'
         }
         else if( header=='headroom_prct'){
             header = 'Headroom (%)'
         }
         else if( header=='utility'){
             header = 'Utility'
+        } 
+        else if( header=='customer_type'){
+            header = 'Customer_ Type'
         } 
         else if( header=='state'){
             header = 'State'
@@ -65,10 +69,10 @@ function populate_table(data){
             header = 'Load Zone'
         }
         else if( header=='utility_price'){
-            header = 'Utility Price'
+            header = 'Utility Price ($/kWh)'
         }
         else if( header=='retail_price'){
-            header = 'TLE Retail Price'
+            header = 'TLE Retail Price ($/kWh)'
         }
         th.textContent = header;
         headerRow.appendChild(th);
@@ -164,7 +168,7 @@ var layout = {
 
 var data = [trace];
 
-Plotly.newPlot('chart', data, layout);
+Plotly.newPlot('chart', data, layout,{responsive: true});
 top_entries = top_entries_extractor_global(json_data);
 populate_table(top_entries);
 
@@ -176,30 +180,3 @@ document.getElementById('chart').on('plotly_click', function(data){
 
 });
 
-function downloadAsPDF() {
-    var element = document.getElementById('chart');
-
-    domtoimage.toPng(element)
-        .then(function (dataUrl) {
-            var pdf = new window.jspdf.jsPDF({
-                orientation: 'landscape',
-                unit: 'mm',
-                format: [element.clientWidth * 0.75, element.clientHeight * 0.75], // Adjust scale as needed
-            });
-
-            pdf.addImage(dataUrl, 'PNG', 0, 0, element.clientWidth * 0.75, element.clientHeight * 0.75); // Adjust scale here as well
-
-            pdf.save('heatmap.pdf');
-        })
-        .catch(function (error) {
-            console.error('Error capturing heatmap:', error);
-        });
-}
-
-
-$(document).ready(function() {
-$("#download_heatmap").click(function() {
-    downloadAsPDF();
-    });
-
-});

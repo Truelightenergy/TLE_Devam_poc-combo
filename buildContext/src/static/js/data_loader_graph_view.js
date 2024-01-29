@@ -19,7 +19,8 @@ truelight.graphview = {
         btnGenerateGraph: null,
         customGraphFiltersModal: null,
         btnAddCustomGraphToggle: null,
-        btnAddGraph: null
+        btnAddGraph: null,
+        btnDownload:null
     },
     cache: {
         loadZones: [],
@@ -44,6 +45,7 @@ truelight.graphview = {
         controls.cob = $("#cob");
         controls.btnGenerateGraph = $("#save");
         controls.btnDayOverDay = $("#btnDayOverDay");
+        controls.btnDownload = $("#btnDownload");
         controls.btnWeekOverWeek = $("#btnWeekOverWeek");
         controls.btnMonthOverMonth = $("#btnMonthOverMonth");
         controls.btnAddCustomGraphToggle = $("#btnAddCustomGraphToggle");

@@ -137,27 +137,30 @@ class Util:
 
             
             color = self.generate_random_color()
-
+            update = 'Interaday'
+            if params['cob']== True or params['cob']=='true':
+                update = 'COB'
             # df = self.db_model.get_data(**params)  # Unpacking parameters for the get_data method
             fig.add_trace(go.Scatter(
                 x=df["month"], 
                 y=df["data"], 
                 mode="markers+lines",
-                name=params.get("label", f"{params['loadZone']}: {params['operating_day']}"),  # You can pass a label for each line
-                line_shape='linear',
+                name=params.get("label", f"{params['loadZone']}: {params['operatin_day_timestamps']} {update}"),  # You can pass a label for each line
+                line_shape='linear'
                 # line=dict(color=color),  # Set the line color here if it's the same for all
             ))
 
-        fig.update_layout(
-            template="plotly",
-            title="Energy Prices Over Time",
-            title_x=0.5,
-            xaxis_title="Date",
-            yaxis_title="Price ($)",
-            xaxis=dict(showgrid=False),
-            hovermode="x unified",
-        )
+            fig.update_layout(
+                template="plotly",
+                title="Energy Prices Over Time (5x16)",
+                title_x=0.5,
+                xaxis_title="Date",
+                yaxis_title="Price ($/MWh)",
+                xaxis=dict(showgrid=False),
+                hovermode="x unified",
+            )
 
+        
         graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
         return graphJSON
     
