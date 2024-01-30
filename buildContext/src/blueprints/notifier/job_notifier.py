@@ -48,6 +48,11 @@ class Process_Notifier:
 
         try:
             results = self.db_util.fetch_pending_notifications()
+            results = sorted(results, key=lambda x: x['price_shift_prct'],  reverse=True)
+            # Use a set to store unique locations and a dictionary comprehension to filter unique dicts
+            unique_locations = set()
+            results = [unique_locations.add(d['location']) or d for d in results if d['location'] not in unique_locations]
+            results = results[:9]
             data = {
                 "notification_id" : list(),
                 "body_content": ""
@@ -70,10 +75,10 @@ class Process_Notifier:
 
             success_flag = self.send_notificaions(data)
             if success_flag:
-                success_flag = self.setup_next_schdule(row["notification_id"], row['cron_pattern'])
-                self. db_util.update_status(row["change_id"], "processed")
+                # success_flag = self.setup_next_schdule(row["notification_id"], row['cron_pattern'])
+                self. db_util.update_status(row["event_id"], "processed")
             else:
-                self. db_util.update_retries(row["change_id"], row["retries"]+1)
+                self. db_util.update_retries(row["event_id"], row["retries"]+1)
             if success_flag:
                 print("Pending Notifications are done")
             else:

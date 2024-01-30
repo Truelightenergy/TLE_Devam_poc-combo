@@ -9,6 +9,9 @@ from .energy_ingestors.ercot_energy import Ercot_energy
 from .energy_ingestors.pjm_energy import Pjm_energy
 from .energy_ingestors.miso_energy import Miso_energy
 from .energy_ingestors.nyiso_energy import Nyiso_energy
+from utils.configs import read_config
+
+config = read_config()
 
 class Energy:
     """
@@ -19,8 +22,8 @@ class Energy:
         """
         makes the 
         """
-        self.secret_key = "super-scret-key" #env variable
-        self.secret_salt = "secret-salt" #env variable
+        self.secret_key = config['secret_key']
+        self.secret_salt = config['secret_salt']
         self.db_util = IngestorUtil(self.secret_key, self.secret_salt)
 
         self.isone_ingestor = Isone_energy()
@@ -45,7 +48,7 @@ class Energy:
         elif data.controlArea == "isone":
             result = self.isone_ingestor.ingestion(data)
         
-        if "data inserted" in result.lower():
+        if "data inserted" in result.lower() or "data updated" in result.lower():
             # logging the trigger
             self.db_util.event_for_notification(data.curveStart, data.controlArea+"_energy")
         return result

@@ -1,0 +1,25 @@
+secret_key : super-scret-key
+secret_salt : secret-salt
+cron_time : 10
+cron_instances: 2
+login_location : /login
+mantainance_location : /maintainance
+admin_role : admin
+read_write_role : read_write_user
+read_only_role: read_only_user
+logging_folder : ./logs
+time_log: /time_log.log
+upload_folder: ./flask_file_upload
+defaulted_folder: ./defaulted_file_upload
+unzipped_folder : /unzipped/
+hash_algo : HS256
+app_session_type : filesystem
+app_secret_key: super secret key
+template_path : ../templates/
+static_path : static
+admins_path : admins
+auths_path : auths
+extractors_path : extractors
+graph_view_path : graph_view
+headrooms_path : headrooms
+ingestors_path : ingestors

@@ -5,18 +5,19 @@ from .util import Util
 from .admin_model import AdminUtil
 from utils.revoke_tokens import RevokedTokens
 from utils.roles import RolesDecorator
-from utils.keys import secret_key, secret_salt
+from utils.configs import read_config
 from utils.blocked_tokens import revoked_jwt
 import json
 
-
-admins = Blueprint('admins', __name__,
-                    template_folder="../templates/",
-                    static_folder='static')
-
-
+config = read_config()
+admins = Blueprint(config['admins_path'], __name__,
+                    template_folder=config['template_path'],
+                    static_folder=config['static_path'])
 
 
+
+secret_key = config['secret_key']
+secret_salt = config['secret_salt']
 
 db_obj = AdminUtil(secret_key, secret_salt)
 api_util = Util()
@@ -34,19 +35,6 @@ def setup_session(auth_token):
     session["user"] = payload["client_email"]
     session["level"] = payload["role"]
 
-@admins.route('/get_options', methods=['GET', 'POST'])
-@roles.readonly_token_required
-def get_options():
-
-    """
-    makes the current drop down dynamic
-    """
-    curve = request.json['curve']
-    if curve == "rec":
-        option = ["ERCOT", "ISONE", "NYISO", "PJM"]
-    else:
-        option = ["ERCOT", "ISONE", "NYISO","MISO", "PJM"]
-    return jsonify(option)
 
 @admins.route("/log_stream", methods=['GET','POST'])
 @roles.admin_token_required

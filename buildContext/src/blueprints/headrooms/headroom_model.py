@@ -234,8 +234,10 @@ class HeadroomModel:
         try:
             results = self.engine.execute(final_query).fetchall()
             for row in results:
-                data.append({"state": row['state'], "load_zone": row['load_zone'], "utility": row['utility'],
-                             "headroom": row['headroom'], "headroom_prct": row['headroom_prct']
+                data.append({"state": row['state'], "utility": row['utility'], "load_zone": row['load_zone'],
+                             "utility_price": round(float(row['ptc']),2), "retail_price": round(float(row['total_bundled_price']),2),
+                             "headroom": round(float(row['headroom']),2), "headroom_prct": round(float(row['headroom_prct']),2),
+                             "customer_type": row['cost_component']
                              })
             return data
         except:

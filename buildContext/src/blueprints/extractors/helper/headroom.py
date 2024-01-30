@@ -77,7 +77,7 @@ class Headroom:
                         where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         UNION
                         select id, month, curvestart, curveend, matching_id, lookup_id,  control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, ptc,  term, term from trueprice.headroom_history
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, ptc, term from trueprice.headroom_history
                         where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         
                     """

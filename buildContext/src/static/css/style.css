@@ -1,9 +1,9 @@
 /********** Template CSS **********/
 :root {
-    --primary: #1addc3;
-    --secondary: #191C24;
-    --light: #6C7293;
-    --dark: #000000;
+    --primary: #000;
+    --secondary: #4267B2;
+    --light: #fff;
+    --dark: #fff;
 }
 
 .back-to-top {
@@ -120,7 +120,7 @@
 
 /*** Navbar ***/
 .sidebar .navbar .navbar-nav .nav-link {
-    padding: 7px 20px;
+    padding: 7px;
     color: var(--light);
     font-weight: 500;
     border-left: 3px solid var(--secondary);
@@ -141,13 +141,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: var(--dark);
+    background: var(--secondary);
     border-radius: 40px;
 }
 
 .sidebar .navbar .navbar-nav .nav-link:hover i,
 .sidebar .navbar .navbar-nav .nav-link.active i {
-    background: var(--secondary);
+    background: var(--light);
 }
 
 .sidebar .navbar .dropdown-toggle::after {
@@ -173,7 +173,7 @@
 
 .sidebar .navbar .dropdown-item:hover,
 .sidebar .navbar .dropdown-item.active {
-    background: var(--dark);
+    background: var(--primary);
 }
 
 .content .navbar .navbar-nav .nav-link {
@@ -195,17 +195,17 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: var(--dark);
+    background: var(--secondary);
     border-radius: 40px;
 }
 
 .content .navbar .dropdown-item {
-    color: var(--light);
+    color: var(--primary);
 }
 
 .content .navbar .dropdown-item:hover,
 .content .navbar .dropdown-item.active {
-    background: var(--dark);
+    background: var(--light);
 }
 
 .content .navbar .dropdown-toggle::after {

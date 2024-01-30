@@ -11,7 +11,7 @@ style.innerHTML = `
   border-radius: 4px;
   border: solid 1px #ced4da;
   width : 100% !important;
-  background: #000;
+  background: #fff;
   position: relative;
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
   background-repeat: no-repeat;
@@ -26,7 +26,7 @@ style.innerHTML = `
   display:inline-block;
 }
 .multiselect-dropdown span.optext{
-  background-color: #2C3333;
+  background-color: #F1F0E8;
   padding:1px 0.75em; 
 }
 .multiselect-dropdown span.optext .optdel {

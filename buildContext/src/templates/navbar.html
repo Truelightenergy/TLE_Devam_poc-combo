@@ -4,22 +4,26 @@
         <h3 class="text-primary"><i class="fa fa-bolt me-2"></i>TRUEPrice</h3>
     </a>
     
-    <div class="navbar-nav w-100">
-        <a href="{{ url_for('auths.index') }}" class="nav-item nav-link {% if request.path == '/home' %}active{% endif %}"><i class="fa fa-home me-2"></i>Home</a>
-        <a href="{{ url_for('auths.update_password')}}" class="nav-item nav-link {% if request.path == '/update_password' %}active{% endif %} "><i class="fa fa-key me-2"></i>Password</a>
+    <div class="navbar-nav w-100" style="width: 2000px;">
+        <a href="{{ url_for('auths.index') }}" class="nav-item nav-link {% if request.path == '/home' %}active{% endif %}"><i class="fa fa-home me-2"></i>My TRUEPrice</a>
+        <!-- <a href="{{ url_for('auths.update_password')}}" class="nav-item nav-link {% if request.path == '/update_password' %}active{% endif %} "><i class="fa fa-key me-2"></i>Password</a> -->
         {%if session["level"]=="admin" or session["level"]=="read_write_user"%} 
-            <div class="nav-item dropdown">
+            <!-- <div class="nav-item dropdown">
                 <a href="#" class="nav-link dropdown-toggle {% if request.path == '/upload_csv' %}active{% endif %}" data-bs-toggle="dropdown"><i class="fa fa-upload me-2"></i>Uploads</a>
                 <div class="dropdown-menu bg-transparent border-0">
                     <a href="{{ url_for('ingestors.upload_csv')}}" class="dropdown-item"><i class="fa fa-file me-2"></i>CSV</a>
                     <a href="#" class="dropdown-item disabled"><i class="fa fa-archive me-2"></i>ZIP</a>
                 </div>
-            </div>
+            </div> -->
+
+            <a href="{{ url_for('ingestors.upload_csv')}}" class="nav-item nav-link {% if request.path == '/upload_csv' %}active{% endif %}"><i class="fa fa-upload me-2"></i>Upload CSV</a>
+       
+            <a href="{{ url_for('admins.upload_status')}}" class="nav-item nav-link {% if request.path == '/upload_status' %}active{% endif %}"><i class="fa fa-clipboard me-2"></i>Recent Uploads</a>
+        
         {%endif%}
 
 
-        <a href="{{ url_for('admins.upload_status')}}" class="nav-item nav-link {% if request.path == '/upload_status' %}active{% endif %}"><i class="fa fa-clipboard me-2"></i>Recent Uploads</a>
-        <a href="{{ url_for('extractors.download_data')}}" class="nav-item nav-link {% if request.path == '/download_data' %}active{% endif %}"><i class="fa fa-download me-2"></i>Downloads</a>
+        <a href="{{ url_for('extractors.download_data')}}" class="nav-item nav-link {% if request.path == '/download_data' %}active{% endif %}"><i class="fa fa-download me-2"></i>Download Data</a>
         {%if session["level"]=="admin"%}
         
         <div class="nav-item dropdown">
@@ -43,20 +47,17 @@
                     
                 </div>
             </div>
-
-
-            <div class="nav-item dropdown">
-                <a href="#" class="nav-link dropdown-toggle {% if request.path == '/generate_graph_view' or request.path == '/available_graphs' %}active{% endif %}" data-bs-toggle="dropdown"><i class="far fa-chart-bar me-2"></i>Graph View</a>
-                <div class="dropdown-menu bg-transparent border-0">
-                    <a href="{{ url_for('graph_view.generate_garph_view')}}" onclick="sessionHandler();" class="dropdown-item"><i class="fa fa-plus me-2"></i>Generate</a>
-                    <a href="{{ url_for('graph_view.available_graphs')}}" onclick="sessionHandler();" class="dropdown-item"><i class="fa fa-eye me-2"></i>View</a>
-                    
-                </div>
-            </div>
-            <a href="{{ url_for('headrooms.generate_headroom_heatmap')}}" class="nav-item nav-link {% if request.path == '/generate_headroom_heatmap' %}active{% endif %} "><i class="fa fa-globe me-2"></i>Heatmaps</a>
             
         
+            {%endif%}
+
+        <a href="{{ url_for('graph_view.generate_garph_view')}}" onclick="sessionHandler();" class="nav-item nav-link {% if request.path == '/generate_garph_view' or request.path == '/graph'  %}active{% endif %} "><i class="far fa-chart-bar me-2"></i>Graph View</a>
+        <a href="{{ url_for('headrooms.generate_headroom_heatmap')}}" class="nav-item nav-link {% if request.path == '/generate_headroom_heatmap' %}active{% endif %} "><i class="fa fa-globe me-2"></i><span>Headroom Heatmap</span></Headroom></a>
+
+        {%if session["level"]=="read_only_user"%}
+        <a href="{{ url_for('auths.contact')}}" class="nav-item nav-link {% if request.path == '/contact' %}active{% endif %} "><i class="fa fa-address-book me-2"></i>My Account</a>
         {%endif%}
+        
         <a href="{{ url_for('auths.logout')}}" class="nav-item nav-link"><i class="fa fa-power-off me-2"></i>Log Out</a>
     </div>
 </nav>
