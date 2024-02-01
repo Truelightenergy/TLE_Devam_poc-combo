@@ -18,10 +18,11 @@ from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 import logging
 from .extractor import Extractor
 from .extractor_model import ExtractorUtil
+from utils.configs import read_config
 
 
 
-
+config = read_config()
 class Util:
     """
     Handles all the api calls 
@@ -32,8 +33,8 @@ class Util:
         all the intializers will be handled here
         """
         
-        self.secret_key = "super-scret-key" #env variable
-        self.secret_salt = "secret-salt" #env variable
+        self.secret_key = config['secret_key']
+        self.secret_salt = config['secret_salt']
         self.extractor = Extractor()
         self.db_model = ExtractorUtil(self.secret_key, self.secret_salt)
 
@@ -64,12 +65,17 @@ class Util:
         query_strings["start"] = str(request.form.get('start'))
         query_strings["end"] = str(request.form.get('end'))
 
-        if request.form.get('history'):
+        if  'history' not in request.form:
+            query_strings['history'] = False
+        
+        elif request.form.get('history').lower()=='all':
             query_strings['history'] = True
+
         else:
             query_strings['history'] = False
+            query_strings['cob'] = True
 
-        query_strings["offset"] =  request.form.get('offset')
+        query_strings["offset"] =  0
         query_strings["operating_day"] = request.form.get('operating_day')
 
         
@@ -108,9 +114,12 @@ class Util:
             
             data_frame, status = self.extractor.get_custom_data(query_strings, query_strings["type"])
             file_name = f'{query_strings["curve_type"]}_{query_strings["iso"]}_{"_".join(query_strings["strip"])}_{query_strings["start"]}_{query_strings["end"]}'
+            if data_frame.empty:
+                return data_frame, "No Such Data Available"
+            
             if status == "success":
                 if query_strings["type"].lower()=="csv":
-                    if (query_strings["curve_type"]).lower()=='matrix':
+                    if (query_strings["curve_type"]).lower() in ['matrix', 'headroom']:
                         resp = Response(
                         data_frame.to_csv(header=None),
                         mimetype="text/csv",
@@ -132,10 +141,33 @@ class Util:
                         headers={'Content-Disposition':'attachment;filename='+file_name+'.json'}), status
                 
                 logging.info(f"{session['user']}: Data Extracted Successfully")
+        
+                return resp
+            return None, status 
             
-                    
-            return resp
         except:
             resp = None, 'Unable to Fetch Data'
             return resp
+        
+    def extract_operating_day(self, curve, iso):
+        """
+        extracts the operating days
+        """
+
+        return self.db_model.get_all_operating_days(curve, iso)
+    
+    def extract_operating_day_with_load_zone(self, table, load_zone):
+        """
+        extracts the operating days with load_zone
+        """
+
+        return self.db_model.get_all_operating_days_with_load_zone(table, load_zone)
+    
+    def cob_availability_check(self, table, date):
+        """
+        finds the availability check for cob
+        """
+        return self.db_model.cob_availability(table, date)
+        
+
 

@@ -61,37 +61,38 @@ class HeadroomModel:
         except:
             return False
         
-    def get_matrix_data(self, curvestart):
+    def get_matrix_data(self, curvestart, filename):
         """
         fetches the latest matrix data from db
         """
 
-        query = f"select * from trueprice.matrix where curvestart = '{curvestart}';"
+        query = f"select * from trueprice.matrix where curvestart = '{curvestart}' and control_area_type = '{filename}';"
         data = []
         try:
             results = self.engine.execute(query).fetchall()
             for row in results:
-                if row['sub_cost_component'] == 'Total Bundled Price ($/MWh)' or row['sub_cost_component'] == 'Total Contract Load (kWh)':
+                if 'Total Bundled Price' in row['sub_cost_component']:
                     data.append({"control_area_type": row['control_area_type'], "control_area": row['control_area'],
                                 "state": row['state'], "load_zone": row['load_zone'],
                                 "capacity_zone": row['capacity_zone'], "utility": row['utility'],
                                 "strip": row['strip'], "cost_group": row['cost_group'],
                                 "cost_component": row['cost_component'], "term": row['term'],
                                 "beginning_date": row['beginning_date'], "load_profile": row['load_profile'],
-                                "total_bundled_price": row['data']
+                                "total_bundled_price": row['data'],
+                                "matching_id": row["matching_id"],
+                                "lookup_id": row["lookup_id"]
                                 })
             return data
         except:
             return data
         
-    def get_ptc_data(self):
+    def get_ptc_data(self, filename):
         """
         fetches the latest ptc data from db
         """
-        current_date = datetime.datetime.now()
-        required_month = current_date.replace(day=1).date()
 
-        query = f"select * from trueprice.ptc where month::date = '{required_month}'  and curvestart = (Select curvestart from trueprice.ptc ORDER BY curvestart DESC LIMIT 1);"
+
+        query = f"select * from trueprice.ptc where control_area_type = '{filename}'  and curvestart = (Select curvestart from trueprice.ptc where control_area_type = '{filename}' ORDER BY curvestart DESC LIMIT 1);"
         data = []
         try:
             results = self.engine.execute(query).fetchall()
@@ -102,7 +103,9 @@ class HeadroomModel:
                              "strip": row['strip'], "cost_group": row['cost_group'],
                              "cost_component": row['cost_component'], "utility_name": row['utility_name'],
                              "load_profile": row["profile_load"],
-                             "month": row['month'], "data": row['data']
+                             "month": row['month'], "data": row['data'],
+                             "matching_id": row["matching_id"],
+                             "lookup_id": row["lookup_id"]
                              })
             return data
         except:
@@ -156,17 +159,17 @@ class HeadroomModel:
                             with current as (
                                 -- get the current rows in the database, all of them, not just things that will change
 
-                                select id, control_area_type, control_area, state, load_zone,
+                                select id, control_area_type, matching_id, lookup_id,  control_area, state, load_zone,
                                     capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, curvestart, ptc,
                                 from trueprice.headroom where curvestart>='{sod}' and curvestart<='{eod}' and control_area_type='{df['control_area_type'].unique()[0]}'
                             ),
                             backup as (
                                 -- take current rows and insert into database but with a new "curveend" timestamp
 
-                                insert into trueprice.headroom_history (control_area_type, control_area, state, load_zone,
+                                insert into trueprice.headroom_history (control_area_type, matching_id, lookup_id,  control_area, state, load_zone,
                                     capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, curvestart, ptc, curveend)
 
-                                select control_area_type, control_area, state, load_zone,
+                                select control_area_type, matching_id, lookup_id,  control_area, state, load_zone,
                                     capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, curvestart, ptc, {curveend} as curveend
                                 from current
                             ),
@@ -184,10 +187,10 @@ class HeadroomModel:
                             ),
 
                             updation as (
-                            insert into trueprice.headroom (control_area_type, control_area, state, load_zone,
+                            insert into trueprice.headroom (control_area_type, matching_id, lookup_id,  control_area, state, load_zone,
                                     capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, curvestart, ptc)
 
-                            select control_area_type, control_area, state, load_zone,
+                            select control_area_type, matching_id, lookup_id,  control_area, state, load_zone,
                                     capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, curvestart, ptc
                                 from trueprice.{tmp_table_name}
                             )
@@ -202,6 +205,14 @@ class HeadroomModel:
             return False
         except:
             return False
+        
+    def latest_headroom(self, dt):
+        current_date = datetime.datetime.now()
+        return (
+            dt.year == current_date.year and
+            dt.month == current_date.month
+        )
+
     
     def get_headrooms_data(self):
         """
@@ -209,14 +220,34 @@ class HeadroomModel:
         """
         
 
-        query = f"select * from trueprice.headroom where curvestart = (Select curvestart from trueprice.headroom ORDER BY curvestart DESC LIMIT 1);"
+        regions = ['ercot', 'pjm', 'isone', 'nyiso', 'miso']
+        queries = []
+
+        for region in regions:
+            query = f"""
+            SELECT *
+            FROM trueprice.headroom
+            WHERE control_area_type = '{region}' AND curvestart = (
+                SELECT curvestart
+                FROM trueprice.headroom
+                WHERE control_area_type = '{region}'
+                ORDER BY curvestart DESC
+                LIMIT 1
+            )
+            """
+            queries.append(query)
+
+        final_query = " UNION ".join(queries)
         data = []
         try:
-            results = self.engine.execute(query).fetchall()
+            results = self.engine.execute(final_query).fetchall()
             for row in results:
-                data.append({"state": row['state'], "load_zone": row['load_zone'], "utility": row['utility'],
-                             "headroom": row['headroom'], "headroom_prct": row['headroom_prct']
-                             })
+                if(self.latest_headroom(row['month'])):
+                    data.append({"state": row['state'], "utility": row['utility'], "load_zone": row['load_zone'],
+                                "utility_price": round(float(row['ptc']),2), "retail_price": round(float(row['total_bundled_price']),2),
+                                "headroom": round(float(row['headroom']),2), "headroom_prct": round(float(row['headroom_prct']),2),
+                                "customer_type": row['cost_component']
+                                })
             return data
         except:
             return data

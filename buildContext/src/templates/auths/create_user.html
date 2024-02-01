@@ -92,29 +92,29 @@
             <div class="container-fluid pt-4 px-4">
                 <div class="row g-4 align-items-center justify-content-center mx-0  mt-5">
                     <div class="col-sm-12 col-xl-6">
-                        <div class="bg-secondary rounded h-100 p-4">
-                            <h6 class="mb-4">Create User</h6>
+                        <div class="bg-light text-dark rounded h-100 p-4">
+                            <h6 class="mb-4 text-dark">Create User</h6>
                             <form id="download_forms" enctype="multipart/form-data" method="post">
                                 <div class="mb-3">
                                     <label for="email" class="form-label">Email</label>
-                                    <input type="input" placeholder="Enter your email"  class="form-control mt-2 bg-dark text-white" required id="email" name="email">
+                                    <input type="input" placeholder="Enter your email"  class="form-control mt-2  " required id="email" name="email">
                                     
                                     
                                 </div>
                                 <div class="mb-3">
-                                    <label for="password" class="form-label">Email</label>
-                                    <input type="password" placeholder="Enter your password" class="form-control mt-2 bg-dark text-white" required id="password" name="password" >
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" placeholder="Enter your password" class="form-control mt-2  " required id="password" name="password" >
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="confirm" class="form-label">Email</label>
-                                    <input type="password" placeholder="Enter your password again" class="form-control mt-2 bg-dark text-white" required id="confirm" name="confirm" >
+                                    <label for="confirm" class="form-label">Confirm Password</label>
+                                    <input type="password" placeholder="Enter your password again" class="form-control mt-2  " required id="confirm" name="confirm" >
                                 </div>
 
 
                                 <div class="mb-3">
                                     <label for="prv_level" class="form-label">Privileged Level</label>
-                                    <select name="prv_level" class="form-control mt-2 bg-dark text-white" >
+                                    <select name="prv_level" class="form-control mt-2 form-select " >
                                         <option value="admin">Admin</option>
                                         <option value="read_write_user">Read-write user</option>
                                         <option value="read_only_user">Read-only user</option>
@@ -123,7 +123,7 @@
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <input type="submit" onclick="confirm_password()" value="Create User" id="save" class="btn btn-outline-primary w-100 m-2" />
+                                    <input type="submit" onclick="confirm_password()" value="Create User" id="save" class="btn btn-primary w-100 m-2" />
                                 </div>
                             </form>
                         </div>

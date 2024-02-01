@@ -45,3 +45,58 @@ class ExtractorUtil:
             return None, None
         except:
             return None, None
+        
+    def get_all_operating_days(self, curve, iso):
+        """
+        fetches the latest operating day from table
+        """
+        operating_days = []
+        if curve.lower() in ['energy', 'nonenergy', 'rec']:
+            table = f"{iso}_{curve}"
+            query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table};"
+        else:
+            table = curve
+            query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table} WHERE control_area_type = '{iso}';"
+        try:
+            operating_days = []
+            result = self.engine.execute(query)
+            if result.rowcount >0:
+                for row in result:
+                    result = row
+                    operating_days.append(result[0].strftime('%Y-%m-%d'))
+            return operating_days
+        except:
+            return operating_days
+        
+    def get_all_operating_days_with_load_zone(self, table, load_zone):
+        """
+        fetches the latest operating day from table
+        """
+        operating_days = []
+        query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table} WHERE load_zone = '{load_zone}';"
+        
+        try:
+            operating_days = []
+            result = self.engine.execute(query)
+            if result.rowcount >0:
+                for row in result:
+                    result = row
+                    operating_days.append(result[0].strftime('%Y-%m-%d'))
+            return operating_days
+        except:
+            return operating_days
+        
+    def cob_availability(self, table, date):
+        """
+        availability check for cob
+        """
+
+        try:
+
+            query = f"SELECT * FROM trueprice.{table} where cob = {True} and curvestart::date='{date}';"
+            result = self.engine.execute(query)
+            if result.rowcount >0:
+                return True
+            return False
+        except:
+            return False

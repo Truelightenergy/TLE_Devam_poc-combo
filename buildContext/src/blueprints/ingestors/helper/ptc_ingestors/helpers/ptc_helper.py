@@ -30,7 +30,7 @@ class PTCHelper:
         """
         try:
             df = data_frame
-            df_data = df.iloc[25:]
+            df_data = df.iloc[27:]
             df_data = df_data.dropna(axis = 1, how = 'all')
             df_data = df_data.dropna(axis = 0, how = 'all')
             df_data.reset_index(inplace=True, drop=True)
@@ -41,7 +41,7 @@ class PTCHelper:
             df_data = self.renaming_columns(df_data)
             
             # making the headers dataframe and tranposing it
-            df_info = df.iloc[0:25]
+            df_info = df.iloc[0:27]
             # df_info = df.iloc[[1, 2, 3, 4, 5, 6, 7, 8, 9, 14, 15]]
             df_info = df_info.reset_index(drop=True)
             df_info = df_info.dropna(axis = 1, how = 'all')
@@ -53,12 +53,14 @@ class PTCHelper:
             
             
             df_info.columns = [column.lower() for column in df_info.columns]
-            df_info =  df_info[['control area', 'state', 'load zone', 
+            df_info =  df_info[['matching id', 'lookup id1', 'control area', 'state', 'load zone', 
                                 'capacity zone', 'utility', 'block type', 'cost group', 
                                 'cost component', 'utility name', 'rate class/load profile']]
             df_info = df_info.loc[:, ~df_info.columns.duplicated()]
             df_info.reset_index(inplace=True, drop=True)
 
+            # filling matching id
+            df_info['matching id'] = df_info['matching id'].fillna('N/A')
             if df_info.isnull().values.any():
                 raise Exception("File Format Not Matched")
             
@@ -70,7 +72,7 @@ class PTCHelper:
                 
                 tmp_df = df_data[["Date"]].copy()
                 tmp_df.loc[:, 'Data'] = df_data.iloc[:, index+1]
-                labels = ['control area', 'state', 'load zone', 
+                labels = ['matching id', 'lookup id1', 'control area', 'state', 'load zone', 
                             'capacity zone', 'utility', 'block type', 'cost group', 
                             'cost component', 'utility name', 'rate class/load profile']
                 for label in labels:

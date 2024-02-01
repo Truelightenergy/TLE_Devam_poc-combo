@@ -69,34 +69,37 @@
         <div class="container-fluid">
             <div class="row h-100 align-items-center justify-content-center" style="min-height: 100vh;">
                 <div class="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4">
-                    <div class="bg-secondary rounded p-4 p-sm-5 my-4 mx-3">
+                    <div class="bg-light text-dark rounded p-4 p-sm-5 my-4 mx-3">
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <a href="{{ url_for('auths.index') }}" class="">
-                                <h3 class="text-primary"><i class="fa fa-bolt me-2"></i>TRUEPrice</h3>
+                                <h3 class="text-secondary"><i class="fa fa-bolt me-2"></i>TRUEPrice</h3>
                             </a>
-                            <h3>Sign Up</h3>
+                            <h3 class="text-secondary">Sign Up</h3>
                         </div>
                         <form id="login_forms" enctype="multipart/form-data" method="post">
-                            <div class="form-floating mb-3">
-                                <input type="email" required class="form-control" id="email" name="email" placeholder="name@example.com">
+                            <div class=" mb-3">
                                 <label for="email">Email address</label>
+                                <input type="email" required class="form-control" id="email" name="email" placeholder="name@example.com">
+                                
                             </div>
-                            <div class="form-floating mb-4">
-                                <input type="password" required class="form-control" id="password" name="password" placeholder="Password">
+                            <div class="mb-4">
                                 <label for="password">Password</label>
+                                <input type="password" required class="form-control" id="password" name="password" placeholder="Password">
+                                
                             </div>
-                            <div class="form-floating mb-4">
-                                <input type="password" required class="form-control" id="confirm" name="confirm" placeholder="Confirm Password">
+                            <div class="mb-4">
                                 <label for="confirm">Confirm Password</label>
+                                <input type="password" required class="form-control" id="confirm" name="confirm" placeholder="Confirm Password">
+                                
                             </div>
-                            <div class="d-flex align-items-center justify-content-between mb-4">
+                            <!-- <div class="d-flex align-items-center justify-content-between mb-4">
                                 <div class="form-check">
-                                    <!-- blank -->
+                                    
                                 </div>
                                 <a href="">Forgot Password</a>
-                            </div>
+                            </div> -->
                             <input type="submit" onclick="confirm_password()" class="btn btn-primary py-3 w-100 mb-4" value= "Sign Up" />
-                            <p class="text-center mb-0">Already have an Account? <a href="{{ url_for('auths.login')}}">Log In</a></p>
+                            <p class="text-center text-dark mb-0">Already have an Account? <a href="{{ url_for('auths.login')}}" class="text-secondary">Log In</a></p>
                         </form>
                     </div>
                 </div>

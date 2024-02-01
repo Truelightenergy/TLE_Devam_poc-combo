@@ -73,13 +73,13 @@
                                 {% for row in data %}
                                 <div class="mb-3">
                                     <label for="email" class="form-label">Email</label>
-                                    <input type="input" placeholder="Enter your Email" value="{{row['email']}}"   class="form-control mt-2 bg-dark text-white " disabled required id="email" name="email">
+                                    <input type="input" placeholder="Enter your Email" value="{{row['email']}}"   class="form-control mt-2 " disabled required id="email" name="email">
                                                                 
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="prv_level" class="form-label">Privileged Level</label>
-                                    <select name="prv_level" id ="prv_level" class="form-control mt-2 bg-dark text-white" >
+                                    <select name="prv_level" id ="prv_level" class="form-control mt-2  " >
                                         <option value="admin" {% if row['privileged_level'] == 'admin' %} selected {% endif %}>Admin</option>
 										<option value="read_write_user"{% if row['privileged_level'] == 'read_write_user' %} selected{% endif %}>Read & Write User</option>
 										<option value="read_only_user"{% if row['privileged_level'] == 'read_only_user' %} selected{% endif %}>Read Only User</option>

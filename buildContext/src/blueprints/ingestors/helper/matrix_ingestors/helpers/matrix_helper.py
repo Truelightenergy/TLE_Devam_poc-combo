@@ -14,7 +14,7 @@ class MatrixHelper:
         select the feature of importance
         """
 
-        df = df[['Beginning Date', 'Control Area', 'State', 'Load Zone',
+        df = df[['Matching ID', 'Lookup ID1', 'Beginning Date', 'Control Area', 'State', 'Load Zone',
                     'Capacity Zone','Utility', 'Block Type', 'Cost Group',
                     'Cost Component', 'Load Profile', 'Term (Months)', 'Sub Cost Component', 'Data']]
         return df
@@ -23,7 +23,7 @@ class MatrixHelper:
         """
         rename the columns accordingly
         """
-        df.columns  = ['Beginning Date', 'Control Area', 'State', 'Load Zone',
+        df.columns  = ['Matching ID', 'Lookup ID1', 'Beginning Date', 'Control Area', 'State', 'Load Zone',
                     'Capacity Zone','Utility', 'Block Type', 'Cost Group',
                     'Cost Component', 'Load Profile', 'Term', 'Sub Cost Component', 'Data']
         
@@ -58,6 +58,9 @@ class MatrixHelper:
             df_info.columns = df_info.iloc[0]
             df_info = df_info.drop(df_info.index[0])
             df_info.reset_index(inplace=True, drop=True)
+
+            # filling matching id
+            df_info['Matching ID'] = df_info['Matching ID'].fillna('N/A')
 
             if df_info.isnull().values.any():
                 raise Exception("File Format Not Matched")

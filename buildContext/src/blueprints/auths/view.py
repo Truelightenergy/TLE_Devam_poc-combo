@@ -5,19 +5,29 @@ from .util import Util
 from .auth_model import AuthUtil
 from utils.revoke_tokens import RevokedTokens
 from utils.roles import RolesDecorator
-from utils.keys import secret_key, secret_salt
+from utils.configs import read_config
 from utils.blocked_tokens import revoked_jwt
+from ..headrooms.headroom_util import Util as head_util
+from ..graph_view.util import Util as gv_util
+from ..notifier.util import Util as notif_util
+from datetime import datetime , timedelta
+from dateutil.relativedelta import relativedelta
+
+config = read_config()
+auths = Blueprint(config['auths_path'], __name__,
+                    template_folder=config['template_path'],
+                    static_folder=config['static_path'])
 
 
-auths = Blueprint('auths', __name__,
-                    template_folder="../templates/",
-                    static_folder='static')
-
-
+secret_key = config['secret_key']
+secret_salt = config['secret_salt']
 
 db_obj = AuthUtil(secret_key, secret_salt)
 api_util = Util(secret_key, secret_salt)
 roles = RolesDecorator(revoked_jwt)
+headroom_util = head_util()
+graph_view_util = gv_util()
+notifier_util = notif_util()
 
 
 def setup_session(auth_token):
@@ -157,6 +167,25 @@ def logout():
         return redirect(url_for("auths.login"))
     
 
+@auths.route('/contact', methods=['GET', 'POST'])
+@roles.readonly_token_required
+def contact():
+    """
+    contact us from the application.
+    ---
+    tags:
+      - Authentication
+    security:
+        - Bearer: []
+    responses:
+      200:
+        description: contact successful
+      302:
+        description: Redirect to login page
+    """
+    return render_template("auths/contact.html")
+    
+
 @auths.route('/', methods=['GET', 'POST'])
 @roles.readonly_token_required
 def index():
@@ -180,6 +209,33 @@ def home():
     """
     return render_template("auths/index.html")
 
+@auths.route('/get_graphview', methods=['GET', 'POST'])
+@roles.readonly_token_required
+def get_graphview():
+  notification_data = notifier_util.fetch_todays_notifications()
+  curve_start = notifier_util.fetch_latest_time_stamp()
+  operating_day_timestamp = curve_start.strftime('%Y-%m-%d %H:%M:%S')
+  operating_day = curve_start.strftime('%Y-%m-%d')
+  d_o_d_timestamp = (curve_start - timedelta(days=1)).strftime('%Y-%m-%d')
+  start = d_o_d_timestamp
+  end = (curve_start + relativedelta(months=61)).strftime('%Y-%m-%d')
+  graph, params = graph_view_util.generate_graph_view_for_home_screen(notification_data[0], operating_day,operating_day_timestamp, d_o_d_timestamp, start, end)
+  
+  return {"graph":graph, "payload":params}
+
+@auths.route('/get_heatmap', methods=['GET', 'POST'])
+@roles.readonly_token_required
+def get_heatmap():
+  heatmap = headroom_util.get_headroom_heatmap()
+  return heatmap
+
+@auths.route('/get_notifications', methods=['GET', 'POST'])
+@roles.readonly_token_required
+def get_notifications():
+  
+  notification_data = notifier_util.fetch_todays_notifications()
+  return notification_data
+   
 @auths.route('/create_user', methods=['GET', 'POST'])
 @roles.admin_token_required
 def create_user():

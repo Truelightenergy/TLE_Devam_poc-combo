@@ -809,112 +809,209 @@ services:
 
         -- Matrix schema starts here
 
-        CREATE TABLE trueprice.matrix (
-        id serial PRIMARY KEY,
-        curveStart TIMESTAMPTZ,
-        control_area_type varchar(100),
-        control_area varchar(100),
-        state varchar(100),
-        load_zone varchar(100),
-        capacity_zone varchar(100),
-        utility varchar(100),
-        strip varchar(4),
-        cost_group varchar(100),
-        cost_component varchar(100),
-        sub_cost_component varchar(100),
-        term NUMERIC(20,10), 
-        beginning_date TIMESTAMPTZ,
-        load_profile varchar(100),
-        data NUMERIC(20,10)
-      );
-
-      CREATE TABLE trueprice.matrix_history(
-        id serial PRIMARY KEY,
-        curveStart TIMESTAMPTZ,
-        curveEnd TIMESTAMPTZ,
-        control_area_type varchar(100),
-        control_area varchar(100),
-        state varchar(100),
-        load_zone varchar(100),
-        capacity_zone varchar(100),
-        utility varchar(100),
-        strip varchar(4),
-        cost_group varchar(100),
-        cost_component varchar(100),
-        sub_cost_component varchar(100),
-        term NUMERIC(20,10), 
-        beginning_date TIMESTAMPTZ,
-        load_profile varchar(100),
-        data NUMERIC(20,10)
-      );
-      -- Matrix schema ends here
-
-        -- headroom calculations schema starts from here
-
-      CREATE TABLE trueprice.headroom(
-        id serial PRIMARY KEY,
-        curveStart TIMESTAMPTZ,
-        month TIMESTAMPTZ,
-        control_area_type varchar(100),
-        control_area varchar(100),
-        state varchar(100),
-        load_zone varchar(100),
-        capacity_zone varchar(100),
-        utility varchar(100),
-        strip varchar(4),
-        cost_group varchar(100),
-        cost_component varchar(100),
-        headroom NUMERIC(20,10),
-        headroom_prct NUMERIC(20,10),
-        term NUMERIC(20,10),
-        beginning_date TIMESTAMPTZ,
-        load_profile varchar(100),
-        utility_name varchar(100),
-        total_bundled_price NUMERIC(20,10),
-        ptc NUMERIC(20,10)
-        
-      ); 
-
-      CREATE TABLE trueprice.headroom_history(
-        id serial PRIMARY KEY,
-        curveStart TIMESTAMPTZ,
-        curveend TIMESTAMPTZ,
-        month TIMESTAMPTZ,
-        control_area_type varchar(100),
-        control_area varchar(100),
-        state varchar(100),
-        load_zone varchar(100),
-        capacity_zone varchar(100),
-        utility varchar(100),
-        strip varchar(4),
-        cost_group varchar(100),
-        cost_component varchar(100),
-        headroom NUMERIC(20,10),
-        headroom_prct NUMERIC(20,10),
-        term NUMERIC(20,10),
-        beginning_date TIMESTAMPTZ,
-        load_profile varchar(100),
-        utility_name varchar(100),
-        total_bundled_price NUMERIC(20,10),
-        ptc NUMERIC(20,10)
-        
-      ); 
- 
-      
-      -- headroom calculations schema ends here
-
-        -- cron job for Headroom calculations
-        CREATE TABLE trueprice.headroom_trigger(
-          change_id SERIAL PRIMARY KEY,
-          curvestart TIMESTAMPTZ,
-          filename varchar(255),
-          status varchar(255) Default 'waiting'
+          CREATE TABLE trueprice.matrix (
+          id serial PRIMARY KEY,
+          curveStart TIMESTAMPTZ,
+          control_area_type varchar(100),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100),
+          term NUMERIC(20,10), 
+          beginning_date TIMESTAMPTZ,
+          load_profile varchar(100),
+          data NUMERIC(20,10)
+        );
+          CREATE TABLE trueprice.matrix (
+          id serial PRIMARY KEY,
+          curveStart TIMESTAMPTZ,
+          control_area_type varchar(100),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100),
+          term NUMERIC(20,10), 
+          beginning_date TIMESTAMPTZ,
+          load_profile varchar(100),
+          data NUMERIC(20,10)
         );
 
-        --notifier v2 changes
-         -- email_template_content
-        UPDATE trueprice.email_template_contents set body_content = '<html><body><p>Dear {username},<br/> Energy in {location} has {price_shift} by {price_shift_value} resulting in a {price_shift_prct} gain.<br/>The TRUEPrice Team </p></body></html>'
-        WHERE template_id=1 and language_id=1 AND subject_content = 'Price Change Alert';
+        CREATE TABLE trueprice.matrix_history(
+          id serial PRIMARY KEY,
+          curveStart TIMESTAMPTZ,
+          curveEnd TIMESTAMPTZ,
+          control_area_type varchar(100),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100),
+          term NUMERIC(20,10), 
+          beginning_date TIMESTAMPTZ,
+          load_profile varchar(100),
+          data NUMERIC(20,10)
+        );
+        -- Matrix schema ends here
+        CREATE TABLE trueprice.matrix_history(
+          id serial PRIMARY KEY,
+          curveStart TIMESTAMPTZ,
+          curveEnd TIMESTAMPTZ,
+          control_area_type varchar(100),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          sub_cost_component varchar(100),
+          term NUMERIC(20,10), 
+          beginning_date TIMESTAMPTZ,
+          load_profile varchar(100),
+          data NUMERIC(20,10)
+        );
+        -- Matrix schema ends here
+
+          -- headroom calculations schema starts from here
+          -- headroom calculations schema starts from here
+
+        CREATE TABLE trueprice.headroom(
+          id serial PRIMARY KEY,
+          curveStart TIMESTAMPTZ,
+          month TIMESTAMPTZ,
+          control_area_type varchar(100),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          headroom NUMERIC(20,10),
+          headroom_prct NUMERIC(20,10),
+          term NUMERIC(20,10),
+          beginning_date TIMESTAMPTZ,
+          load_profile varchar(100),
+          utility_name varchar(100),
+          total_bundled_price NUMERIC(20,10),
+          ptc NUMERIC(20,10)
+          
+        ); 
+        CREATE TABLE trueprice.headroom(
+          id serial PRIMARY KEY,
+          curveStart TIMESTAMPTZ,
+          month TIMESTAMPTZ,
+          control_area_type varchar(100),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          headroom NUMERIC(20,10),
+          headroom_prct NUMERIC(20,10),
+          term NUMERIC(20,10),
+          beginning_date TIMESTAMPTZ,
+          load_profile varchar(100),
+          utility_name varchar(100),
+          total_bundled_price NUMERIC(20,10),
+          ptc NUMERIC(20,10)
+          
+        ); 
+
+        CREATE TABLE trueprice.headroom_history(
+          id serial PRIMARY KEY,
+          curveStart TIMESTAMPTZ,
+          curveend TIMESTAMPTZ,
+          month TIMESTAMPTZ,
+          control_area_type varchar(100),
+          control_area varchar(100),
+          state varchar(100),
+          load_zone varchar(100),
+          capacity_zone varchar(100),
+          utility varchar(100),
+          strip varchar(4),
+          cost_group varchar(100),
+          cost_component varchar(100),
+          headroom NUMERIC(20,10),
+          headroom_prct NUMERIC(20,10),
+          term NUMERIC(20,10),
+          beginning_date TIMESTAMPTZ,
+          load_profile varchar(100),
+          utility_name varchar(100),
+          total_bundled_price NUMERIC(20,10),
+          ptc NUMERIC(20,10)
+          
+        ); 
+
+        -- headroom calculations schema ends here
+
+          -- cron job for Headroom calculations
+          CREATE TABLE trueprice.headroom_trigger(
+            change_id SERIAL PRIMARY KEY,
+            curvestart TIMESTAMPTZ,
+            filename varchar(255),
+            status varchar(255) Default 'waiting'
+          );
+          -- cron job for Headroom calculations
+          CREATE TABLE trueprice.headroom_trigger(
+            change_id SERIAL PRIMARY KEY,
+            curvestart TIMESTAMPTZ,
+            filename varchar(255),
+            status varchar(255) Default 'waiting'
+          );
+
+          --notifier v2 changes
+          -- email_template_content
+          UPDATE trueprice.email_template_contents set body_content = '<html><body><p>Dear {username},<br/> Energy in {location} has {price_shift} by {price_shift_value} resulting in a {price_shift_prct} gain.<br/>The TRUEPrice Team </p></body></html>'
+          WHERE template_id=1 and language_id=1 AND subject_content = 'Price Change Alert';
+          --notifier v2 changes
+          -- email_template_content
+          UPDATE trueprice.email_template_contents set body_content = '<html><body><p>Dear {username},<br/> Energy in {location} has {price_shift} by {price_shift_value} resulting in a {price_shift_prct} gain.<br/>The TRUEPrice Team </p></body></html>'
+          WHERE template_id=1 and language_id=1 AND subject_content = 'Price Change Alert';
+
+          -- adding matching_id and lookup_id into ptc, matrix, headroom
+          ALTER TABLE trueprice.ptc
+            ADD COLUMN matching_id TEXT,
+            ADD COLUMN lookup_id TEXT;
+          ALTER TABLE trueprice.ptc_history
+            ADD COLUMN matching_id TEXT,
+            ADD COLUMN lookup_id TEXT;
+
+          ALTER TABLE trueprice.matrix
+            ADD COLUMN matching_id TEXT,
+            ADD COLUMN lookup_id TEXT;
+          ALTER TABLE trueprice.matrix_history
+            ADD COLUMN matching_id TEXT,
+            ADD COLUMN lookup_id TEXT;
+
+          ALTER TABLE trueprice.headroom
+            ADD COLUMN matching_id TEXT,
+            ADD COLUMN lookup_id TEXT;
+          ALTER TABLE trueprice.headroom_history
+            ADD COLUMN matching_id TEXT,
+            ADD COLUMN lookup_id TEXT;
+
+          ALTER TABLE  trueprice.price_changes_notifications
+            ADD notification_date TIMESTAMPTZ DEFAULT '2023-12-12'::TIMESTAMPTZ;
 
         EOSQL
   # adminer: # for postgres, php admin interface

@@ -11,9 +11,10 @@ import plotly.express as px
 import random
 from .graphview_model import GraphView_Util
 from datetime import datetime
+from utils.configs import read_config
 
 
-
+config = read_config()
 class Util:
     """
     handles the operations of the garph view utility
@@ -24,8 +25,8 @@ class Util:
         loads the models
         """
 
-        secret_key = "super-scret-key"
-        secret_salt = "secret-salt"
+        secret_key = config['secret_key']
+        secret_salt = config['secret_salt']
         self.db_model = GraphView_Util(secret_key, secret_salt)
 
     def generate_random_color(self):
@@ -97,13 +98,16 @@ class Util:
         """
         generates line charts for each set of parameters in the array
         """
-        pio.templates.default = "plotly_dark"
+        pio.templates.default = "plotly"
         fig = go.Figure()
 
 
         for i, params in enumerate(parameters_array):
             if i>0:
-                datetime_object = datetime.strptime(params['operatin_day_timestamps'], '%Y-%m-%d %H:%M')
+                try:
+                    datetime_object = datetime.strptime(params['operatin_day_timestamps'], '%Y-%m-%d %H:%M')
+                except:
+                    datetime_object = datetime.strptime(params['operatin_day_timestamps'], '%Y-%m-%d')
                 date_only_string = datetime_object.strftime('%Y-%m-%d')
 
                 params['operatin_day_timestamps'] = date_only_string
@@ -133,29 +137,49 @@ class Util:
 
             
             color = self.generate_random_color()
-
+            update = 'Interaday'
+            if params['cob']== True or params['cob']=='true':
+                update = 'COB'
             # df = self.db_model.get_data(**params)  # Unpacking parameters for the get_data method
             fig.add_trace(go.Scatter(
                 x=df["month"], 
                 y=df["data"], 
                 mode="markers+lines",
-                name=params.get("label", f"{params['loadZone']}: {params['operating_day']}"),  # You can pass a label for each line
-                line_shape='linear',
-                line=dict(color=color),  # Set the line color here if it's the same for all
+                name=params.get("label", f"{params['loadZone']}: {params['operatin_day_timestamps']} {update}"),  # You can pass a label for each line
+                line_shape='linear'
+                # line=dict(color=color),  # Set the line color here if it's the same for all
             ))
 
-        fig.update_layout(
-            template="plotly_dark",
-            title="Energy prices over time",
-            title_x=0.5,
-            xaxis_title="Date",
-            yaxis_title="Energy",
-            xaxis=dict(showgrid=False),
-            hovermode="x unified",
-        )
+            fig.update_layout(
+                template="plotly",
+                title="Energy Prices Over Time (5x16)",
+                title_x=0.5,
+                xaxis_title="Date",
+                yaxis_title="Price ($/MWh)",
+                xaxis=dict(showgrid=False),
+                hovermode="x unified",
+            )
 
+        
         graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
         return graphJSON
+    
+    def generate_graph_view_for_home_screen(self, raw_params, operating_day, operating_day_ts, prev_day, start, end):
+        """
+        creates the graphview based on the raw parameters
+        """
+        control_table = ((raw_params.split(',')[0]).split('in')[-1]).strip()
+        load_zone = ((raw_params.split(',')[1]).split('(5x16)')[0]).strip()
+        previous_day = self.db_model.get_previous_day(load_zone, control_table)
+        if previous_day is not None:
+            prev_day = previous_day.strftime('%Y-%m-%d')
+
+        params= [{'data_type': 'Energy', 'control_table': f'{control_table.lower()}_energy', 'loadZone': load_zone, 'operating_day': operating_day, 'operatin_day_timestamps': operating_day_ts, 'history': 'false', 'cob': 'false', 'start': start, 'end': end}, 
+         {'data_type': 'Energy', 'control_table': f'{control_table.lower()}_energy', 'loadZone': load_zone, 'operating_day': prev_day, 'operatin_day_timestamps': prev_day, 'history': 'false', 'cob': 'false', 'start': start, 'end': end}]
+        
+        graph = self.generate_line_charts(params)
+        
+        return graph, params
 
     def get_email(self, token):
         """
@@ -177,3 +201,6 @@ class Util:
         """
 
         return self.db_model.get_graph_data(garph_id)
+    
+    
+    

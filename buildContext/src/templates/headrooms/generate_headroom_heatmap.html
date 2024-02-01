@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Headroom Heatmaps</title>
+    <title>Headroom Heatmap</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -65,17 +65,22 @@
             {% include 'notification.html'%}
 
             <!-- Blank Start -->
+            
             <div class="container-fluid pt-4 px-4">
                 <div class="row g-4 align-items-center justify-content-center mx-0  mt-5">
-                    <div class="col-sm-12 col-xl-12">
-                        <div class="bg-secondary rounded h-100 p-4">
-                            <h6 class="mb-4">Hearoom Heatmaps</h6>
+                    <div class="col-md-12 col-xl-12">
+                        <div class="bg-light text-dark rounded h-100 p-4">
+                            <h6 class="mb-4 text-dark">Headroom Heatmap</h6>
+                              
+                            
                             <div style="height: 700px;" id='chart' class='chart'></div>
                         </div>
                     </div>                
             </div>
-            <div id='chart' class='chart'”></div>
-            <table id="data-table" class="table-dark table-hover table">
+            
+            <div id='chart' class='chart'></div>
+            <div style="max-width: 100; overflow-y: auto; overflow-x: auto;">
+            <table id="data-table"  class=" text-dark table-hover table">
                 <!-- Table headers will be added dynamically using JavaScript -->
                 <thead>
                     <tr>
@@ -87,6 +92,9 @@
                 </tbody>
             </table>
             </div>
+            </div>
+                      
+            
             <!-- Blank End -->
 
 
@@ -104,9 +112,10 @@
     </div>
 
 <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+
 <script type='text/javascript'>
 var json_data = {{ data | tojson }}; 
-    
+
 </script>
 
 
@@ -123,11 +132,16 @@ var json_data = {{ data | tojson }};
 
     <!-- Template Javascript -->
     <!-- <script src="static/js/main.js"></script> -->
+    
+    
     <script  src="{{ url_for('static', filename='js/heatmap_mapper.js')}}"></script>
+    
     <script  src="{{ url_for('static', filename='js/main.js')}}"></script>
     <script  src="{{ url_for('static', filename='js/data_loader_graph_view.js')}}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
     <script>
+    
 
         var token = "{{session.get('jwt_token')}}";
     </script>

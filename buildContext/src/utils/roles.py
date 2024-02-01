@@ -1,11 +1,14 @@
 from functools import wraps
 from flask import session, request, jsonify, url_for, redirect, make_response
 from utils.db_utils import DataBaseUtils
-from utils.keys import secret_key, secret_salt
+from utils.configs import read_config
 
+config = read_config()
 
 class RolesDecorator:
     def __init__(self, revoked_jwt):
+        secret_key = config['secret_key']
+        secret_salt = config['secret_salt']
         self.db_obj = DataBaseUtils(secret_key, secret_salt)
         self.revoked_jwt = revoked_jwt
 
@@ -14,7 +17,7 @@ class RolesDecorator:
         # Redirect to the new URL
         
         response = make_response('')
-        response.headers['Location'] = '/login'
+        response.headers['Location'] = config['login_location']
         response.status_code = 302
         return response
     
@@ -23,7 +26,7 @@ class RolesDecorator:
     
         # Redirect to the new URL
         response = make_response('')
-        response.headers['Location'] = '/maintainance'
+        response.headers['Location'] = config['mantainance_location']
         response.status_code = 302
         return response
 
@@ -56,7 +59,7 @@ class RolesDecorator:
                 return jsonify({'message': 'Token is Invalid'}) if 'Authorization' in request.headers else self.login()
             
             # handling case where no role is available
-            if user_role not in ('read_only_user', 'admin', 'read_write_user'):
+            if user_role not in (config['admin_role'], config['read_write_role'], config['read_only_role']):
                 return jsonify({'message': 'Unauthorized access'}) if 'Authorization' in request.headers else self.login()
             
             # handling case where user is disabled or not
@@ -69,7 +72,7 @@ class RolesDecorator:
                 return jsonify({'message': 'Token is expired'}) if 'Authorization' in request.headers else self.login()
 
             # api/ui disable check
-            if user_role !="admin":
+            if user_role !=config['admin_role']:
                 if 'Authorization' in request.headers:
                     if not self.db_obj.verify_api():
                         return jsonify({'message': 'API Disabled'})
@@ -114,7 +117,7 @@ class RolesDecorator:
                 return jsonify({'message': 'Token is Invalid'}) if 'Authorization' in request.headers else self.login()
 
              # handling case where no role is available
-            if user_role not in ('admin', 'read_write_user'):
+            if user_role not in (config['admin_role'], config['read_write_role']):
                 return jsonify({'message': 'Unauthorized access'}) if 'Authorization' in request.headers else self.login()
             
             # handling case where user is disabled or not
@@ -127,7 +130,7 @@ class RolesDecorator:
                 return jsonify({'message': 'Token is expired'}) if 'Authorization' in request.headers else self.login()
             
             # api/ui disable check
-            if user_role !="admin":
+            if user_role !=config['admin_role']:
                 if 'Authorization' in request.headers:
                     if not self.db_obj.verify_api():
                         return jsonify({'message': 'API Disabled'})
@@ -167,7 +170,7 @@ class RolesDecorator:
                 return jsonify({'message': 'Token is Invalid'}) if 'Authorization' in request.headers else self.login()
 
             # handling case where no role is available
-            if user_role not in ('admin'):
+            if user_role not in (config['admin_role']):
                 return jsonify({'message': 'Unauthorized access'}) if 'Authorization' in request.headers else self.login()
             
             # handling case where user is disabled or not

@@ -51,6 +51,8 @@ class Util:
         if (latest_curve_data is None) or (prev_curve_data is None):
             self.db_util.update_notification_status(curvestart, filename)
             return
+        latest_curve_data = self.key_nodals(latest_curve_data, filename)
+        prev_curve_data = self.key_nodals(prev_curve_data, filename)
         # increase volume
         increased_data = self.notifications_item_calculations(latest_curve_data, prev_curve_data, "increase")
         # decrease volume
@@ -65,6 +67,29 @@ class Util:
             print(f"Unable to add notifciations for upload {filename}_{curvestart}")
 
         return
+    
+    def key_nodals(self, dataframe, filename):
+        """
+        filters only key nodals point
+        """
+
+        # for ercot
+        if 'ercot' in filename.lower():
+            filters = ['NORTH ZONE']
+        # for nyiso
+        elif 'nyiso' in filename.lower():
+            filters = ['ZONE A', 'ZONE G', 'ZONE J']
+        # for pjm
+        elif 'pjm' in filename.lower():
+            filters = ['AD HUB', 'WEST HUB', 'EAST HUB', 'NI HUB']
+        # for isone
+        elif 'isone' in filename.lower():
+            filters = ['MASS HUB']
+        else:
+            filters = ['NoneValue']
+
+        dataframe = dataframe[dataframe['load_zone'].isin(filt for filt in filters)]
+        return dataframe
 
     def setup_notifications(self):
         """
@@ -74,3 +99,27 @@ class Util:
         for row in results:
             self.calculate_price_change(row['curvestart'], row['filename'])
         return None
+    
+    def fetch_todays_notifications(self):
+        """
+        extracts all latest notifications
+        """
+
+        notification_data = self.db_util.extract_latest_notifications()
+        notification_data = sorted(notification_data, key=lambda x: x['price_shift_prct'],  reverse=True)[:9]
+        processed_notifications = []
+        for notification in notification_data:
+            if notification['price_shift'] == 'increase':
+                weigh = 'gain'
+            else:
+                weigh = 'loss'
+            processed_notifications.append(f"The prompt month energy in in {notification['location']} has {notification['price_shift']} by ${round(notification['price_shift_value'], 2)}($/KWh) resulting in a {round(notification['price_shift_prct'], 2)}% {weigh}.")
+
+
+        return processed_notifications
+    
+    def fetch_latest_time_stamp(self):
+        """
+        fetch latest curvestart from the ingestion
+        """
+        return self.db_util.fetch_latest_curve_date()

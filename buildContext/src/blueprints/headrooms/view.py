@@ -5,15 +5,16 @@ from .headroom_util import Util
 from .headroom_model import HeadroomModel
 from utils.revoke_tokens import RevokedTokens
 from utils.roles import RolesDecorator
-from utils.keys import secret_key, secret_salt
+from utils.configs import read_config
 from utils.blocked_tokens import revoked_jwt
 
+config = read_config()
+headrooms = Blueprint(config['headrooms_path'], __name__,
+                    template_folder=config['template_path'],
+                    static_folder=config['static_path'])
 
-headrooms = Blueprint('headrooms', __name__,
-                    template_folder="../templates/",
-                    static_folder='static')
-
-
+secret_key = config['secret_key']
+secret_salt = config['secret_salt']
 db_obj = HeadroomModel(secret_key, secret_salt)
 api_util = Util()
 roles = RolesDecorator(revoked_jwt)
@@ -29,7 +30,7 @@ def setup_session(auth_token):
     session["level"] = payload["role"]
 
 @headrooms.route('/generate_headroom_heatmap', methods=['GET', 'POST'])
-@roles.admin_token_required
+@roles.readonly_token_required
 def generate_headroom_heatmap():
 
     """
