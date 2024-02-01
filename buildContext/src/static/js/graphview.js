@@ -103,7 +103,7 @@ truelight.graphview.view = {
 
                 pdf.addImage(dataUrl, 'PNG', 0, 0, element.clientWidth * 0.75, element.clientHeight * 0.75); // Adjust scale here as well
 
-                pdf.save('heatmap.pdf');
+                pdf.save('graphview.pdf');
             })
             .catch(function (error) {
                 console.error('Error capturing heatmap:', error);

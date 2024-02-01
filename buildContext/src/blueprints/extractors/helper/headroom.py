@@ -19,6 +19,10 @@ class Headroom:
         data_base = ConnectDatabase()
         self.engine = data_base.get_engine()
 
+    def latest_headroom(self, df):
+        current_date = datetime.now()
+        filtered_df = df[(df['month'].dt.year == current_date.year) & (df['month'].dt.month == current_date.month)]
+        return filtered_df
 
     def extraction(self, query_strings):
         """
@@ -54,18 +58,18 @@ class Headroom:
                 if query_strings["history"]:
                     psql_query = f"""
                         select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, ptc,  term from trueprice.headroom 
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, beginning_date, total_bundled_price, ptc,  term from trueprice.headroom 
                         where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         UNION
                         select id, month, curvestart, curveend, matching_id, lookup_id,  control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, ptc,  term from trueprice.headroom_history
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, beginning_date, total_bundled_price, ptc,  term from trueprice.headroom_history
                         where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         
                     """
                 else:
                     psql_query = f"""
                         select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, ptc,  term from trueprice.headroom 
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, beginning_date, total_bundled_price, ptc,  term from trueprice.headroom 
                         where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         
                     """
@@ -73,18 +77,18 @@ class Headroom:
                 if query_strings["history"]:
                     psql_query = f"""
                         select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, ptc,  term from trueprice.headroom
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, beginning_date, total_bundled_price, ptc,  term from trueprice.headroom
                         where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         UNION
                         select id, month, curvestart, curveend, matching_id, lookup_id,  control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, ptc, term from trueprice.headroom_history
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, beginning_date, total_bundled_price, ptc, term from trueprice.headroom_history
                         where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         
                     """
                 else:
                     psql_query = f"""
                         select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id, control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, ptc,  term from trueprice.headroom
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, beginning_date, total_bundled_price, ptc,  term from trueprice.headroom
                         where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         
                     """
@@ -92,18 +96,18 @@ class Headroom:
                 if query_strings["history"]:
                     psql_query = f"""
                         select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, ptc,  term from trueprice.headroom
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, beginning_date, total_bundled_price, ptc,  term from trueprice.headroom
                         where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         UNION
                         select id, month, curvestart, curveend, matching_id, lookup_id,  control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, ptc,  term from trueprice.headroom_history
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, beginning_date, total_bundled_price, ptc,  term from trueprice.headroom_history
                         where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}' 
                         
                     """
                 else:
                     psql_query = f"""
                         select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, ptc,  term from trueprice.headroom
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, beginning_date, total_bundled_price, ptc,  term from trueprice.headroom
                         where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         
                     """
@@ -111,18 +115,18 @@ class Headroom:
                 if query_strings["history"]:
                     psql_query = f"""
                         select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, ptc,  term from trueprice.headroom
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, beginning_date, total_bundled_price, ptc,  term from trueprice.headroom
                         where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         UNION
                         select id, month, curvestart, curveend, matching_id, lookup_id,  control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, ptc,  term from trueprice.headroom_history
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, beginning_date, total_bundled_price, ptc,  term from trueprice.headroom_history
                         where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         
                     """
                 else:
                     psql_query = f"""
                         select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, ptc,  term from trueprice.headroom
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, beginning_date, total_bundled_price, ptc,  term from trueprice.headroom
                         where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         
                     """
@@ -131,18 +135,18 @@ class Headroom:
                 if query_strings["history"]:
                     psql_query = f"""
                         select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, ptc,  term from trueprice.headroom
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, beginning_date, total_bundled_price, ptc,  term from trueprice.headroom
                         where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         UNION
                         select id, month, curvestart, curveend, matching_id, lookup_id,  control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, ptc,  term from trueprice.headroom_history
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, beginning_date, total_bundled_price, ptc,  term from trueprice.headroom_history
                         where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         
                     """
                 else:
                     psql_query = f"""
                         select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area_type, control_area, state, load_zone,
-                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, ptc,  term from trueprice.headroom
+                                    capacity_zone, utility, strip, cost_group, cost_component, load_profile, headroom, headroom_prct, beginning_date, total_bundled_price, ptc,  term from trueprice.headroom
                         where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         
                     """
@@ -159,10 +163,10 @@ class Headroom:
             data_frame = None
             data_frame = pd.read_sql_query(sql=psql_query, con=self.engine.connect())
             
-            
+            # filter data 
+            data_frame = self.latest_headroom(data_frame)
             return data_frame, "success"  
             
-
         except:
             import traceback, sys
             print(traceback.format_exc())

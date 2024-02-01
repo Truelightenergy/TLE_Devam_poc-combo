@@ -65,7 +65,7 @@ class Util:
                 df = df.rename(columns={'data': 'ptc'})
                 df['headroom'] = df['ptc'] - df['total_bundled_price']
                 df['headroom_prct'] = (df['headroom'] / df['ptc'])*100
-                df['headroom_prct'] = df['headroom_prct'].replace(-np.inf, -0.999)
+                df['headroom_prct'] = df['headroom_prct'].replace(-np.inf, 0)
                 df['curvestart'] = instance['curvestart']
 
 

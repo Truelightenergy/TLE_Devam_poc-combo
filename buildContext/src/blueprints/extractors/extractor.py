@@ -41,20 +41,14 @@ class Extractor:
         """
 
         if type == 'headroom':
-            pivoted_df = pd.pivot_table(df, values= ['headroom', 'headroom_prct'], index=['curvestart', 'month'], columns=["matching_id", "lookup_id", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "control_area_type", "load_profile", "term"], aggfunc=list)
-            pivoted_df.columns.name = None
-            pivoted_df.index.name = None
-            
-            # Explode the lists into multiple rows
-            flattened_df = pivoted_df.apply(lambda x: pd.Series(x).explode())
-
-            # rename indexes
-            flattened_df = flattened_df.rename_axis(index={"matching_id": "Matching ID", "lookup_id": "Lookup ID", 'curvestart': 'Curve Update Date', 'month': "Curve Start Month"})
-
-            # renaming columns
-            flattened_df.columns.names =  [" ","Matching ID", "Lookup ID", "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Strip", "Cost Group", "Cost Component", "Control Area Type", "Load Profile", "Term"]
-            # returning dataframe
-            return flattened_df
+            # df = df.transpose()
+            df["ptc"] = df["ptc"] * 1000
+            df["total_bundled_price"] = df["total_bundled_price"]* 1000
+            df["headroom"] = df["headroom"]* 1000
+            df = df[["matching_id", "lookup_id", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "control_area_type", "load_profile", "term", "beginning_date", "month", "ptc", "total_bundled_price", "headroom", "headroom_prct"]]
+            df.columns = ["Matching ID", "Lookup ID", "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Strip", "Cost Group", "Cost Component", "Control Area Type", "Load Profile", "Term", "Sample Utility PTC Date", "Utility PTC Date", "Utility PTC ($/MWh)", "Truelight Price ($/MWh)", "Headroom ($/MWh)", "Headrrom (%)"]
+            df = df.transpose()
+            return df
 
         elif type=='matrix':
 

@@ -119,7 +119,7 @@ class Util:
             
             if status == "success":
                 if query_strings["type"].lower()=="csv":
-                    if (query_strings["curve_type"]).lower()=='matrix':
+                    if (query_strings["curve_type"]).lower() in ['matrix', 'headroom']:
                         resp = Response(
                         data_frame.to_csv(header=None),
                         mimetype="text/csv",
