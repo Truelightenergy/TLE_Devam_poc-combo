@@ -412,11 +412,14 @@ class AdminUtil:
         except:
             return None
         
-    def get_control_area_for_dropdown(self, table):
+    def get_control_area_for_dropdown(self, table, control_area_type= None):
         """
         extracts all the control area from the database
         """
-        query = f"SELECT DISTINCT(control_area) FROM trueprice.{table};"
+        query = f"SELECT DISTINCT(control_area) FROM trueprice.{table}"
+        if control_area_type:
+            query = f"{query} WHERE control_area_type= '{control_area_type}'"
+        query = f"{query};"
 
         try:
             results = self.engine.execute(query).fetchall()
@@ -428,11 +431,14 @@ class AdminUtil:
             return None
         
 
-    def get_state_for_dropdown(self, table, control_area):
+    def get_state_for_dropdown(self, table, control_area, control_area_type=None):
         """
         extracts all the state from the database
         """
-        query = f"SELECT DISTINCT(state) FROM trueprice.{table} WHERE control_area = '{control_area}';"
+        query = f"SELECT DISTINCT(state) FROM trueprice.{table} WHERE control_area = '{control_area}'"
+        if control_area_type:
+            query = f"{query} AND control_area_type= '{control_area_type}'"
+        query = f"{query};"
 
         try:
             results = self.engine.execute(query).fetchall()
@@ -443,11 +449,14 @@ class AdminUtil:
         except:
             return None
         
-    def get_load_zone_for_dropdown(self, table, control_area, state):
+    def get_load_zone_for_dropdown(self, table, control_area, state, control_area_type=None):
         """
         extracts all the load zone from the database
         """
-        query = f"SELECT DISTINCT(load_zone) FROM trueprice.{table} WHERE control_area = '{control_area}' AND state = '{state}';"
+        query = f"SELECT DISTINCT(load_zone) FROM trueprice.{table} WHERE control_area = '{control_area}' AND state = '{state}'"
+        if control_area_type:
+            query = f"{query} AND control_area_type= '{control_area_type}'"
+        query = f"{query};"
 
         try:
             results = self.engine.execute(query).fetchall()
@@ -459,11 +468,14 @@ class AdminUtil:
             return None
         
 
-    def get_capacity_zone_for_dropdown(self, table, control_area, state, load_zone):
+    def get_capacity_zone_for_dropdown(self, table, control_area, state, load_zone, control_area_type=None):
         """
         extracts all the capacity zone from the database
         """
-        query = f"SELECT DISTINCT(capacity_zone) FROM trueprice.{table} WHERE control_area = '{control_area}' AND state = '{state}' AND load_zone = '{load_zone}';"
+        query = f"SELECT DISTINCT(capacity_zone) FROM trueprice.{table} WHERE control_area = '{control_area}' AND state = '{state}' AND load_zone = '{load_zone}'"
+        if control_area_type:
+            query = f"{query} AND control_area_type= '{control_area_type}'"
+        query = f"{query};"
 
         try:
             results = self.engine.execute(query).fetchall()
@@ -475,11 +487,14 @@ class AdminUtil:
             return None
     
 
-    def get_utility_for_dropdown(self, table, control_area, state, load_zone, capacity_zone):
+    def get_utility_for_dropdown(self, table, control_area, state, load_zone, capacity_zone, control_area_type=None):
         """
         extracts all the utility from the database
         """
-        query = f"SELECT DISTINCT(utility) FROM trueprice.{table} WHERE control_area = '{control_area}' AND state = '{state}' AND load_zone = '{load_zone}' AND capacity_zone ='{capacity_zone}';"
+        query = f"SELECT DISTINCT(utility) FROM trueprice.{table} WHERE control_area = '{control_area}' AND state = '{state}' AND load_zone = '{load_zone}' AND capacity_zone ='{capacity_zone}'"
+        if control_area_type:
+            query = f"{query} AND control_area_type= '{control_area_type}'"
+        query = f"{query};"
 
         try:
             results = self.engine.execute(query).fetchall()
@@ -490,11 +505,14 @@ class AdminUtil:
         except:
             return None
         
-    def get_block_type_for_dropdown(self, table, control_area, state, load_zone, capacity_zone, utility):
+    def get_block_type_for_dropdown(self, table, control_area, state, load_zone, capacity_zone, utility, control_area_type=None):
         """
         extracts all the block type from the database
         """
-        query = f"SELECT DISTINCT(strip) FROM trueprice.{table} WHERE control_area = '{control_area}' AND state = '{state}' AND load_zone = '{load_zone}' AND capacity_zone ='{capacity_zone}' AND utility = '{utility}';"
+        query = f"SELECT DISTINCT(strip) FROM trueprice.{table} WHERE control_area = '{control_area}' AND state = '{state}' AND load_zone = '{load_zone}' AND capacity_zone ='{capacity_zone}' AND utility = '{utility}'"
+        if control_area_type:
+            query = f"{query} AND control_area_type= '{control_area_type}'"
+        query = f"{query};"
 
         try:
             results = self.engine.execute(query).fetchall()
@@ -505,11 +523,14 @@ class AdminUtil:
         except:
             return None
         
-    def get_cost_group_for_dropdown(self, table, control_area, state, load_zone, capacity_zone, utility, strip):
+    def get_cost_group_for_dropdown(self, table, control_area, state, load_zone, capacity_zone, utility, strip, control_area_type=None):
         """
         extracts all the cost group from the database
         """
-        query = f"SELECT DISTINCT(cost_group) FROM trueprice.{table} WHERE control_area = '{control_area}' AND state = '{state}' AND load_zone = '{load_zone}' AND capacity_zone ='{capacity_zone}' AND utility = '{utility}' AND strip = '{strip}';"
+        query = f"SELECT DISTINCT(cost_group) FROM trueprice.{table} WHERE control_area = '{control_area}' AND state = '{state}' AND load_zone = '{load_zone}' AND capacity_zone ='{capacity_zone}' AND utility = '{utility}' AND strip = '{strip}'"
+        if control_area_type:
+            query = f"{query} AND control_area_type= '{control_area_type}'"
+        query = f"{query};"
 
         try:
             results = self.engine.execute(query).fetchall()
@@ -520,11 +541,14 @@ class AdminUtil:
         except:
             return None
         
-    def get_cost_components_for_dropdown(self, table, control_area, state, load_zone, capacity_zone, utility, strip, cost_group):
+    def get_cost_components_for_dropdown(self, table, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, control_area_type=None):
         """
         extracts all the cost components from the database
         """
-        query = f"SELECT DISTINCT(cost_component) FROM trueprice.{table} WHERE control_area = '{control_area}' AND state = '{state}' AND load_zone = '{load_zone}' AND capacity_zone ='{capacity_zone}' AND utility = '{utility}' AND strip = '{strip}' AND cost_group= '{cost_group}';"
+        query = f"SELECT DISTINCT(cost_component) FROM trueprice.{table} WHERE control_area = '{control_area}' AND state = '{state}' AND load_zone = '{load_zone}' AND capacity_zone ='{capacity_zone}' AND utility = '{utility}' AND strip = '{strip}' AND cost_group= '{cost_group}'"
+        if control_area_type:
+            query = f"{query} AND control_area_type= '{control_area_type}'"
+        query = f"{query};"
 
         try:
             results = self.engine.execute(query).fetchall()
@@ -535,12 +559,16 @@ class AdminUtil:
         except:
             return None
         
-    def get_sub_cost_components_for_dropdown(self, table, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component):
+    def get_sub_cost_components_for_dropdown(self, table, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, control_area_type=None):
         """
         extracts all the sub cost component from the database
         """
         
-        query = f"SELECT DISTINCT(sub_cost_component) FROM trueprice.{table} WHERE control_area = '{control_area}' AND state = '{state}' AND load_zone = '{load_zone}' AND capacity_zone ='{capacity_zone}' AND utility = '{utility}' AND strip = '{strip}' AND cost_group= '{cost_group}' AND cost_component = '{cost_component}';"
+        query = f"SELECT DISTINCT(sub_cost_component) FROM trueprice.{table} WHERE control_area = '{control_area}' AND state = '{state}' AND load_zone = '{load_zone}' AND capacity_zone ='{capacity_zone}' AND utility = '{utility}' AND strip = '{strip}' AND cost_group= '{cost_group}' AND cost_component = '{cost_component}'"
+        if control_area_type:
+            query = f"{query} AND control_area_type= '{control_area_type}'"
+        query = f"{query};"
+
         query = text(query)
         try:
             results = self.engine.execute(query).fetchall()
@@ -595,31 +623,43 @@ class AdminUtil:
 
         tables = ["ercot_energy", "nyiso_energy", "miso_energy", "isone_energy", "pjm_energy",
                   "ercot_nonenergy", "nyiso_nonenergy", "miso_nonenergy", "isone_nonenergy", "pjm_nonenergy",
-                  "ercot_rec", "nyiso_rec", "isone_rec", "pjm_rec"
+                  "ercot_rec", "nyiso_rec", "isone_rec", "pjm_rec",
+
+                  "ercot_ptc", "nyiso_ptc", "miso_ptc", "isone_ptc", "pjm_ptc",
+                  "ercot_matrix", "nyiso_matrix", "miso_matrix", "isone_matrix", "pjm_matrix",
+                  "ercot_headroom", "nyiso_headroom", "miso_headroom", "isone_headroom", "pjm_headroom"
+
+
                   ]
         states_responses = dict()
-        curve_responses = {"energy": dict(), "nonenergy": dict(), "rec": dict()}
+        curve_responses = {"energy": dict(), "nonenergy": dict(), "rec": dict(), "ptc": dict(), "matrix": dict(), "headroom" : dict()}
         try:
             for table in tables:
+                control_area_type = None
+                if ('ptc' in table) or ('matrix' in table) or ('headroom' in table):
+                    control_area_type, table = table.split("_")
                 
                 single_response = list()
-                control_areas =  self.get_control_area_for_dropdown(table)
+                control_areas =  self.get_control_area_for_dropdown(table, control_area_type)
                 for c_area in control_areas:
-                    states = self.get_state_for_dropdown(table, c_area)
+                    states = self.get_state_for_dropdown(table, c_area, control_area_type)
                     for st in states:
-                        load_zones = self.get_load_zone_for_dropdown(table, c_area, st)
+                        load_zones = self.get_load_zone_for_dropdown(table, c_area, st, control_area_type)
                         for l_zone in load_zones:
-                            capacity_zones = self.get_capacity_zone_for_dropdown(table, c_area, st, l_zone)
+                            capacity_zones = self.get_capacity_zone_for_dropdown(table, c_area, st, l_zone, control_area_type)
                             for c_zone in capacity_zones:
-                                utilities = self.get_utility_for_dropdown(table, c_area, st, l_zone, c_zone)
+                                utilities = self.get_utility_for_dropdown(table, c_area, st, l_zone, c_zone, control_area_type)
                                 for util in utilities:
-                                    strips = self.get_block_type_for_dropdown(table, c_area, st, l_zone, c_zone, util)
+                                    strips = self.get_block_type_for_dropdown(table, c_area, st, l_zone, c_zone, util, control_area_type)
                                     for strip in strips:
-                                        cost_groups = self.get_cost_group_for_dropdown(table, c_area, st, l_zone, c_zone, util, strip)
+                                        cost_groups = self.get_cost_group_for_dropdown(table, c_area, st, l_zone, c_zone, util, strip, control_area_type)
                                         for c_group in cost_groups:
-                                            cost_components = self.get_cost_components_for_dropdown(table, c_area, st, l_zone, c_zone, util, strip, c_group)
+                                            cost_components = self.get_cost_components_for_dropdown(table, c_area, st, l_zone, c_zone, util, strip, c_group, control_area_type)
                                             for c_comp in cost_components:
-                                                sub_cost_component = self.get_sub_cost_components_for_dropdown (table, c_area, st, l_zone, c_zone, util, strip, c_group, c_comp)
+                                                if ('ptc' in table) or ('headroom' in table):
+                                                    sub_cost_component = [None]
+                                                else:
+                                                    sub_cost_component = self.get_sub_cost_components_for_dropdown (table, c_area, st, l_zone, c_zone, util, strip, c_group, c_comp, control_area_type)
                                                 single_response.extend([
                                                     {
                                                         "control_area": c_area,
@@ -637,7 +677,10 @@ class AdminUtil:
 
 
                 # states_responses[table.split("_")[0]] = single_response
-                curve_responses[table.split("_")[1]][table.split("_")[0]] = single_response
+                if ('ptc' in table) or ('matrix' in table) or ('headroom' in table):
+                    curve_responses[table][control_area_type] = single_response
+                else:
+                    curve_responses[table.split("_")[1]][table.split("_")[0]] = single_response
                 
             return curve_responses
         except :

@@ -4,7 +4,9 @@ handles the operation of the notification events
 
 import datetime
 import pandas as pd
+from flask import session
 from .notifier_model import NotifierUtil
+from ..extractors.helper.extraction_rules import Rules
 
 class Util:
     """
@@ -16,6 +18,7 @@ class Util:
         """
 
         self.db_util = NotifierUtil()
+        self.filter = Rules()
 
     def notifications_item_calculations(self, latest_curve_data, prev_curve_data, volume):
         """
@@ -100,12 +103,41 @@ class Util:
             self.calculate_price_change(row['curvestart'], row['filename'])
         return None
     
+    def filter_data(self, dataframe, rules):
+        """
+        filter data based on the rules
+        """
+
+        dataframes = []
+        dataframe["control_table"] = dataframe["location"].apply(lambda x: x.split(',')[0].split('in')[-1].strip().lower()+"_energy")
+        dataframe["load_zone"] = dataframe["location"].apply(lambda x: x.split(',')[1].split('(5x16)')[0].strip())
+        dataframe['strip'] = '5x16'
+
+        for row in rules:
+            query = f"control_table == '{row['control_table']}' & load_zone == '{row['load_zone']}' & strip == '{row['strip']}'"
+            df = dataframe.query(query)
+            dataframes.append(df)
+        if len(dataframes)>=1:    
+            return pd.concat(dataframes, axis=0), "success"
+        return None, "error"          
+
+
     def fetch_todays_notifications(self):
         """
         extracts all latest notifications
         """
 
         notification_data = self.db_util.extract_latest_notifications()
+        dataframe = pd.DataFrame(notification_data)
+        email = session["user"]
+        if session["level"]!= 'admin':
+            rules = self.filter.fetch_module_rules("_energy", email)
+            dataframe, status = self.filter_data(dataframe, rules)
+            if status =='success':
+                notification_data =  dataframe.to_dict(orient='records')
+
+
+
         notification_data = sorted(notification_data, key=lambda x: x['price_shift_prct'],  reverse=True)[:9]
         processed_notifications = []
         for notification in notification_data:
@@ -113,7 +145,7 @@ class Util:
                 weigh = 'gain'
             else:
                 weigh = 'loss'
-            processed_notifications.append(f"The prompt month energy in in {notification['location']} has {notification['price_shift']} by ${round(notification['price_shift_value'], 2)}($/KWh) resulting in a {round(notification['price_shift_prct'], 2)}% {weigh}.")
+            processed_notifications.append(f"The prompt month energy in {notification['location']} has {notification['price_shift']} by ${round(notification['price_shift_value'], 2)}($/KWh) resulting in a {round(notification['price_shift_prct'], 2)}% {weigh}.")
 
 
         return processed_notifications

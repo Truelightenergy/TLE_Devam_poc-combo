@@ -7,7 +7,7 @@
     </a>
     
     {%if request.path == '/home' %}
-    <div class="align-items-center" style="margin-left: 40%;"><strong>Welcome Back! {{session['user'].split('@')[0]}}</strong></div>
+    <div class="align-items-center" style="margin-left: 40%;"><strong>Welcome Back, User</strong></div>
     {%endif%}
 
     {%if request.path == '/download_data' %}

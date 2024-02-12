@@ -119,9 +119,15 @@ class Util:
             
             if status == "success":
                 if query_strings["type"].lower()=="csv":
-                    if (query_strings["curve_type"]).lower() in ['matrix', 'headroom']:
+                    if (query_strings["curve_type"]).lower() == 'matrix':
                         resp = Response(
                         data_frame.to_csv(header=None),
+                        mimetype="text/csv",
+                        headers={"Content-disposition":
+                        "attachment; filename="+file_name+".csv"}), status
+                    elif(query_strings["curve_type"]).lower() == 'headroom':
+                        resp = Response(
+                        data_frame.to_csv(index=False),
                         mimetype="text/csv",
                         headers={"Content-disposition":
                         "attachment; filename="+file_name+".csv"}), status

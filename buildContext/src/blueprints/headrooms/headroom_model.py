@@ -97,7 +97,7 @@ class HeadroomModel:
         try:
             results = self.engine.execute(query).fetchall()
             for row in results:
-                data.append({"control_area_type": row['control_area_type'], "control_area": row['control_area'],
+                data.append({"curvestart": row['curvestart'], "control_area_type": row['control_area_type'], "control_area": row['control_area'],
                              "state": row['state'], "load_zone": row['load_zone'],
                              "capacity_zone": row['capacity_zone'], "utility": row['utility'],
                              "strip": row['strip'], "cost_group": row['cost_group'],
@@ -206,12 +206,6 @@ class HeadroomModel:
         except:
             return False
         
-    def latest_headroom(self, dt):
-        current_date = datetime.datetime.now()
-        return (
-            dt.year == current_date.year and
-            dt.month == current_date.month
-        )
 
     
     def get_headrooms_data(self):
@@ -242,12 +236,17 @@ class HeadroomModel:
         try:
             results = self.engine.execute(final_query).fetchall()
             for row in results:
-                if(self.latest_headroom(row['month'])):
-                    data.append({"state": row['state'], "utility": row['utility'], "load_zone": row['load_zone'],
-                                "utility_price": round(float(row['ptc']),2), "retail_price": round(float(row['total_bundled_price']),2),
-                                "headroom": round(float(row['headroom']),2), "headroom_prct": round(float(row['headroom_prct']),2),
-                                "customer_type": row['cost_component']
-                                })
+                
+                data.append({"state": row['state'], "utility": row['utility'], "load_zone": row['load_zone'],
+                            "utility_price": round(float(row['ptc']),5), "retail_price": round(float(row['total_bundled_price']),5),
+                            "headroom": round(float(row['headroom']),5), "headroom_prct": round(float(row['headroom_prct']),2),
+                            "customer_type": row['cost_component'],
+                            "control_area": row['control_area'], "capacity_zone": row['capacity_zone'],
+                            "utility": row['utility'], "strip": row['strip'], "cost_group": row['cost_group'],
+                            "cost_component": row['cost_component'] 
+
+
+                            })
             return data
         except:
             return data

@@ -10,8 +10,10 @@ import plotly.graph_objs as go
 import plotly.express as px
 import random
 from .graphview_model import GraphView_Util
-from datetime import datetime
+from datetime import datetime, timedelta
 from utils.configs import read_config
+from ..extractors.helper.extraction_rules import Rules
+from flask import session
 
 
 config = read_config()
@@ -28,6 +30,7 @@ class Util:
         secret_key = config['secret_key']
         secret_salt = config['secret_salt']
         self.db_model = GraphView_Util(secret_key, secret_salt)
+        self.filter = Rules()
 
     def generate_random_color(self):
         """Generate a random HTML color code favoring a primary color."""
@@ -94,6 +97,44 @@ class Util:
                                         )
         return df
     
+    def calculate_balanced_month(self, months):
+        current_date = datetime.now()
+        first_day_of_month = current_date.replace(day=1)
+        end_date = first_day_of_month + timedelta(days=months * 30)
+        end_date = end_date.replace(day=1)
+
+        first_day_of_month = first_day_of_month.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_date = end_date.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        start_date = pd.to_datetime(first_day_of_month, utc=True)
+        end_date = pd.to_datetime(end_date, utc=True)
+
+        return start_date.date(), end_date.date()
+    
+    def dataframe_filtering(self, dataframe, rules, control_table):
+        """
+        filter the data based on the user subscription rules
+        """
+        dataframes = []
+        for row in rules:
+            if ("headroom" in control_table) or ("ptc" in control_table):
+                query = f"control_area == '{row['control_area']}' & state == '{row['state']}' & load_zone == '{row['load_zone']}' & capacity_zone == '{row['capacity_zone']}' & utility == '{row['utility']}' & strip == '{row['strip']}' & cost_group == '{row['cost_group']}' & cost_component == '{row['cost_component']}'"
+            else:
+                query = f"control_area == '{row['control_area']}' & state == '{row['state']}' & load_zone == '{row['load_zone']}' & capacity_zone == '{row['capacity_zone']}' & utility == '{row['utility']}' & strip == '{row['strip']}' & cost_group == '{row['cost_group']}' & cost_component == '{row['cost_component']}' & sub_cost_component == '{row['sub_cost_component']}'"
+            df = dataframe.query(query)
+            if (("headroom" in control_table) or ("ptc" in control_table) or ("matrix" in control_table)):
+                pass
+            else: 
+                if row['balanced_month_range'] ==  0:
+                    df = df.loc[(df['month'] >= row['startmonth']) & (df['month'] <= row['endmonth'])]
+                else:
+                    start_month, end_month = self.calculate_balanced_month(row['balanced_month_range'])
+                    df = df.loc[(df['month'] >= start_month) & (df['month'] <= end_month)]
+            dataframes.append(df)
+        if len(dataframes)>=1:    
+            return pd.concat(dataframes, axis=0), "success"
+        return None, "error"
+    
     def generate_line_charts(self, parameters_array):
         """
         generates line charts for each set of parameters in the array
@@ -129,54 +170,78 @@ class Util:
                     params['history'] = False
                     params['cob'] = cob_flag
                     df = self.fetch_data(params)
-                
+            email = session["user"]
+            if session["level"]!= 'admin':
+                rules = self.filter.filter_data(params['control_table'], email)
+                df, status = self.dataframe_filtering(df, rules, params['control_table'])
+            if (session["level"]== 'admin')or(status !='error'):
+                color = self.generate_random_color()
+                update = 'ID'
+                if params['cob']== True or params['cob']=='true':
+                    update = 'COB'
+                # df = self.db_model.get_data(**params)  # Unpacking parameters for the get_data method
+                fig.add_trace(go.Scatter(
+                    x=df["month"], 
+                    y=df["data"], 
+                    mode="markers+lines",
+                    name=params.get("label", f"{params['loadZone']}: {params['operatin_day_timestamps']} {update}"),  # You can pass a label for each line
+                    line_shape='linear'
+                    # line=dict(color=color),  # Set the line color here if it's the same for all
+                ))
 
-                
-                
-                
-
-            
-            color = self.generate_random_color()
-            update = 'Interaday'
-            if params['cob']== True or params['cob']=='true':
-                update = 'COB'
-            # df = self.db_model.get_data(**params)  # Unpacking parameters for the get_data method
-            fig.add_trace(go.Scatter(
-                x=df["month"], 
-                y=df["data"], 
-                mode="markers+lines",
-                name=params.get("label", f"{params['loadZone']}: {params['operatin_day_timestamps']} {update}"),  # You can pass a label for each line
-                line_shape='linear'
-                # line=dict(color=color),  # Set the line color here if it's the same for all
-            ))
-
-            fig.update_layout(
-                template="plotly",
-                title="Energy Prices Over Time (5x16)",
-                title_x=0.5,
-                xaxis_title="Date",
-                yaxis_title="Price ($/MWh)",
-                xaxis=dict(showgrid=False),
-                hovermode="x unified",
+                fig.update_layout(
+                    template="plotly",
+                    title="<b>Energy Prices Over Time (5x16)</b>",
+                    title_x=0.5,
+                    xaxis_title="<b>Date</b>",
+                    yaxis_title="<b>Price ($/MWh)</b>",
+                    xaxis=dict(showgrid=False),
+                    hovermode="x unified",
             )
+                fig.update_yaxes(tickprefix="$", tickfont_size=16)
+                fig.update_xaxes(tickfont_size=16)
+                
 
         
         graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
         return graphJSON
     
-    def generate_graph_view_for_home_screen(self, raw_params, operating_day, operating_day_ts, prev_day, start, end):
+    def validate_access(self, rules, control_table, load_zone):
+        """
+        check availability of access to current user
+        """
+        flag = False
+        for rule in rules:
+            if (rule['control_table'] == control_table) and (rule['load_zone']== load_zone) and (rule['strip']=='5x16'):
+                flag = True
+                break
+        return flag
+    def generate_graph_view_for_home_screen(self, notification_params, operating_day, operating_day_ts, prev_day, start, end):
         """
         creates the graphview based on the raw parameters
         """
-        control_table = ((raw_params.split(',')[0]).split('in')[-1]).strip()
-        load_zone = ((raw_params.split(',')[1]).split('(5x16)')[0]).strip()
-        previous_day = self.db_model.get_previous_day(load_zone, control_table)
-        if previous_day is not None:
-            prev_day = previous_day.strftime('%Y-%m-%d')
 
-        params= [{'data_type': 'Energy', 'control_table': f'{control_table.lower()}_energy', 'loadZone': load_zone, 'operating_day': operating_day, 'operatin_day_timestamps': operating_day_ts, 'history': 'false', 'cob': 'false', 'start': start, 'end': end}, 
-         {'data_type': 'Energy', 'control_table': f'{control_table.lower()}_energy', 'loadZone': load_zone, 'operating_day': prev_day, 'operatin_day_timestamps': prev_day, 'history': 'false', 'cob': 'false', 'start': start, 'end': end}]
+        for raw_params in notification_params:
+            control_table = ((raw_params.split(',')[0]).split('in')[-1]).strip()
+            load_zone = ((raw_params.split(',')[1]).split('(5x16)')[0]).strip()
+            email = session["user"]
+            if session["level"]!= 'admin':
+                rules = self.filter.filter_data(f'{control_table.lower()}_energy', email)
+                access_flag = self.validate_access(rules, f'{control_table.lower()}_energy', load_zone)
+                if not access_flag:
+                    continue
+
+
+            previous_day = self.db_model.get_previous_day(load_zone, control_table)
+            if previous_day is not None:
+                prev_day = previous_day.strftime('%Y-%m-%d')
+
+            params= [{'data_type': 'Energy', 'control_table': f'{control_table.lower()}_energy', 'loadZone': load_zone, 'operating_day': operating_day, 'operatin_day_timestamps': operating_day_ts, 'history': 'false', 'cob': 'false', 'start': start, 'end': end}, 
+            {'data_type': 'Energy', 'control_table': f'{control_table.lower()}_energy', 'loadZone': load_zone, 'operating_day': prev_day, 'operatin_day_timestamps': prev_day, 'history': 'false', 'cob': 'false', 'start': start, 'end': end}]
         
+            if (session["level"] == 'admin') or access_flag:
+                break
+
         graph = self.generate_line_charts(params)
         
         return graph, params

@@ -219,7 +219,7 @@ def get_graphview():
   d_o_d_timestamp = (curve_start - timedelta(days=1)).strftime('%Y-%m-%d')
   start = d_o_d_timestamp
   end = (curve_start + relativedelta(months=61)).strftime('%Y-%m-%d')
-  graph, params = graph_view_util.generate_graph_view_for_home_screen(notification_data[0], operating_day,operating_day_timestamp, d_o_d_timestamp, start, end)
+  graph, params = graph_view_util.generate_graph_view_for_home_screen(notification_data, operating_day,operating_day_timestamp, d_o_d_timestamp, start, end)
   
   return {"graph":graph, "payload":params}
 

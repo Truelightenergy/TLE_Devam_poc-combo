@@ -54,64 +54,64 @@ class Matrix:
                 if query_strings["history"]:
                     psql_query = f"""
                         select id, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component, data, term, beginning_date, load_profile,  from trueprice.matrix 
-                        where control_area_type = '{control_area}' and ({strip_query}) and beginning_date::date >= '{start_date}' and beginning_date::date <= '{end_date}'
+                        where control_area_type = '{control_area}' and ({strip_query})  
                         UNION
                         select id, curvestart, curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component, data, term, beginning_date, load_profile from trueprice.matrix_history
-                        where control_area_type = '{control_area}' and ({strip_query}) and beginning_date::date >= '{start_date}' and beginning_date::date <= '{end_date}'
+                        where control_area_type = '{control_area}' and ({strip_query})  
                         
                     """
                 else:
                     psql_query = f"""
                         select id,    curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component, data, term, beginning_date, load_profile from trueprice.matrix 
-                        where control_area_type = '{control_area}' and ({strip_query}) and beginning_date::date >= '{start_date}' and beginning_date::date <= '{end_date}'
+                        where control_area_type = '{control_area}' and ({strip_query})  
                         
                     """
             elif control_area == "pjm":
                 if query_strings["history"]:
                     psql_query = f"""
                         select id, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component, data, term, beginning_date, load_profile from trueprice.matrix
-                        where control_area_type = '{control_area}' and ({strip_query}) and beginning_date::date >= '{start_date}' and beginning_date::date <= '{end_date}'
+                        where control_area_type = '{control_area}' and ({strip_query})  
                         UNION
                         select id, curvestart, curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component, data, term, beginning_date, load_profile from trueprice.matrix_history
-                        where control_area_type = '{control_area}' and ({strip_query}) and beginning_date::date >= '{start_date}' and beginning_date::date <= '{end_date}'
+                        where control_area_type = '{control_area}' and ({strip_query})  
                         
                     """
                 else:
                     psql_query = f"""
                         select id, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component, data, term, beginning_date, load_profile from trueprice.matrix
-                        where control_area_type = '{control_area}' and ({strip_query}) and beginning_date::date >= '{start_date}' and beginning_date::date <= '{end_date}'
+                        where control_area_type = '{control_area}' and ({strip_query})  
                         
                     """
             elif control_area == "ercot":
                 if query_strings["history"]:
                     psql_query = f"""
                         select id, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component, data, term, beginning_date, load_profile from trueprice.matrix
-                        where control_area_type = '{control_area}' and ({strip_query}) and beginning_date::date >= '{start_date}' and beginning_date::date <= '{end_date}'
+                        where control_area_type = '{control_area}' and ({strip_query})  
                         UNION
                         select id,   curvestart, curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component, data, term, beginning_date, load_profile from trueprice.matrix_history
-                        where control_area_type = '{control_area}' and ({strip_query}) and beginning_date::date >= '{start_date}' and beginning_date::date <= '{end_date}' 
+                        where control_area_type = '{control_area}' and ({strip_query})   
                         
                     """
                 else:
                     psql_query = f"""
                         select id, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component, data, term, beginning_date, load_profile from trueprice.matrix
-                        where control_area_type = '{control_area}' and ({strip_query}) and beginning_date::date >= '{start_date}' and beginning_date::date <= '{end_date}'
+                        where control_area_type = '{control_area}' and ({strip_query})  
                         
                     """
             elif control_area == "nyiso":
                 if query_strings["history"]:
                     psql_query = f"""
                         select id, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component, data, term, beginning_date, load_profile from trueprice.matrix
-                        where control_area_type = '{control_area}' and ({strip_query}) and beginning_date::date >= '{start_date}' and beginning_date::date <= '{end_date}'
+                        where control_area_type = '{control_area}' and ({strip_query})  
                         UNION
                         select id, curvestart, curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component, data, term, beginning_date, load_profile from trueprice.matrix_history
-                        where control_area_type = '{control_area}' and ({strip_query}) and beginning_date::date >= '{start_date}' and beginning_date::date <= '{end_date}'
+                        where control_area_type = '{control_area}' and ({strip_query})  
                         
                     """
                 else:
                     psql_query = f"""
                         select id, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,term, sub_cost_component, data, beginning_date, load_profile from trueprice.matrix
-                        where control_area_type = '{control_area}' and ({strip_query}) and beginning_date::date >= '{start_date}' and beginning_date::date <= '{end_date}'
+                        where control_area_type = '{control_area}' and ({strip_query})  
                         
                     """
 
@@ -119,16 +119,16 @@ class Matrix:
                 if query_strings["history"]:
                     psql_query = f"""
                         select id, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component, data, term, beginning_date, load_profile from trueprice.matrix
-                        where control_area_type = '{control_area}' and ({strip_query}) and beginning_date::date >= '{start_date}' and beginning_date::date <= '{end_date}'
+                        where control_area_type = '{control_area}' and ({strip_query})  
                         UNION
                         select id, curvestart, curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component, data, term, beginning_date, load_profile from trueprice.matrix_history
-                        where control_area_type = '{control_area}' and ({strip_query}) and beginning_date::date >= '{start_date}' and beginning_date::date <= '{end_date}'
+                        where control_area_type = '{control_area}' and ({strip_query})  
                         
                     """
                 else:
                     psql_query = f"""
                         select id, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component, data, term, beginning_date, load_profile from trueprice.matrix
-                        where control_area_type = '{control_area}' and ({strip_query}) and beginning_date::date >= '{start_date}' and beginning_date::date <= '{end_date}'
+                        where control_area_type = '{control_area}' and ({strip_query})  
                         
                     """
                 

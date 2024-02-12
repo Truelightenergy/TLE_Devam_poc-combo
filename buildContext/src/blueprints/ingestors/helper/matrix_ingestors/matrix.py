@@ -46,13 +46,14 @@ class MATRIX:
             
 
             df['beginning_date'] = pd.to_datetime(df['beginning_date'])
+            df['sub_cost_component'] = [x.strip() for x in df['sub_cost_component']]
             df['term'] = df['term'].astype(int)
             df.rename(inplace=True, columns={
                 'lookup_id1' : 'lookup_id',
                 'block_type' : 'strip'
             })
             
-
+            
             df.insert(0, 'curvestart', data.curveStart) # date on file, not the internal zone/month column
             df.insert(0, 'control_area_type', data.controlArea) # stored as object, don't freak on dtypes
 

@@ -45,9 +45,8 @@ class Extractor:
             df["ptc"] = df["ptc"] * 1000
             df["total_bundled_price"] = df["total_bundled_price"]* 1000
             df["headroom"] = df["headroom"]* 1000
-            df = df[["matching_id", "lookup_id", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "control_area_type", "load_profile", "term", "beginning_date", "month", "ptc", "total_bundled_price", "headroom", "headroom_prct"]]
-            df.columns = ["Matching ID", "Lookup ID", "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Strip", "Cost Group", "Cost Component", "Control Area Type", "Load Profile", "Term", "Sample Utility PTC Date", "Utility PTC Date", "Utility PTC ($/MWh)", "Truelight Price ($/MWh)", "Headroom ($/MWh)", "Headrrom (%)"]
-            df = df.transpose()
+            df = df[["control_area", "state", "utility", "load_profile", "beginning_date", "ptc",  "term",  "month", "total_bundled_price", "headroom", "headroom_prct"]]
+            df.columns = ["ISO ", "State", "Utility", "Load Profile", "PTC Effective Date", "Utility PTC ($/MWh)", "TLE Price Term (months)", "TLE Price Start Date", "Truelight Price ($/MWh)", "Headroom ($/MWh)", "Headrrom (%)"]
             return df
 
         elif type=='matrix':
@@ -164,23 +163,18 @@ class Extractor:
             if not isinstance(dataframe, pd.DataFrame):
                     return dataframe, status
             
-            # for un conditional responses (no subscription hence all data return)
-            un_conditional_curves = ['ptc', 'matrix', 'headroom']
-            if str(query_strings["curve_type"]).lower() in un_conditional_curves:
-                dataframe = self.post_processing_csv(dataframe, str(query_strings["curve_type"]).lower())
-                return dataframe, status
             
             control_table = f"{query_strings['iso']}_{query_strings['curve_type']}"
             email = session["user"]
             if session["level"]!= 'admin':
                 rules = self.filter.filter_data(control_table, email)
-                dataframe, status = self.dataframe_filtering(dataframe, rules)
+                dataframe, status = self.dataframe_filtering(dataframe, rules, control_table)
             
                 if status != "success":
                     return None, "No Subscription available"
 
             if download_type.lower()=="csv":
-                dataframe = self.post_processing_csv(dataframe, query_strings["curve_type"]) 
+                dataframe = self.post_processing_csv(dataframe, str(query_strings["curve_type"]).lower())
             else:
                 dataframe = self.post_processing_json(dataframe)
                 
@@ -188,19 +182,25 @@ class Extractor:
         except:
             return None, "Unable to Fetch Data"
 
-    def dataframe_filtering(self, dataframe, rules):
+    def dataframe_filtering(self, dataframe, rules, control_table):
         """
         filter the data based on the user subscription rules
         """
         dataframes = []
         for row in rules:
-            query = f"control_area == '{row['control_area']}' & state == '{row['state']}' & load_zone == '{row['load_zone']}' & capacity_zone == '{row['capacity_zone']}' & utility == '{row['utility']}' & strip == '{row['strip']}' & cost_group == '{row['cost_group']}' & cost_component == '{row['cost_component']}' & sub_cost_component == '{row['sub_cost_component']}'"
-            df = dataframe.query(query)
-            if row['balanced_month_range'] ==  0:
-                df = df.loc[(df['month'] >= row['startmonth']) & (df['month'] <= row['endmonth'])]
+            if ("headroom" in control_table) or ("ptc" in control_table):
+                query = f"control_area == '{row['control_area']}' & state == '{row['state']}' & load_zone == '{row['load_zone']}' & capacity_zone == '{row['capacity_zone']}' & utility == '{row['utility']}' & strip == '{row['strip']}' & cost_group == '{row['cost_group']}' & cost_component == '{row['cost_component']}'"
             else:
-                start_month, end_month = self.calculate_balanced_month(row['balanced_month_range'])
-                df = df.loc[(df['month'] >= start_month) & (df['month'] <= end_month)]
+                query = f"control_area == '{row['control_area']}' & state == '{row['state']}' & load_zone == '{row['load_zone']}' & capacity_zone == '{row['capacity_zone']}' & utility == '{row['utility']}' & strip == '{row['strip']}' & cost_group == '{row['cost_group']}' & cost_component == '{row['cost_component']}' & sub_cost_component == '{row['sub_cost_component']}'"
+            df = dataframe.query(query)
+            if (("headroom" in control_table) or ("ptc" in control_table) or ("matrix" in control_table)):
+                pass
+            else: 
+                if row['balanced_month_range'] ==  0:
+                    df = df.loc[(df['month'] >= row['startmonth']) & (df['month'] <= row['endmonth'])]
+                else:
+                    start_month, end_month = self.calculate_balanced_month(row['balanced_month_range'])
+                    df = df.loc[(df['month'] >= start_month) & (df['month'] <= end_month)]
             dataframes.append(df)
         if len(dataframes)>=1:    
             return pd.concat(dataframes, axis=0), "success"

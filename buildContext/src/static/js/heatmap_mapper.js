@@ -134,6 +134,9 @@ state_wise_data.forEach(stateData => {
 
     let state_mean = calculate_mean(headrooms);
     let normalized_mean = (state_mean - global_mean) / global_std;
+    if(state_mean == global_mean){
+        normalized_mean = state_mean;
+    }
     stateMeanHeadroom[state] = { mean: Math.round(normalized_mean * 100)/100};
 
 });

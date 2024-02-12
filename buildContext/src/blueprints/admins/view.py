@@ -698,7 +698,7 @@ def get_catalog_data():
       
       base_dir = os.path.dirname(os.path.abspath(__file__))
       data_file_path = os.path.join(base_dir, 'catalog.json')
-      #subcostcomponents = db_obj.get_catalog_data_from_db()
+      # subcostcomponents = db_obj.get_catalog_data_from_db()
       with open(data_file_path, 'r') as json_file:
         data = json.load(json_file)
 

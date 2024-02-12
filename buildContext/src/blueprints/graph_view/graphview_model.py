@@ -62,7 +62,7 @@ class GraphView_Util:
             tableName = tableName + '_history'
             curvestartfilter = f"and curvestart::date = '{operatin_day_timestamp}'"
 
-        query = f"""SELECT DISTINCT ON (month::date) month::date, curvestart, data FROM trueprice.{tableName} 
+        query = f"""SELECT DISTINCT ON (month::date) month::date, curvestart, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component FROM trueprice.{tableName} 
                         where strip='5x16' and sub_cost_component='{location}' 
                         and month::date >= '{start_date}' 
                         and month::date <= '{end_date}' 
