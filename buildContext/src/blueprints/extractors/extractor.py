@@ -2,6 +2,7 @@
 makes query to the database and returns to the database
 """
 
+import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
 from flask import session
@@ -138,6 +139,19 @@ class Extractor:
         df.columns = ["Curve Start Month", 'Data', 'Curve Update Date', "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", 'Sub Cost Component']
         return df
 
+    def adding_disclaimer(self, df):
+        """
+        adding disclaimer to the dataframe
+        """
+        text_to_add = """
+        The information in this file is intended only for the use of authorized clients of TRUELight Energy's TRUEPrice products & services. If you are not the intended recipient of this file, or the person responsible for delivering this file to the intended recipient, you are strictly prohibited from disclosing, copying, distributing, or retaining this file or any part of it. This file contains information which is confidential and covered by legal, professional, or other privileges under applicable law. If you have received this file in error, please notify TRUELight by email at info@truelightenergy.com 
+        """
+
+        
+        df[" "] = np.nan
+        df.iloc[-1, -1] = text_to_add
+
+        return df
 
     def get_custom_data(self, query_strings, download_type):
         """
@@ -177,6 +191,11 @@ class Extractor:
                 dataframe = self.post_processing_csv(dataframe, str(query_strings["curve_type"]).lower())
             else:
                 dataframe = self.post_processing_json(dataframe)
+
+            if dataframe is not None:
+                dataframe = self.adding_disclaimer(dataframe)
+
+            
                 
             return dataframe, status
         except:

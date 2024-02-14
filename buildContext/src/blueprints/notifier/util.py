@@ -145,7 +145,8 @@ class Util:
                 weigh = 'gain'
             else:
                 weigh = 'loss'
-            processed_notifications.append(f"The prompt month energy in {notification['location']} has {notification['price_shift']} by ${round(notification['price_shift_value'], 2)}($/KWh) resulting in a {round(notification['price_shift_prct'], 2)}% {weigh}.")
+            val = "{:.5f}".format(notification['price_shift_value'])
+            processed_notifications.append(f"The prompt month energy in {notification['location']} has {notification['price_shift']} by ${val}($/kWh) resulting in a {round(notification['price_shift_prct'], 2)}% {weigh}.")
 
 
         return processed_notifications

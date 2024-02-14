@@ -8,6 +8,8 @@ import pandas as pd
 import datetime
 from sqlalchemy import text
 from utils.database_connection import ConnectDatabase
+from decimal import Decimal, ROUND_HALF_UP
+
 
 class HeadroomModel:
 
@@ -207,6 +209,9 @@ class HeadroomModel:
             return False
         
 
+
+    def round_to_5_decimals(self, number):
+        return Decimal(number).quantize(Decimal('0.00000'), rounding=ROUND_HALF_UP)
     
     def get_headrooms_data(self):
         """
@@ -236,10 +241,16 @@ class HeadroomModel:
         try:
             results = self.engine.execute(final_query).fetchall()
             for row in results:
-                
+                util_price = round(float(row['ptc']),5)
+                util_price = self.round_to_5_decimals(util_price)
+                retail_price =  round(float(row['total_bundled_price']),5)
+                retail_price = self.round_to_5_decimals(retail_price)
+                headroom = round(float(row['headroom']),5)
+                headroom = self.round_to_5_decimals(headroom)
+
                 data.append({"state": row['state'], "utility": row['utility'], "load_zone": row['load_zone'],
-                            "utility_price": round(float(row['ptc']),5), "retail_price": round(float(row['total_bundled_price']),5),
-                            "headroom": round(float(row['headroom']),5), "headroom_prct": round(float(row['headroom_prct']),2),
+                            "utility_price":util_price , "retail_price": retail_price,
+                            "headroom":headroom , "headroom_prct": round(float(row['headroom_prct']),2),
                             "customer_type": row['cost_component'],
                             "control_area": row['control_area'], "capacity_zone": row['capacity_zone'],
                             "utility": row['utility'], "strip": row['strip'], "cost_group": row['cost_group'],

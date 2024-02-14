@@ -16,6 +16,7 @@ function top_entries_extractor(data){
     return top10Entries
 
 }
+
 function populate_table(data){
     // Get a reference to the table
     const table = document.getElementById('data-table');
@@ -37,7 +38,7 @@ function populate_table(data){
                     item[header]=  itr+"-"+item['utility']+" "+'('+item['load_zone']+')';
                 }
                 if(header=='headroom'){
-                    item[header]=  "=$"+ String(item[header]);
+                    item[header]=  "=$"+ String((item[header]).toFixed(5))+" (kWh)";
                 }
 
             
