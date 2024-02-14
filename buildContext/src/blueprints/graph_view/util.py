@@ -220,7 +220,7 @@ class Util:
         """
         creates the graphview based on the raw parameters
         """
-
+        params = list()
         for raw_params in notification_params:
             control_table = ((raw_params.split(',')[0]).split('in')[-1]).strip()
             load_zone = ((raw_params.split(',')[1]).split('(5x16)')[0]).strip()

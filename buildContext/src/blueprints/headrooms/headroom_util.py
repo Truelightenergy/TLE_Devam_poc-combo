@@ -57,9 +57,11 @@ class Util:
         """
         filters specific columns
         """
-
-        dataframe =  dataframe[['state', 'utility', 'load_zone', 'utility_price', 'retail_price', 'headroom', 
-                                'headroom_prct', 'customer_type']]
+        if dataframe is not None:
+            dataframe =  dataframe[['state', 'utility', 'load_zone', 'utility_price', 'retail_price', 'headroom', 
+                                    'headroom_prct', 'customer_type']]
+        else:
+            dataframe = pd.DataFrame()
         return dataframe
 
     def get_headroom_heatmap(self):
