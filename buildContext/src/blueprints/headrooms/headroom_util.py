@@ -57,7 +57,7 @@ class Util:
         """
         filters specific columns
         """
-        if dataframe is not None:
+        if (dataframe is not None) and len(dataframe) != 0 :
             dataframe =  dataframe[['state', 'utility', 'load_zone', 'utility_price', 'retail_price', 'headroom', 
                                     'headroom_prct', 'customer_type']]
         else:
