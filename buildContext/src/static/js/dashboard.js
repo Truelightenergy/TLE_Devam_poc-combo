@@ -37,7 +37,7 @@ function populate_table(data){
                     item[header]=  itr+"-"+item['utility']+" "+'('+item['load_zone']+')';
                 }
                 if(header=='headroom'){
-                    item[header]=  "=$"+ String(Math.round(item[header] * 100) / 100);
+                    item[header]=  "=$"+ String((item[header]).toFixed(5))+" (kWh)";
                 }
 
             
@@ -82,6 +82,9 @@ state_wise_data.forEach(stateData => {
 
     let state_mean = calculate_mean(headrooms);
     let normalized_mean = (state_mean - global_mean) / global_std;
+    if(state_mean == global_mean){
+        normalized_mean = state_mean;
+    }
     stateMeanHeadroom[state] = { mean: Math.round(normalized_mean * 100)/100};
 
 });

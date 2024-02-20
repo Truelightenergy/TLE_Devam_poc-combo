@@ -26,6 +26,26 @@ function top_entries_extractor_global(data){
     return top10Entries
 
 }
+function addZeros(numberString) {
+    // Split the string at the decimal point
+    numberString = String(numberString);
+    const parts = numberString.split(".");
+  
+    // Check if decimal part exists and needs padding
+    if (parts.length === 2 && parts[1].length < 5) {
+      // Calculate the number of zeros to add
+      const numZeros = 5 - parts[1].length;
+  
+      // Pad the decimal part with zeros
+      parts[1] += "0".repeat(numZeros);
+  
+      // Join the parts back together
+      return parts.join(".");
+    }
+  
+    // Input already has at least 5 digits after the decimal point
+    return numberString;
+  }
 function populate_table(data){
     // Get a reference to the table
     const table = document.getElementById('data-table');
@@ -88,7 +108,7 @@ function populate_table(data){
             var value = item[header];
             if ((header=='headroom')|| (header=='retail_price')|| (header=='utility_price')){
                 // item[header]= " $"+(Math.round(item[header]* 100) / 100).toString();
-                value= "$"+ item[header];
+                value= "$"+ addZeros(item[header]);
             }
             if (header=='headroom_prct'){
                 // item[header]= (Math.round(item[header] * 100) / 100).toString()+"% ";
@@ -134,6 +154,9 @@ state_wise_data.forEach(stateData => {
 
     let state_mean = calculate_mean(headrooms);
     let normalized_mean = (state_mean - global_mean) / global_std;
+    if(state_mean == global_mean){
+        normalized_mean = state_mean;
+    }
     stateMeanHeadroom[state] = { mean: Math.round(normalized_mean * 100)/100};
 
 });

@@ -6,9 +6,9 @@
 #loading {
     border: 8px solid rgba(0, 0, 0, 0);
     
-    border-top: 8px solid #1addc3;
-    border-bottom: 8px solid #1addc3;
-    border-left: 8px solid #1addc3;
+    border-top: 8px solid #808080;
+    border-bottom: 8px solid #808080;
+    border-left: 8px solid #808080;
 
     border-radius: 50%;
     width: 100px;

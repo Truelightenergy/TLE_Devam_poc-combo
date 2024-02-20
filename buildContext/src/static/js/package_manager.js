@@ -245,7 +245,6 @@ $(document).ready(function() {
              }
              subscribed_filters[curve][control_area].push(values);
         }
-
         return subscribed_filters;
     
         
@@ -269,6 +268,7 @@ $(document).ready(function() {
                 // selected_data = pre_process_subscribed_filters(response);
                 unselected_data = pre_process_unsubscribed_filters(response);
                 unselected_filters = unselected_data;
+                document.getElementById("loading").remove();
 
             }   
         });
@@ -657,13 +657,12 @@ $(document).ready(function() {
             curves.push(curve);
         }
         createButtons(curves, "curves_button");
-        document.getElementById("loading").remove();
+        
 
         // control Area
         $("#curves_button").on("click", "button", function() {
             document.getElementById(this.id).classList.remove('btn-warning');
             unselected_filters = unselected_filters.filter(item => item !== this.id);        
-            
             
             var control_areas = [];
             for (var control_area in data[this.id]){
@@ -872,7 +871,10 @@ $(document).ready(function() {
 
                     var sub_cost_comp = data_catalog[items]["sub_cost_component"];
                     var value = this.id+"___"+sub_cost_comp;
-                    sub_cost_comps.push(value);
+                    if(sub_cost_comp!=null){
+                        sub_cost_comps.push(value);
+                    }
+                    
                 }  
             }
             let unique_sub_cost_comps = [...new Set(sub_cost_comps)];

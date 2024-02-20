@@ -2,6 +2,7 @@ import croniter
 import datetime
 from .notifier_model import NotifierUtil
 from .emailer import Email
+from ..extractors.helper.extraction_rules import Rules
 
 
 class Process_Notifier:
@@ -9,6 +10,7 @@ class Process_Notifier:
     def __init__(self):
         self.db_util = NotifierUtil()
         self.email_sender = Email()
+        self.filter = Rules()
 
     
     
@@ -22,6 +24,17 @@ class Process_Notifier:
         """extract the email of the user based on its id"""
         return self.db_util.get_user_email(user_id)
     
+    def valid_authorization(self, rules, control_table, load_zone, strip):
+        """
+        validate access to the notifications
+        """
+        flag = False
+        for row in rules:
+            if(row['control_table']==control_table) and (row['load_zone']==load_zone) and (row['strip']== strip):
+                flag = True
+                break
+        return flag
+    
     def send_notificaions(self, data):
         """
         this method is reponsible for sending the notification to each users
@@ -30,10 +43,25 @@ class Process_Notifier:
         users = data["user_id"]
         head = data["subject_content"]
         body = data["body_content"]
+
+        header_sec, body_sec, tail_sec = body.split("<br/><br/>")
+        notifications = body_sec.split("<br/>")
         
         emails= self.fetch_users_email(users)
         for email in emails:
-            self.email_sender.send_email(head, body, email)
+            is_admin = self.filter.check_admin_privileges(email)
+            custom_notification_body = ""
+            for notif in notifications:
+                rules = self.filter.fetch_module_rules("_energy", email)
+                control_table = notif.split(',')[0].split('in')[-1].strip().lower()+"_energy"
+                load_zone = notif.split(',')[1].split('(5x16)')[0].strip()
+                strip = '5x16'
+
+                if (is_admin) or (self.valid_authorization(rules, control_table, load_zone, strip)):
+                    custom_notification_body = f"{custom_notification_body}<br/>{notif}"
+
+            custom_notification_body = f"{header_sec}<br/><br/>{custom_notification_body}<br/><br/>{tail_sec}"
+            self.email_sender.send_email(head, custom_notification_body, email)
 
         for not_id in notification_id:
             self.db_util.log_notification(emails, not_id, head)
@@ -48,11 +76,11 @@ class Process_Notifier:
 
         try:
             results = self.db_util.fetch_pending_notifications()
-            results = sorted(results, key=lambda x: x['price_shift_prct'],  reverse=True)
             # Use a set to store unique locations and a dictionary comprehension to filter unique dicts
             unique_locations = set()
             results = [unique_locations.add(d['location']) or d for d in results if d['location'] not in unique_locations]
             results = results[:9]
+            results = sorted(results, key=lambda x: x['price_shift_prct'],  reverse=True)
             data = {
                 "notification_id" : list(),
                 "body_content": ""
@@ -71,7 +99,7 @@ class Process_Notifier:
                 data['body_content'] = f"{data['body_content']}<br/>{body_content}"
                 data['notification_id'].append(notification_id)
                 if i == (len(results)-1):
-                    data['body_content'] = f"{header_body}<br/><br/>{data['body_content']}<br/><br/>{tail_body}"
+                    data['body_content'] = f"{header_body}<br/>{data['body_content']}<br/><br/>{tail_body}"
 
             success_flag = self.send_notificaions(data)
             if success_flag:

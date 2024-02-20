@@ -73,6 +73,7 @@
                     <div class="col-sm-12 col-xl-12">
                         <div class="bg-light text-dark rounded h-100 p-4">
                             <div class="d-flex justify-content-end">
+                                <input type="button" id='btnDownload' value="Export Graph" class="btn btn-primary btn-sm m-2" /> 
                                 <input type="button" value="Day/Day" id="btnDayOverDay"
                                     class="btn btn-primary btn-sm m-2" />
                                 <input type="button" value="Week/Week" id="btnWeekOverWeek"
@@ -96,10 +97,7 @@
                             </div> -->
                         </div>
                     </div>
-                    <div class="col-md-10"></div>
-                    <div class="col-md-2">
-                        <input id ='btnDownload' value="Export Graph" class="btn btn-primary btn-sm m-2"> 
-                    </div>
+                    <div class="col-md-10"></div>                   
                 </div>
                 <div id='chart' class='chart' ”></div>
                 {% include 'components/graphviewfiltersmodal.html'%}

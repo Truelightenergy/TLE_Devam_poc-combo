@@ -86,6 +86,26 @@ class Util:
             
         return response, status
          
+    def get_csv_string_with_disclaimer(self,csv_string):
+        """
+        Converts a DataFrame to a CSV string and appends a disclaimer.
+        """
+        disclaimer_text = (
+        '\r\n"The information in this file is intended only for the use of authorized '
+        'clients of TRUELight Energy\'s TRUEPrice products & services. If you are '
+        'not the intended recipient of this file, or the person responsible for '
+        'delivering this file to the intended recipient, you are strictly prohibited '
+        'from disclosing, copying, distributing, or retaining this file or any part '
+        'of it. This file contains information which is confidential and covered by '
+        'legal, professional, or other privileges under applicable law. If you have '
+        'received this file in error, please notify TRUELight by email at '
+        'info@truelightenergy.com"\r\n'
+        )
+    
+        # Append the disclaimer to the CSV string
+        csv_string_with_disclaimer = csv_string + disclaimer_text
+        
+        return csv_string_with_disclaimer
 
     def extract_data(self, query_strings):
         """
@@ -119,15 +139,25 @@ class Util:
             
             if status == "success":
                 if query_strings["type"].lower()=="csv":
-                    if (query_strings["curve_type"]).lower() in ['matrix', 'headroom']:
+
+                    if (query_strings["curve_type"]).lower() == 'matrix':
+                        data = self.get_csv_string_with_disclaimer(data_frame.to_csv(header=None))
                         resp = Response(
-                        data_frame.to_csv(header=None),
+                        data,
+                        mimetype="text/csv",
+                        headers={"Content-disposition":
+                        "attachment; filename="+file_name+".csv"}), status
+                    elif(query_strings["curve_type"]).lower() == 'headroom':
+                        data = self.get_csv_string_with_disclaimer(data_frame.to_csv(index=False))
+                        resp = Response(
+                        data,
                         mimetype="text/csv",
                         headers={"Content-disposition":
                         "attachment; filename="+file_name+".csv"}), status
                     else:
+                        data = self.get_csv_string_with_disclaimer(data_frame.to_csv())
                         resp = Response(
-                            data_frame.to_csv(),
+                            data,
                             mimetype="text/csv",
                             headers={"Content-disposition":
                             "attachment; filename="+file_name+".csv"}), status
@@ -145,7 +175,9 @@ class Util:
                 return resp
             return None, status 
             
-        except:
+        except Exception as e:
+            # Print the error to console
+            # print("An error occurred while adding the disclaimer:", e, file=sys.stderr)
             resp = None, 'Unable to Fetch Data'
             return resp
         
