@@ -57,7 +57,7 @@ class Util:
         """
         filters specific columns
         """
-        if dataframe is not None:
+        if (dataframe is not None) and len(dataframe) != 0 :
             dataframe =  dataframe[['state', 'utility', 'load_zone', 'utility_price', 'retail_price', 'headroom', 
                                     'headroom_prct', 'customer_type']]
         else:
@@ -93,6 +93,11 @@ class Util:
 
                 # converting data to the dataframes
                 ptc_df = pd.DataFrame(ptc_data)
+                # ptc_df = ptc_df.drop(columns=['lookup_id']) 
+
+                
+                matrix_df = pd.DataFrame(matrix_data)
+                # matrix_df = matrix_df.drop(columns=['matching_id'])
 
                 current_ptc_date = ptc_df['curvestart'].unique()[0]
 

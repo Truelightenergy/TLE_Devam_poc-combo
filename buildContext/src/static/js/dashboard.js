@@ -16,7 +16,6 @@ function top_entries_extractor(data){
     return top10Entries
 
 }
-
 function populate_table(data){
     // Get a reference to the table
     const table = document.getElementById('data-table');
