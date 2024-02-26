@@ -75,6 +75,7 @@ class Util:
         """
         filters only key nodals point
         """
+        filters = []
 
         # for ercot
         if 'ercot' in filename.lower():
@@ -88,10 +89,10 @@ class Util:
         # for isone
         elif 'isone' in filename.lower():
             filters = ['MASS HUB']
-        else:
-            filters = ['NoneValue']
+        
 
-        dataframe = dataframe[dataframe['load_zone'].isin(filt for filt in filters)]
+        if len(filters)>0:
+            dataframe = dataframe[dataframe['load_zone'].isin(filters)]
         return dataframe
 
     def setup_notifications(self):
