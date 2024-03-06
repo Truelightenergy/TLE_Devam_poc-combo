@@ -1,11 +1,15 @@
 var json_data = null;
 var notification_data = null;
-var graphview_data =  null;
+var graphview_data = null;
 var payload = null;
 
-function top_entries_extractor(data){
+function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+function top_entries_extractor(data) {
     data.forEach(entry => {
-    entry.headroom = parseFloat(entry.headroom);
+        entry.headroom = parseFloat(entry.headroom);
     });
 
     // Sort the data by headroom in descending order
@@ -16,145 +20,250 @@ function top_entries_extractor(data){
     return top10Entries
 
 }
-function populate_table(data){
-    // Get a reference to the table
-    const table = document.getElementById('data-table');
-    
 
-    // Add table headers
-    const headers = ['utility', 'headroom'];
+function populate_table(data) {
+    var rowTemplate = $(`<tr>
+        <td class="px-1 cUtility">
+            <img src="/static/app-assets/media/BKV.png" alt="BKV" />
+        </td>
+        <td class="px-1 cPrice">
+            $72.222
+        </td>
+        <td class="text-nowrap px-1 ">
+            <div class="d-flex cHeadroom">                
+            </div>
+        </td>       
+    </tr>`);
 
-    // Add data rows
-    const tbody = table.querySelector('tbody');
-    tbody.innerHTML='';
-    
+    const table = $("#data-table");
+
+    const tbody = table.find('tbody');
+    tbody.html('');
+
     data.forEach((item, itr) => {
         itr++;
-        const tr = document.createElement('tr');
-        headers.forEach(header => {
-            const td = document.createElement('td');
-                if(header=='utility'){
-                    item[header]=  itr+"-"+item['utility']+" "+'('+item['load_zone']+')';
-                }
-                if(header=='headroom'){
-                    item[header]=  "=$"+ String((item[header]).toFixed(5))+" (kWh)";
-                }
-
-            
-            td.textContent = item[header];
-            tr.appendChild(td);
-        });
-        tbody.appendChild(tr);
+        var row = rowTemplate.clone();
+        row.find('.cUtility').html(`${itr}-${item['utility']} (${item['load_zone']})`);
+        row.find('.cPrice').html(`$${item.retail_price}`);
+        row.find('.cHeadroom').html(`<span class="">$${item.headroom.toFixed(5)} (kWh)</span><span class="ms-1 me-25">${item.headroom_prct}%</span>`);
+        tbody.append(row);
     });
 }
 
 // calculate mean
-function calculate_mean(values){
+function calculate_mean(values) {
     return values.reduce((acc, value) => acc + value, 0) / values.length;
 }
 
 // calculate standard deviation 
-function calculate_std(values, mean){
+function calculate_std(values, mean) {
     const variance = values.reduce((acc, value) => acc + Math.pow(value - mean, 2), 0) / values.length;
     return Math.sqrt(variance);
 }
 
-function data_adjustments(data){
+function data_adjustments(data) {
     const result = data.reduce((acc, { state, headroom }) => {
         acc[state] = acc[state] || { state, headrooms: [] };
         acc[state].headrooms.push(parseFloat(headroom));
         return acc;
-    }, {});  
+    }, {});
     return Object.values(result);
 }
 
-function load_heatmap(){
-var stateMeanHeadroom = {};
-let allHeadrooms = json_data.flatMap(data => parseFloat(data.headroom));
-let global_mean = calculate_mean(allHeadrooms);
-let global_std = calculate_std(allHeadrooms, global_mean);
+function load_heatmap() {
+    $("#heapmap_graph").html('');
+    var stateMeanHeadroom = {};
+    let allHeadrooms = json_data.flatMap(data => parseFloat(data.headroom));
+    let global_mean = calculate_mean(allHeadrooms);
+    let global_std = calculate_std(allHeadrooms, global_mean);
 
-state_wise_data = data_adjustments(json_data);
+    state_wise_data = data_adjustments(json_data);
 
-state_wise_data.forEach(stateData => {
-    var state = stateData.state;
-    var headrooms = stateData.headrooms;
+    state_wise_data.forEach(stateData => {
+        var state = stateData.state;
+        var headrooms = stateData.headrooms;
 
-    let state_mean = calculate_mean(headrooms);
-    let normalized_mean = (state_mean - global_mean) / global_std;
-    if(state_mean == global_mean){
-        normalized_mean = state_mean;
-    }
-    stateMeanHeadroom[state] = { mean: Math.round(normalized_mean * 100)/100};
+        let state_mean = calculate_mean(headrooms);
+        let normalized_mean = (state_mean - global_mean) / global_std;
+        if (state_mean == global_mean) {
+            normalized_mean = state_mean;
+        }
+        stateMeanHeadroom[state] = { mean: Math.round(normalized_mean * 100) / 100 };
 
-});
+    });
 
-var trace = {
-    type: 'choropleth',
-    locationmode: 'USA-states',
-    featureidkey: 'properties.NAME_2',
-    locations: Object.keys(stateMeanHeadroom),
-    z: Object.values(stateMeanHeadroom).map(item => item.mean),
-    text: Object.keys(stateMeanHeadroom),  // Array of state names
-    hoverinfo: 'location+z+text',  // Display location, z value, and text (state name)
-    colorscale: 'BuGn',  // Custom color scale
-    colorbar: { title: 'Headroom Mean' },
-    showscale:false,
-};
+    var svg = d3.select("#heapmap_graph");
+    svg.on("mouseleave", function () {
+        // Hide the tooltip
+        d3.select("#tooltip").style("opacity", 0).style("left", "0px").style("top", "0px");
+    })
+        .on('click', function () {
+            document.location.href = "/generate_headroom_heatmap"
+        });
+    var width = $("#heapmap_graph").parent().width();
+    var height = 333;
 
+    $("#heapmap_graph").parent().height(height);
+    var projection = d3.geoMercator()
+        .scale(1300)
+        .fitSize([width, height - 54], { type: "FeatureCollection", features: geoJSON.features });
 
-    var layout = {
-        geo: {
-            scope: 'usa',
-            showland: true,  // Display land mass
-            landcolor: 'rgb(217, 217, 217)'  // Land color
-        },
-        legend: {
-            traceorder: 'reversed',
-            font: { size: 10 }
-        },
-        margin: { l: 0, r: 0, b: 0, t: 0 },  // Adjust margin for a cleaner look
-        showcolorbar: false,
-        dragmode:false
-    };
+    var path = d3.geoPath()
+        .projection(projection);
 
-    var data = [trace];
+    // A color scale for commute times
+    var colorScale = d3.scaleDiverging()
+        .domain([-1.0, 0.01, 1.00]) // Example domain, adjust according to your data's range
+        .range(['rgb(0,73,137)', 'rgb(0,73,137)', 'rgb(251,83,83)']); // Blue to white to red color gradient
 
-    Plotly.newPlot('chart_heatmap', data, layout, {responsive: true});
+    var tooltip = d3.select("#tooltip");
 
+    svg.selectAll('.hex')
+        .data(geoJSON.features)
+        .enter().append('path')
+        .attr('class', 'hex state')
+        .attr('d', path)
+        .attr('fill', function (d) {
+            var value = stateMeanHeadroom[d.properties.iso3166_2];
+            if (!value) {
+                return 'rgb(0,73,137)';
+            }
+            return colorScale(value.mean);
+        })
+        .on("mouseover", function (event, d) {
+            var value = stateMeanHeadroom[d.properties.iso3166_2];
+            if (value) {
+                tooltip.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                const [x, y] = d3.pointer(event, svg.node());
+                tooltip.html("State: " + value.mean.toFixed(5))
+                    .style("left", (x) + "px")
+                    .style("top", (event.pageY) + "px"); // your content
+            }
+            else {
+                d3.select("#tooltip").style("opacity", 0).style("left", "0px").style("top", "0px");
+            }
+        });
+
+    // Add state labels
+    svg.selectAll('.label')
+        .data(geoJSON.features)
+        .enter().append('text')
+        .attr('class', 'label')
+        .attr("transform", function (d) {
+            var centroid = path.centroid(d);
+            return "translate(" + centroid + ")";
+        })
+        .style("text-anchor", "middle")
+        .style("alignment-baseline", "central")
+        .text(function (d) {
+            if (d.properties.iso3166_2)
+                return d.properties.iso3166_2;
+        })
+        .attr('fill', 'white');
+
+    var legendWidth = 40;
+    var legendHeight = 5;
+    var legendPadding = 30; // Space between legend items
+    var legendY = height - 20; // Y position of the legend, adjust as needed
+
+    var numberOfItems = colorScale.ticks(6).length - 1; // Subtract 1 to account for the slice in your data setup
+    var totalLegendWidth = numberOfItems * legendWidth + (numberOfItems - 1) * legendPadding;
+    var legendX = (width - totalLegendWidth) / 2;
+    var verticalPadding = 10; // Decrease this value to reduce the space
+
+    var legend = svg.append('g')
+        .attr('class', 'legend')
+        .attr('transform', 'translate(' + legendX + ',' + legendY + ')')
+        .selectAll('g')
+        .data(colorScale.ticks(6).slice(1).reverse())
+        .enter().append('g')
+        .attr('transform', function (d, i) {
+            return 'translate(' + i * (legendWidth + legendPadding) + ', 0)';
+        });
+
+    legend.append('rect')
+        .attr('width', legendWidth)
+        .attr('height', legendHeight)
+        .style('fill', colorScale);
+
+    legend.append('text')
+        .attr('x', legendWidth / 2) // Center the text within the rectangle horizontally
+        .attr('y', legendHeight + verticalPadding) // Position the text right below the rectangle
+        .attr('dy', '0.35em') // Center the text vertically within the line height
+        .style('text-anchor', 'middle') // Center the text horizontally
+        .text(function (d) { return d; });
 
     top_entries = top_entries_extractor(json_data);
     populate_table(top_entries);
-} 
-
-function load_notifications(){
-    var myDiv = $("#notifier-panel");
-
-
-  var ul = $("<ul>");
-
-  for (var i = 0; i < notification_data.length; i++) {
-    var li = $("<li>").text(notification_data[i]);
-    ul.append(li);
-  }
-
-  myDiv.append(ul);
 }
 
-function load_graph_view(){
-    Plotly.newPlot('graphview', graphview_data['data'], graphview_data['layout'], {responsive: true});
+
+function load_graph_view() {
+
+    var layout = {
+        "xaxis": {
+            "tickfont": {
+                "size": 10,
+                "color": "grey"
+            },
+            "showline": false,
+            "mirror": true,
+            "ticks": 'outside', // Ensure the ticks are outside the plot
+            "ticklen": 5, // Length of the ticks
+            showgrid: false
+        },
+        "yaxis": {
+            "tickprefix": "$",
+            "tickfont": {
+                "size": 10,
+                "color": "grey"
+            },
+            "showline": false,
+            "linewidth": 2,
+            "linecolor": 'black',
+            "mirror": true,
+            "ticks": 'outside', // Ensure the ticks are outside the plot
+            "ticklen": 5, // Length of the ticks
+            showgrid: false
+        },
+        "legend": {
+            "orientation": "h",
+            "x": 0.5,
+            "xanchor": "center",
+            "y": -0.2, // You may need to adjust this to place the legend below the plot
+            "yanchor": "top" // Anchors the legend at the top of its bounding box
+        },
+        "hovermode": "x unified",
+        "plot_bgcolor": "white",
+        "margin": {
+            "l": 50,
+            "r": 50,
+            "t": 100,
+            "b": 100
+        }
+    };
+
+    Plotly.newPlot('graphview', graphview_data['data'], layout,
+        {
+            responsive: true,
+            staticPlot: true,
+            displayModeBar: false
+        }
+    );
 }
 
-function load_data(){
+function load_data() {
     // load heatmpas
     $.ajax({
         url: '/get_heatmap',
         type: 'POST',
         contentType: 'application/json',
         headers: {
-            'Authorization': "Bearer "+token
+            'Authorization': "Bearer " + token
         },
-        success: function(response) {
+        success: function (response) {
             json_data = response;
             load_heatmap();
         }
@@ -167,89 +276,62 @@ function load_data(){
         contentType: 'application/json',
         dataType: 'json',
         headers: {
-            'Authorization': "Bearer "+token
+            'Authorization': "Bearer " + token
         },
-        success: function(response) {
+        success: function (response) {
             graphview_data = JSON.parse(response['graph']);
-            payload = response['payload'];           
+            payload = response['payload'];
             load_graph_view();
         }
     });
-
-    // load notifications
-    $.ajax({
-        url: '/get_notifications',
-        type: 'POST',
-        contentType: 'application/json',
-        headers: {
-            'Authorization': "Bearer "+token
-        },
-        success: function(response) {
-            notification_data = response;           
-            load_notifications();
-
-        }
-    });
+   
 }
 
-function listners(){
+function listners() {
 
-    $('#graphview').on('click', function(event) {
+    $('#graphview').on('click', function (event) {
         localStorage.setItem('dashboard_flow', true);
         localStorage.setItem('dashboard_filters', JSON.stringify(payload[0]));
         localStorage.setItem('dashboard_extra_filters', JSON.stringify(payload[1]));
         window.location.href = "/graph";
+    });
 
-        // $.ajax({
-        //     url: '/graphs',
-        //     type: 'POST',
-        //     contentType: 'application/json',
-        //     dataType: 'html',
-        //     data: JSON.stringify(payload),
-        //     headers: {
-        //         'Authorization': "Bearer "+token
-        //     },
-        //     success: function(response) {
-        //         localStorage.setItem('dashboard_flow', true);
-        //         localStorage.setItem('dashboard_filters', JSON.stringify(payload[0]));
-        //         localStorage.setItem('dashboard_extra_filters', JSON.stringify(payload[1]));
-        //         document.open();
-		// 		document.write(response);
-		// 		document.close();
-    
-        //     }
-        // });
-
-      });
-
-      $('#chart_heatmap').on('click', function(event) {
+    $('#chart_heatmap').on('click', function (event) {
         $.ajax({
             url: '/generate_headroom_heatmap',
             type: 'POST',
-            dataType : "html",
+            dataType: "html",
             contentType: "application/x-www-form-urlencoded; charset=UTF-8",
             headers: {
-                'Authorization': "Bearer "+token
+                'Authorization': "Bearer " + token
             },
-            success: function(response) {
+            success: function (response) {
                 document.open();
-				document.write(response);
-				document.close();
-    
+                document.write(response);
+                document.close();
+
             }
         });
     });
 
-      
+
 
 }
 
-$(document).ready(function() {
-
+$(document).ready(function () {
     truelight.loader.show();
     load_data();
     truelight.loader.hide();
     listners();
-    
+
+
+   
 });
+
+$(window).resize(function () {
+    load_heatmap();
+    // console.log("<div>Handler for `resize` called.</div>");
+});
+
+
 

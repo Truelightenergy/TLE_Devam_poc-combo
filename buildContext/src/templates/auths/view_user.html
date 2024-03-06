@@ -1,161 +1,126 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'master.html' %}
 
-<head>
-    <meta charset="utf-8">
-    <title>Users</title>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="" name="keywords">
-    <meta content="" name="description">
+{% block title %}Users - TRUEPrice{% endblock %}
 
-    <!-- Favicon -->
-    <link href="static/img/favicon.ico" rel="icon">
+{% block content %}
+<div class="content-body">
+    <div class="row">
+        <div class="col-12 col-md-12">
+            <h3 class="axiBold text-black">Users</h3>
+            <div class="card mb-0">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 col-md-12 border-start-0 ">
+                            <div class="table-responsive table-dense">
+                                <table id="myTable" class="table cHeader">
+                                    <thead>
+                                        <tr>
+                                            <th class="px-1">Email</th>
+                                            <th class="px-1">Level</th>
+                                            <th class="px-1 text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
 
-    <link href="/static/external_cdns/css/css2.css" rel="stylesheet">
+                                        {% if data%}
+                                        {% for row in data %}
+                                        <tr>
+                                            <td>{{row["email"]}}</td>
+                                            <td>{{row["privileged_level"]}}</td>
+                                            <td>
+                                                <div class="row">
+                                                    <div class="col-12 col-md-12 align-items-end text-end" role="group" aria-label="Time filters">
+                                                        {%if row["email"]!=session["user"]%}
+                                                        {%if row["status"]=="enabled"%}
+                                                        <a type="button"
+                                                            href="/disable_user_ui?user_id={{ row['id'] }}"
+                                                            class="btn btn-secondary">Disable</a>
 
-    <!-- Icon Font Stylesheet -->
-
-    <link href="/static/external_cdns/css/all.min.css" rel="stylesheet">
-    <link href="/static/external_cdns/css/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Customized Bootstrap Stylesheet -->
-    <link href="static/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Template Stylesheet -->
-    <link href="static/css/style.css" rel="stylesheet">
+                                                        {%else%}
+                                                        <a href="/enable_user_ui?user_id={{ row['id'] }}"
+                                                            class="btn btn-secondary">Enable</a>
+                                                            {%endif%}
 
 
+                                                            <a href="/update_user_ui?user_id={{ row['id'] }}"
+                                                                class="btn btn-warning">Update</a>
+                                                            <a title="Reset"
+                                                                href="/reset_password_ui?user_id={{ row['id'] }}"
+                                                                class="m-2">
+                                                                <img src="/static/app-assets/media/reset.svg"
+                                                                    alt="reset" class="icon-size-14" />
+                                                            </a>
 
-</head>
+                                                            {%if row["privileged_level"]=="admin"%}
+                                                            <a title="View Details"
+                                                                href="/view_authorized_columns_ui?user_id={{ row['id'] }}"
+                                                                class="m-2">
+                                                                <img src="/static/app-assets/media/eye.svg" alt="reset"
+                                                                    class="icon-size-14" />
+                                                            </a>
+                                                            <a href="/reset_subscription?user_id={{ row['id'] }}"
+                                                                class="m-2">
+                                                                <img src="/static/app-assets/media/trash.svg"
+                                                                    alt="reset" class="icon-size-14" />
+                                                            </a>
+                                                            {%else%}
+                                                            <a href="/view_authorized_columns_ui?user_id={{ row['id'] }}"
+                                                                class="m-2">
+                                                                <img src="/static/app-assets/media/eye.svg" alt="reset"
+                                                                    class="icon-size-14" />
+                                                            </a>
 
-<body>
-       
-    <div class="container-fluid position-relative d-flex p-0">
-        <!-- Spinner Start -->
-        <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                <span class="sr-only">Loading...</span>
+                                                            <a href="/reset_subscription?user_id={{ row['id'] }}"
+                                                                title="Remove User" class="m-2"><img
+                                                                    src="/static/app-assets/media/trash.svg" alt="reset"
+                                                                    class="icon-size-14" /></a>
+                                                            {%endif%}
+
+
+
+                                                            {%else%}
+                                                            <!-- <a href="/disable_user_ui?user_id={{ row['id'] }}"
+                                                            class="btn btn-warning disabled">Disable</a>
+
+                                                        <a href="/update_user_ui?user_id={{ row['id'] }}"
+                                                            class="btn btn-info disabled">Update</a>
+                                                        <a href="/reset_password_ui?user_id={{ row['id'] }}"
+                                                            class="btn btn-primary disabled">Reset</a>
+
+                                                        <a href="/view_authorized_columns_ui?user_id={{ row['id'] }}"
+                                                            class="btn btn-primary disabled">View</a>
+                                                        <a href="/reset_subscription?user_id={{ row['id'] }}"
+                                                            class="btn btn-warning disabled">Remove</a> -->
+                                                            {%endif%}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                        {%endif%}
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <!-- Spinner End -->
-
-
-        <!-- Sidebar Start -->
-        <div class="sidebar pe-4 pb-3">
-            {% include 'navbar.html'%}
-        </div>
-        <!-- Sidebar End -->
-
-
-         <!-- Content Start -->
-         <div class="content">
-            <!-- Navbar Start -->
-            {% include 'upper_navbar.html'%}
-            <!-- Navbar End -->
-
-            {% include 'notification.html'%}
-
-            <!-- Blank Start -->
-            <div class="container-fluid pt-4 px-4">
-                <div class="row g-4 align-items-center justify-content-center mx-0  mt-5">
-                    
-                
-                    
-                    <table id="myTable" class=" text-dark table-hover table">
-                        <thead>
-                            <tr>
-                                <th>Email</th>
-                                <th>Level</th>
-                                <th>Disable/Enable</th>
-                                <th>Update</th>
-                                <th>Reset Password</th>
-                                <th>Subscribed Columns</th>
-                                <th>Reset Subscription</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                          
-                          {% if data%}
-                          {% for row in data %}
-                              <tr>
-                              <td>{{row["email"]}}</td>
-                              <td>{{row["privileged_level"]}}</td>
-      
-                              {%if row["email"]!=session["user"]%}
-                                {%if row["status"]=="enabled"%}
-                                <td><a href = "/disable_user_ui?user_id={{ row['id'] }}"  class="btn btn-warning">Disable</a></td>
-                                {%else%}
-                                <td><a href = "/enable_user_ui?user_id={{ row['id'] }}"  class="btn btn-success">Enable</a></td>
-                                {%endif%}
-                              
-                              
-                              <td><a href = "/update_user_ui?user_id={{ row['id'] }}" class="btn btn-info">Update</a></td> 
-                              <td><a href = "/reset_password_ui?user_id={{ row['id'] }}" class="btn btn-primary">Reset</a></td> 
-
-                              {%if row["privileged_level"]=="admin"%}
-                                <td><a href = "/view_authorized_columns_ui?user_id={{ row['id'] }}" class="btn btn-primary disabled">View</a></td> 
-                                <td><a href = "/reset_subscription?user_id={{ row['id'] }}" class="btn btn-warning disabled">Remove</a></td>
-                                {%else%}
-                                <td><a href = "/view_authorized_columns_ui?user_id={{ row['id'] }}" class="btn btn-primary">View</a></td>
-                                <td><a href = "/reset_subscription?user_id={{ row['id'] }}" class="btn btn-warning">Remove</a></td> 
-                                {%endif%}
-
-                              
-                              
-                              {%else%}
-                              <td><a href = "/disable_user_ui?user_id={{ row['id'] }}"  class="btn btn-warning disabled">Disable</a></td>
-                              <td><a href = "/update_user_ui?user_id={{ row['id'] }}" class="btn btn-info disabled">Update</a></td> 
-                              <td><a href = "/reset_password_ui?user_id={{ row['id'] }}" class="btn btn-primary disabled">Reset</a></td>
-                              <td><a href = "/view_authorized_columns_ui?user_id={{ row['id'] }}" class="btn btn-primary disabled">View</a></td>
-                              <td><a href = "/reset_subscription?user_id={{ row['id'] }}" class="btn btn-warning disabled">Remove</a></td>
-                              {%endif%}
-      
-                              </tr>
-                          {% endfor %}
-                          {%endif%}
-                          
-                        </tbody>
-                      </table>
-
-
-            </div>
-
-            
-            </div>
-            <!-- Blank End -->
-
-
-            <!-- Footer Start -->
-            {% include 'footer.html'%}
-            <!-- Footer End -->
-        </div>
-        <!-- Content End -->
-
-
-        <!-- Back to Top -->
-         
     </div>
+</div>
+{% endblock %}
+{% block scriptblock %}
+<link rel="stylesheet" type="text/css" href="/static/app-assets/css/datatable.css" />
+<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"> </script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#myTable').DataTable();
+        var searchBox = $('#myTable_filter input');
 
-    <!-- JavaScript Libraries -->
-    <script src="/static/external_cdns/js/jquery-3.4.1.min.js"></script>
-    <script src="/static/external_cdns/js/bootstrap.bundle.min.js"></script>
-    <script src="static/lib/waypoints/waypoints.min.js"></script>
-
-    
-
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css">   
-    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"> </script>  
- 
-    <script type="text/javascript">
-        $(document).ready(function() {
-          $('#myTable').DataTable();
-        });
-      </script>
-
-    <!-- Template Javascript -->
-    <script src="static/js/main.js"></script>
-   
-</body>
-
-</html>
+        // Modify the search input's placeholder, add a class, or change other attributes
+        searchBox.attr('placeholder', 'Search...');
+        searchBox.addClass('search-input');
+    });
+</script>
+{% endblock %}

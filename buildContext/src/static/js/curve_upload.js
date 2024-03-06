@@ -2,26 +2,20 @@
 $(document).ready(function () {
 
 	function upload_file(formData) {
+		$("#process").show();
 		$.ajax({
 			xhr: function () {
 				var xhr = new window.XMLHttpRequest();
 
 				xhr.upload.addEventListener('progress', function (e) {
-
 					if (e.lengthComputable) {
-
 						console.log('Bytes Loaded: ' + e.loaded);
 						console.log('Total Size: ' + e.total);
 						console.log('Percentage Uploaded: ' + (e.loaded / e.total))
-
 						var percent = Math.round((e.loaded / e.total) * 100);
-
 						$('#progressBar').attr('aria-valuenow', percent).css('width', percent + '%').text(percent + '%');
-
 					}
-
 				});
-
 				return xhr;
 			},
 			type: 'POST',
@@ -36,7 +30,7 @@ $(document).ready(function () {
 			},
 			success: function (response) {
 
-				$('#process').css('display', 'none');
+				$('#process').hide();
 				$('.progress-bar').css('width', '0%');
 				$('#save').attr('disabled', false);
 				$('#upload_form')[0].reset();
@@ -45,7 +39,7 @@ $(document).ready(function () {
 				document.close();
 			},
 			error: function (textStatus, errorThrown) {
-				$('#process').css('display', 'none');
+				$('#process').hide();
 				$('.progress-bar').css('width', '0%');
 				$('#save').attr('disabled', false);
 				$('#upload_form')[0].reset();
@@ -245,15 +239,15 @@ $(document).ready(function () {
 		event.preventDefault();
 
 		$('#save').attr('disabled', 'disabled');
-		$('#process').css('display', 'block');
+		// $('#process').css('display', 'block');
 
 		var formData = new FormData($('#upload_form')[0]);
 		const fileInput = document.getElementById('upload_file');
 		const file = fileInput.files[0];
 		pre_test(file);
 
-		$('#tester_view').css('display', 'block');
-		$('#upload_view').css('display', 'none');
+		$('#tester_view').show();
+		$('#upload_view').hide();
 
 
 	});

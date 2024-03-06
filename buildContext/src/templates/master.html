@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" class="loading" data-textdirection="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /> -->
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge" /> -->
+    <!-- <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=0,minimal-ui" /> -->
+    <title>{% block title %}TRUEPrice{% endblock %}</title>
+
+    <!-- <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description"> -->
+
+    <link rel="apple-touch-icon" href="/static/app-assets/images/ico/apple-icon-120.png" />
+    <link rel="shortcut icon" type="image/x-icon" href="/static/app-assets/images/ico/favicon.ico" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500;1,600"
+        rel="stylesheet" />
+    <!-- BEGIN: Vendor CSS-->
+    <link rel="stylesheet" type="text/css" href="/static/app-assets/vendors/css/vendors.min.css" />
+    <!-- END: Vendor CSS-->
+    <!-- BEGIN: Theme CSS-->
+    <link rel="stylesheet" type="text/css" href="/static/app-assets/css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="/static/app-assets/css/bootstrap-extended.css" />
+    <link rel="stylesheet" type="text/css" href="/static/app-assets/css/components.css" />
+    <link rel="stylesheet" type="text/css" href="/static/app-assets/vendors/css/forms/select/select2.min.css">
+    <!-- BEGIN: Page CSS-->
+    <link rel="stylesheet" type="text/css" href="/static/app-assets/css/core/menu/menu-types/vertical-menu.css" />
+
+</head>
+
+<body class="vertical-layout vertical-menu-modern navbar-floating footer-static customContainer" data-open="click"
+    data-menu="vertical-menu-modern" data-col="">
+    {% include 'navbar.html'%}
+    <!-- {% include 'upper_navbar.html'%} -->
+    <div class="app-content content">
+        {%block notifications %}
+        <div class="notificationBar" id="notificationBar">
+            <div class="border-bottom flex align-items-center pt-1">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="fw-bolder">Notifications</h4>
+                        <div class="me-50 mb-1">
+                            <a class="icon-size-13" href="#" class="me-50">
+                                <img class="icon-size-13" src="/static/app-assets/media/check.svg" alt="check" />
+                            </a>
+                            <a class="icon-size-13" href="#" id="pinBar" class="me-50">
+                                <img class="icon-size-13" src="/static/app-assets/media/pin.svg" alt="pin" />
+                            </a>
+                            <a class="icon-size-13" href="#" id="closeBar">
+                                <img class="icon-size-13" src="/static/app-assets/media/close.svg" alt="close" />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="notificationBody text-dark notifier-panel">
+
+            </div>
+        </div>
+        {% endblock %}
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-xxl">
+            {% if flash_message and message_flag == "error" %}
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-8 col-lg-6 mx-auto">
+                        <!-- Alert goes here -->
+                        <div class="alert alert-danger alert-dismissible fade show p-1" role="alert">
+                            <div class="d-flex align-items-center">{{ message_toast }}</div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% if flash_message and message_flag == "success" %}
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-8 col-lg-6 mx-auto">
+                        <div class="alert alert-primary alert-dismissible fade show p-1" role="alert">
+                            <div class="d-flex align-items-center">{{ message_toast }}</div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% endif %}
+
+            {% block content %}
+            <!-- Default content goes here -->
+            {% endblock %}
+            <footer class="mt-auto w-100">
+                {% include 'footer.html' %}
+            </footer>
+        </div>
+    </div>
+    <div class="sidenav-overlay"></div>
+    <div class="drag-target"></div>
+    <button class="btn btn-primary btn-icon scroll-top" type="button">
+        <i data-feather="arrow-up"></i>
+    </button>
+    <script type='text/javascript'>
+        var token = "{{session.get('jwt_token')}}";
+    </script>
+
+    <script src="{{ url_for('static', filename='external_cdns/js/jquery-3.4.1.min.js')}}"></script>
+    <!-- <script src="/static/external_cdns/js/bootstrap.bundle.min.js"></script> -->
+    <script src="{{ url_for('static', filename='external_cdns/js/bootstrap.bundle.min.js')}}"></script>
+    <!-- <script src="static/lib/waypoints/waypoints.min.js"></script> -->
+    <script src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js')}}"></script>
+
+    <!-- <script  src="{{ url_for('static', filename='js/main.js')}}"></script> -->
+    <script src="{{ url_for('static', filename='js/loader.js')}}"></script>
+
+
+    <script src="/static/app-assets/vendors/js/unison-js/unison-js.min.js"></script>
+    <script src="/static/app-assets/vendors/js/feather-icons/feather-icons.min.js"></script>
+    <script src="/static/app-assets/vendors/js/perfectscrollbar/perfect-scrollbar.min.js"></script>
+
+    <script src="/static/app-assets/js/core/app-menu.js"></script>
+    <script src="/static/app-assets/js/core/app.js"></script>
+
+    <script src="static/js/notifications.js"></script>
+    <!-- Template Javascript -->
+    <script src="static/js/main.js"></script>
+
+
+
+    {% block scriptblock %}
+    <!-- Default content goes here -->
+    {% endblock %}
+    <script>
+        function setNavUserInitials() {
+            var userEmail = '{{session["user"].split("@")[0]}}'; // Replace this with your server-side code to get the user email
+            var initials = userEmail.charAt(0).toUpperCase() + (userEmail.length > 1 ? userEmail.charAt(1).toUpperCase() : '');
+
+            var backgroundColor = localStorage.getItem('initialsBG');
+            if (!backgroundColor) {
+                backgroundColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
+                localStorage.setItem('initialsBG', backgroundColor);
+            }
+
+            var userInitialsElement = document.getElementById('userInitials');
+            userInitialsElement.innerText = initials;
+            userInitialsElement.style.display = 'inline-block';
+            userInitialsElement.style.width = '40px';
+            userInitialsElement.style.height = '40px';
+            userInitialsElement.style.borderRadius = '50%';
+            userInitialsElement.style.backgroundColor = backgroundColor;
+            userInitialsElement.style.color = '#ffffff';
+            userInitialsElement.style.textAlign = 'center';
+            userInitialsElement.style.lineHeight = '40px';
+            userInitialsElement.style.verticalAlign = 'middle';
+            userInitialsElement.style.fontSize = '16px';
+        }
+        $(window).on("load", function () {
+            if (feather) {
+                feather.replace({
+                    width: 14,
+                    height: 14,
+                });
+            }
+
+            $("#pinBar").click(function (e) {
+                localStorage.setItem("notificationsPinned", true);
+                $("#notificationBar").addClass("pinned");
+                if (typeof plotHeatmap !== "undefined") {
+                    plotHeatmap();
+                }
+            });
+            $("#bell, #bellMobile").click(function (event) {
+                $("#notificationBar").toggleClass("showNotification");
+                if (typeof plotHeatmap !== "undefined") {
+                    plotHeatmap();
+                }
+                event.stopPropagation();
+            });
+            $("#closeBar").click(function (event) {
+                $("#notificationBar").removeClass("showNotification");
+                $("#notificationBar").removeClass("pinned");
+                localStorage.removeItem("notificationsPinned");
+                if (typeof plotHeatmap !== "undefined") {
+                    plotHeatmap();
+                }
+                event.stopPropagation();
+            });
+
+            $(".nav-item").removeClass("active");
+
+            var locationPath = window.location.pathname;
+            if (locationPath == "/" || locationPath == "/home") {
+                $("ul.navigation .nav-item").first().addClass("active")
+            }
+            else {
+                $(`a[href='${locationPath}']`).parent().addClass('active')
+            }
+            setNavUserInitials();
+
+            if (localStorage.getItem("notificationsPinned") === 'true') {
+                $("#bell").click();
+                $("#pinBar").click();
+            }
+            else {
+                $("#notificationBar").removeClass("pinned");
+            }
+
+            if (typeof plotHeatmap !== "undefined") {
+                plotHeatmap();
+            }
+        });
+    </script>
+</body>
+
+</html>

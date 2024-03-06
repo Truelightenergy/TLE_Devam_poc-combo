@@ -140,17 +140,17 @@ class Util:
 
 
         notification_data = sorted(notification_data, key=lambda x: x['price_shift_prct'],  reverse=True)[:9]
-        processed_notifications = []
-        for notification in notification_data:
-            if notification['price_shift'] == 'increase':
-                weigh = 'gain'
-            else:
-                weigh = 'loss'
-            val = "{:.5f}".format(notification['price_shift_value'])
-            processed_notifications.append(f"The prompt month energy in {notification['location']} has {notification['price_shift']} by ${val}($/kWh) resulting in a {round(notification['price_shift_prct'], 2)}% {weigh}.")
+        # processed_notifications = []
+        # for notification in notification_data:
+        #     if notification['price_shift'] == 'increase':
+        #         weigh = 'gain'
+        #     else:
+        #         weigh = 'loss'
+        #     val = "{:.5f}".format(notification['price_shift_value'])
+        #     processed_notifications.append(f"The prompt month energy in {notification['location']} has {notification['price_shift']} by ${val}($/kWh) resulting in a {round(notification['price_shift_prct'], 2)}% {weigh}.")
 
 
-        return processed_notifications
+        return notification_data
     
     def fetch_latest_time_stamp(self):
         """

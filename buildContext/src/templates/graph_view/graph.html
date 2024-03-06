@@ -1,166 +1,85 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'master.html' %}
 
-<head>
-    <meta charset="utf-8">
-    <title>Graph view</title>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="" name="keywords">
-    <meta content="" name="description">
+{% block title %}Graph View - TRUEPrice{% endblock %}
 
-    <!-- Favicon -->
-    <!-- <link href="static/img/favicon.ico" rel="icon"> -->
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='img/favicon.ico') }}">
-
-    <!-- Google Web Fonts -->
-
-    <!-- <link href="/static/external_cdns/css/css2.css" rel="stylesheet"> -->
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='external_cdns/css/css2.css') }}">
-
-    <!-- Icon Font Stylesheet -->
-
-    <!-- <link href="/static/external_cdns/css/all.min.css" rel="stylesheet"> -->
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='external_cdns/css/all.min.css') }}">
-    <!-- <link href="/static/external_cdns/css/bootstrap-icons.css" rel="stylesheet"> -->
-    <link rel="stylesheet" type="text/css"
-        href="{{ url_for('static', filename='external_cdns/css/bootstrap-icons.css') }}">
-
-
-    <!-- Customized Bootstrap Stylesheet -->
-    <!-- <link href="static/css/bootstrap.min.css" rel="stylesheet"> -->
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-
-
-    <!-- Template Stylesheet -->
-    <!-- <link href="static/css/style.css" rel="stylesheet"> -->
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
-
-</head>
-
-<body>
-
-
-    <div class="container-fluid position-relative d-flex p-0">
-        <!-- Spinner Start -->
-        <div id="spinner"
-            class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
-        </div>
-        <!-- Spinner End -->
-
-
-        <!-- Sidebar Start -->
-        <div class="sidebar pe-4 pb-3">
-            {% include 'navbar.html'%}
-        </div>
-        <!-- Sidebar End -->
-
-
-        <!-- Content Start -->
-        <div class="content">
-            <!-- Navbar Start -->
-            {% include 'upper_navbar.html'%}
-            <!-- Navbar End -->
-
-            {% include 'notification.html'%}
-
-            <!-- Blank Start -->
-            <div class="container-fluid pt-4 px-4">
-                <div class="row g-4 align-items-center justify-content-center mx-0  mt-5">
+{% block content %}
+<div class="content-body">
+    <div class="row">
+        <div class="col-12 col-md-12">
+            <div class="row mb-1">
+                <div class="col-12 col-md-4 mt-auto">
+                    <h3 class="axiBold text-black">Energy Price Over Time (5 x 16)</h3>
+                </div>
+                <div class="col-12 col-md-8 align-items-center justify-content-end">
                     
-                    <div class="col-sm-12 col-xl-12">
-                        <div class="bg-light text-dark rounded h-100 p-4">
-                            <div class="d-flex justify-content-end">
-                                <input type="button" id='btnDownload' value="Export Graph" class="btn btn-primary btn-sm m-2" /> 
-                                <input type="button" value="Day/Day" id="btnDayOverDay"
-                                    class="btn btn-primary btn-sm m-2" />
-                                <input type="button" value="Week/Week" id="btnWeekOverWeek"
-                                    class="btn btn-primary btn-sm m-2" />
-                                <input type="button" value="Month/Month" id="btnMonthOverMonth"
-                                    class="btn btn-primary btn-sm m-2" />
-                                <input type="button" value="Custom Graph" id="btnAddCustomGraphToggle"
-                                    class="btn btn-primary btn-sm m-2" />
-                            </div>
-                            <div style="height: 700px;" id='chart' class='chart'></div>
-                            <!-- <div class="mt-3 row d-flex justify-content-center">
-                                <div class="col-md-6">
-                                    <button type="button" id="save_graph" class="btn btn-outline-primary w-100 m-2">Save
-                                        Graph</button>
-                                </div>
-                                <div class="col-md-6">
-                                    <button type="button" id="link"
-                                        class="col-md-6 btn btn-outline-primary w-100 m-2">Copy Link</button>
-                                </div>
-
-                            </div> -->
+                    <div class="button-container justify-content-end">
+                        <!-- Button group -->
+                        <div class="btn-group" role="group" aria-label="Time filters">
+                            <button id="btnDayOverDay" type="button" class="btn btn-secondary ps-1 pe-1">Day/Day</button>
+                            <div class="separator"></div>
+                            <button id="btnWeekOverWeek" type="button" class="btn btn-secondary ps-1 pe-1">Week/Week</button>
+                            <div class="separator"></div>
+                            <button id="btnMonthOverMonth" type="button" class="btn btn-secondary ps-1 pe-1">Month/Month</button>
+                            <div class="separator"></div>
+                            <button id="btnAddCustomGraphToggle" type="button" class="btn btn-primary w-140px ps-0 pe-0 fs-10px">
+                                <img src="/static/app-assets/media/custom-graph.svg" width="15" height="15" /> Custom Graph
+                            </button>
+                            <div class="separator"></div>
+                            <button id='btnDownload' type="button" class="btn btn-warning ps-1 pe-1 fs-10px">
+                                <img src="/static/app-assets/media/export.svg" width="15" height="15" /> Export
+                            </button>
                         </div>
                     </div>
-                    <div class="col-md-10"></div>                   
                 </div>
-                <div id='chart' class='chart' ”></div>
-                {% include 'components/graphviewfiltersmodal.html'%}
-                <!-- Blank End -->
-
-
-                <!-- Footer Start -->
-                {% include 'footer.html'%}
-                <!-- Footer End -->
             </div>
-            <!-- Content End -->
-
-
-            <!-- Back to Top -->
-
-
-
+            <div class="card mb-0">
+                <form id="download_forms" enctype="multipart/form-data" method="post">
+                    <div class="card-body">
+                      
+                        <div class="row">
+                            <div class="col-12 col-md-12">
+                                <div style="height: 500px;" id='chart' class='chart'></div>
+                            </div>                            
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
+    </div>
+</div>
 
-        <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
-        <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
-        
-        <!-- <script type='text/javascript'>
-      var graphs = {{graphJSON | safe}};
-      Plotly.plot('chart',graphs,{});
-    </script> -->
+{% include 'components/graphviewfiltersmodal.html'%}
 
-        <!-- JavaScript Libraries -->
-        <!-- <script src="/static/external_cdns/js/jquery-3.4.1.min.js"></script> -->
-        <script src="{{ url_for('static', filename='external_cdns/js/jquery-3.4.1.min.js')}}"></script>
-        <!-- <script src="/static/external_cdns/js/bootstrap.bundle.min.js"></script> -->
-        <script src="{{ url_for('static', filename='external_cdns/js/bootstrap.bundle.min.js')}}"></script>
-        <!-- <script src="static/lib/waypoints/waypoints.min.js"></script> -->
-        <script src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js')}}"></script>
+{% endblock %}
 
-        <!-- Template Javascript -->
-        <!-- <script src="static/js/main.js"></script> -->
-        <script src="{{ url_for('static', filename='js/main.js')}}"></script>
-        <script src="{{ url_for('static', filename='js/loader.js')}}"></script>
-        <script src="{{ url_for('static', filename='js/toaster.js')}}"></script>
-        <script src="{{ url_for('static', filename='js/data_loader_graph_view.js')}}"></script>
-        <script src="{{ url_for('static', filename='js/graphview.js')}}"></script>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{% block scriptblock %}
+<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+<script src="{{ url_for('static', filename='js/loader.js')}}"></script>
+<script src="{{ url_for('static', filename='js/toaster.js')}}"></script>
+<script src="{{ url_for('static', filename='js/data_loader_graph_view.js')}}"></script>
+<script src="{{ url_for('static', filename='js/graphview.js')}}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="/static/app-assets/css/bootstrap-datepicker.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.js"></script>
+<script>
 
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.js"></script>
-        <script>
+    var token = "{{session.get('jwt_token')}}";
 
-            var token = "{{session.get('jwt_token')}}";
-
-            $(document).ready(function () {
-                if (truelight && truelight.graphview && truelight.graphview.view) {
-                    {% if graph_details %}
-                    truelight.graphview.view.setFilters({{ graph_details | tojson | safe }});
-                    {% endif %}
-                    truelight.graphview.view.onViewLoad(token);
-                }
-            });
-        </script>
+    $(document).ready(function () {
+        if (truelight && truelight.graphview && truelight.graphview.view) {
+            {% if graph_details %}
+            truelight.graphview.view.setFilters({{ graph_details | tojson | safe }});
+            {% endif %}
+            truelight.graphview.view.onViewLoad(token);
+        }
+    });
+</script>
 
 </body>
 
 </html>
+{% endblock %}

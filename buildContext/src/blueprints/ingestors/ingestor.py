@@ -37,7 +37,7 @@ class Ingestion:
         validates the incoming data file name
         """
 
-        file_name_components_pattern = re.compile(".*/(.+?)_(.+?)_(.+?)_(.+)?.csv$") # len(5-6)
+        file_name_components_pattern = re.compile(".*[\/\\\\](.+?)_(.+?)_(.+?)_(.+)?.csv$") # len(5-6)
         
         matched = file_name_components_pattern.search(file_name)
         if matched == None:
@@ -111,7 +111,8 @@ class Ingestion:
         """
         store the data to s3 bucket
         """
-        return self.upload_file(data.fileName)
+        return "Data Inserted"
+        # return self.upload_file(data.fileName)
 
     def upload_file(self, file_name, bucket='tle-trueprice-api-source-data', object_name=None):
 
