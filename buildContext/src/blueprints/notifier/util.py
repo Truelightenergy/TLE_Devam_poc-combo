@@ -56,6 +56,11 @@ class Util:
             return
         latest_curve_data = self.key_nodals(latest_curve_data, filename)
         prev_curve_data = self.key_nodals(prev_curve_data, filename)
+
+        if (latest_curve_data is None) or (prev_curve_data is None):
+            self.db_util.update_notification_status(curvestart, filename)
+            return
+        
         # increase volume
         increased_data = self.notifications_item_calculations(latest_curve_data, prev_curve_data, "increase")
         # decrease volume
@@ -75,6 +80,10 @@ class Util:
         """
         filters only key nodals point
         """
+        
+        if 'miso' in filename.lower():
+            return None
+        
         filters = []
 
         # for ercot
