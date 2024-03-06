@@ -1,9 +1,104 @@
+@font-face {
+    font-family: "axiformaReg";
+    src: url("/static/app-assets/fonts/Axiforma/Axiforma-Regular.eot");
+    /* IE9 Compat Modes */
+    src: url("/static/app-assets/fonts/AxiformaAxiforma-Regular.eot?#iefix") format("embedded-opentype"),
+        /* IE6-IE8 */
+        url("/static/app-assets/fonts/Axiforma/Axiforma-Regular.woff") format("woff"),
+        /* Pretty Modern Browsers */
+        url("/static/app-assets/fonts/Axiforma/Axiforma-Regular.ttf") format("truetype");
+    /* Safari, Android, iOS */
+}
+
+@font-face {
+    font-family: "axiformaBold";
+    src: url("/static/app-assets/fonts/Axiforma/Axiforma-Bold.eot");
+    /* IE9 Compat Modes */
+    src: url("/static/app-assets/fonts/AxiformaAxiforma-Bold.eot?#iefix") format("embedded-opentype"),
+        /* IE6-IE8 */
+        url("/static/app-assets/fonts/Axiforma/Axiforma-Bold.woff") format("woff"),
+        /* Pretty Modern Browsers */
+        url("/static/app-assets/fonts/Axiforma/Axiforma-Bold.ttf") format("truetype");
+    /* Safari, Android, iOS */
+}
+
+html,
+body,
+* {
+    font-family: "axiformaReg";
+    color: #000;
+}
+
+html body {
+    height: 100%;
+    background-color: #f8f9fc;
+    direction: ltr;
+    font-family: "axiformaReg";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
 /********** Template CSS **********/
 :root {
     --primary: #000;
     --secondary: #005A9C;
     --light: #F5F5F5;
     --dark: #F5F5F5;
+    --bs-blue: #00cfe8;
+    --bs-indigo: #6610f2;
+    --bs-purple: #7367f0;
+    --bs-pink: #d63384;
+    --bs-red: #ea5455;
+    --bs-orange: #ff9f43;
+    --bs-yellow: #ffc107;
+    --bs-green: #28c76f;
+    --bs-teal: #20c997;
+    --bs-cyan: #0dcaf0;
+    --bs-white: #fff;
+    --bs-gray: #b8c2cc;
+    --bs-gray-dark: #1e1e1e;
+    --bs-gray-100: #babfc7;
+    --bs-gray-200: #ededed;
+    --bs-gray-300: #dae1e7;
+    --bs-gray-400: #636363;
+    --bs-gray-500: #adb5bd;
+    --bs-gray-600: #b8c2cc;
+    --bs-gray-700: #4e5154;
+    --bs-gray-800: #1e1e1e;
+    --bs-gray-900: #2a2e30;
+    --bs-primary: #57a1ff;
+    --bs-primary-dark: #005a9a;
+    --bs-secondary: #82868b;
+    --bs-success: #28c76f;
+    --bs-info: #00cfe8;
+    --bs-warning: #f0c054;
+    --bs-warning-dark: #b8933c;
+    --bs-danger: #ea5455;
+    --bs-light: #f6f6f6;
+    --bs-dark: #4b4b4b;
+    --bs-primary-rgb: 87, 161, 255;
+    --bs-secondary-rgb: 130, 134, 139;
+    --bs-success-rgb: 40, 199, 111;
+    --bs-info-rgb: 0, 207, 232;
+    --bs-warning-rgb: 240, 192, 84;
+    --bs-danger-rgb: 234, 84, 85;
+    --bs-light-rgb: 246, 246, 246;
+    --bs-dark-rgb: 75, 75, 75;
+    --bs-white-rgb: 255, 255, 255;
+    --bs-black-rgb: 34, 41, 47;
+    --bs-body-rgb: 110, 107, 123;
+    --bs-font-sans-serif: "Montserrat", Helvetica, Arial, serif;
+    --bs-font-monospace: "Montserrat", Helvetica, Arial, serif;
+    --bs-gradient: linear-gradient(180deg,
+            rgba(255, 255, 255, 0.15),
+            rgba(255, 255, 255, 0));
+    --bs-body-font-family: var(--bs-font-sans-serif);
+    --bs-body-font-size: 1rem;
+    --bs-body-font-weight: 400;
+    --bs-body-line-height: 1.45;
+    --bs-body-color: #6e6b7b;
+    --bs-body-bg: #f8f8f8;
 }
 
 .back-to-top {
@@ -297,33 +392,147 @@
     width: auto;
     height: 100%;
     max-width: none;
-    margin:0 !important;
+    margin: 0 !important;
 }
 
 /* Custom modal styling for dark theme */
 .modal-content {
-    background-color: var(--secondary); /* Dark background for the modal content */
-    color: #fff; /* Light text color for readability */
+    background-color: var(--secondary);
+    /* Dark background for the modal content */
+    color: #fff;
+    /* Light text color for readability */
     height: 100%;
     border: 0;
     border-radius: 0;
     min-width: 400px;
-   
+
 }
 
-.modal-header, .modal-body, .modal-footer {
-    border-color:var(--dark); /* Darker borders within the modal */
+.modal-header,
+.modal-body,
+.modal-footer {
+    border-color: var(--dark);
+    /* Darker borders within the modal */
 }
 
 /* If you're using custom buttons inside the modal and want them to match the theme */
 .btn-custom {
-    background-color: var(--dark); /* Dark background for buttons */
-    color: #ddd; /* Light text color for buttons */
-    border-color: #444; /* Dark border color for buttons */
+    background-color: var(--dark);
+    /* Dark background for buttons */
+    color: #ddd;
+    /* Light text color for buttons */
+    border-color: #444;
+    /* Dark border color for buttons */
 }
 
 /* Optional: if you want to style the backdrop */
 .modal-backdrop.show {
-    background-color: rgba(0, 0, 0, 0.85); /* Darker backdrop */
+    background-color: rgba(0, 0, 0, 0.85);
+    /* Darker backdrop */
 }
 
+
+
+input.form-control {
+    width: 100%;
+    /* Full width */
+    padding: 5px 0px;
+    /* Padding inside the box */
+    margin: 0px;
+    /* Margin outside the box */
+    display: inline-block;
+    /* Allows the element to be inline but with width and height */
+    border: none;
+    /* No border */
+    border-bottom: 1px solid #DCDBDD;
+    /* Gray bottom border */
+    box-sizing: border-box;
+    /* Makes sure padding does not affect the final width */
+    background-color: white;
+    /* White background color */
+    font-size: 16px;
+    /* Text size */
+    color: #202020;
+    /* Text color */
+    border-radius: 0;
+}
+
+input.form-control:focus {
+    border-color: #4D4D4D;
+    /* Changes border color when the input is focused (you can change the color as needed) */
+    outline: none;
+    /*Removes the default focus outline */
+}
+
+label {
+    color: #005A9A !important;
+    font-size: 16px;
+    /* Text size */
+}
+
+.rounded {
+    border-radius: 35px !important;
+    box-shadow: 0 4px 24px 0 rgba(34, 41, 47, 0.1);
+}
+
+
+.btn-warning {
+    color: #22292f;
+    background-color: var(--bs-warning);
+    border-color: var(--bs-warning);
+}
+
+.btn-warning:hover {
+    color: #22292f;
+    background-color: var(--bs-warning-dark);
+    border-color: var(--bs-warning-dark);
+}
+
+.btn-check:focus+.btn-warning,
+.btn-warning:focus {
+    color: #22292f;
+    background-color: var(--bs-warning-dark);
+    border-color: var(--bs-warning-dark);
+    box-shadow: 0 0 0 0.25rem rgba(222, 141, 64, 0.5);
+}
+
+.btn-check:checked+.btn-warning,
+.btn-check:active+.btn-warning,
+.btn-warning:active,
+.btn-warning.active,
+.show>.btn-warning.dropdown-toggle {
+    color: #22292f;
+    background-color: #F0C055;
+    border-color: #F0C055;
+}
+
+.btn-check:checked+.btn-warning:focus,
+.btn-check:active+.btn-warning:focus,
+.btn-warning:active:focus,
+.btn-warning.active:focus,
+.show>.btn-warning.dropdown-toggle:focus {
+    box-shadow: 0 0 0 0.25rem rgba(222, 141, 64, 0.5);
+}
+
+.btn-warning:disabled,
+.btn-warning.disabled {
+    color: #22292f;
+    background-color: #F0C055;
+    border-color: #F0C055;
+}
+
+h1 {
+    font-weight: 100;
+    font-family: "axiformaReg";
+    color: #202020;
+}
+
+@media (min-width: 576px) {
+    .p-sm-5 {
+        padding: 3rem 5rem !important;
+    }
+}
+
+.text-secondary{
+    color: #005A9A !important;
+}
