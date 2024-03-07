@@ -254,6 +254,36 @@ class NotifierUtil:
         except:
             return data
         
+    def get_all_uploads(self):
+        """
+        extracts all uploads
+        """
+
+        query = """
+               SELECT 
+                    UPPER(split_part(filename, '_', 1)) AS "File Type",
+                    UPPER(REPLACE(filename, '_cob', '')) AS "File Name",
+                    CASE
+                        WHEN POSITION('COB' IN filename) > 0 THEN 'Y'
+                        ELSE 'N'
+                    END AS "COB(Y/N)"
+                FROM 
+                    trueprice.uploads u	
+                ORDER BY 
+                    "File Type", "File Name";
+                """
+        data = []
+        try:
+            results = self.engine.execute(query).fetchall()
+            for row in results:
+                data.append({"File Type": row['File Type'], "File Name": row['File Name'],
+                             "COB(Y/N)": row['COB(Y/N)']
+                             })
+
+            return data
+        except:
+            return data
+        
     def fetch_latest_curve_date(self):
         query = "select MAX(DISTINCT(curvestart)) as curvestart from trueprice.ercot_energy;"
         date = None
