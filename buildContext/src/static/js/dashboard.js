@@ -182,7 +182,7 @@ function load_heatmap() {
         .attr('class', 'legend')
         .attr('transform', 'translate(' + legendX + ',' + (legendY - 10) + ')')
         .selectAll('g')
-        .data(colorScale.ticks(6).slice(1).reverse())
+        .data(colorScale.ticks(6).slice(1))
         .enter().append('g')
         .attr('transform', function (d, i) {
             return 'translate(' + i * (legendWidth + legendPadding) + ', 0)';
