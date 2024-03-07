@@ -161,6 +161,12 @@ class Util:
 
         return notification_data
     
+    def get_all_uploads(self):
+        """
+        fetch latest curvestart from the ingestion
+        """
+        return self.db_util.get_all_uploads()
+    
     def fetch_latest_time_stamp(self):
         """
         fetch latest curvestart from the ingestion
