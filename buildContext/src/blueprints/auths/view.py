@@ -1,5 +1,5 @@
 import os
-from flask import Blueprint, render_template, current_app
+from flask import Blueprint, Response, render_template, current_app
 from flask import request, jsonify, session, Flask, url_for, redirect
 from .util import Util
 from .auth_model import AuthUtil
@@ -12,6 +12,8 @@ from ..graph_view.util import Util as gv_util
 from ..notifier.util import Util as notif_util
 from datetime import datetime , timedelta
 from dateutil.relativedelta import relativedelta
+import csv
+from io import StringIO
 
 config = read_config()
 auths = Blueprint(config['auths_path'], __name__,
@@ -208,6 +210,31 @@ def home():
     start up aplications
     """
     return render_template("auths/index.html")
+
+@auths.route('/alluploads', methods=['GET'])
+@roles.readonly_token_required
+def get_all_uploads():
+  data = notifier_util.get_all_uploads()
+  si = StringIO()
+  cw = csv.writer(si)
+  
+  # Assuming `data` is a list of dictionaries, write headers (keys) and rows (values)
+  if data:  # Check if data is not empty
+      headers = data[0].keys()  # Extract headers from the first item's keys
+      cw.writerow(headers)  # Write the headers to CSV
+      
+      for item in data:
+          cw.writerow(item.values())  # Write each item's values to CSV
+
+  # Reset the buffer's position to the beginning
+  si.seek(0)
+  
+  # Create a response with the CSV data
+  response = Response(si.getvalue(), mimetype='text/csv')
+  # Suggest a filename for the browser to download
+  response.headers['Content-Disposition'] = 'attachment; filename=all_uploads.csv'
+  
+  return response
 
 @auths.route('/get_graphview', methods=['GET', 'POST'])
 @roles.readonly_token_required
