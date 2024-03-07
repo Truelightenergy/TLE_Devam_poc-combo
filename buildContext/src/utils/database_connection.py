@@ -13,7 +13,7 @@ class ConnectDatabase:
         credantials for the database
         """
         self.database = os.environ["DATABASE"] if "DATABASE" in os.environ else "localhost"
-        self.pgpassword = os.environ["PGPASSWORD"] if "PGPASSWORD" in os.environ else "postgres"
+        self.pgpassword = os.environ["PGPASSWORD"] if "PGPASSWORD" in os.environ else "123456"
         self.pguser = os.environ["PGUSER"] if "PGUSER" in os.environ else "postgres"
 
     def get_engine(self):

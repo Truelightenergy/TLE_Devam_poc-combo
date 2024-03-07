@@ -1,18 +1,27 @@
 <div class="modal fade" id="customGraphFiltersModal" tabindex="-1" aria-labelledby="customGraphFiltersModalLabel">
-    <div class="modal-dialog modal-dialog-attached-right">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="customGraphFiltersModalLabel">Add Custom Graph</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <div class="modal-dialog modal-sm modal-dialog-attached-right">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="customGraphFiltersModalLabel">Add Custom Graph</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {% include 'components/graphviewfiltersDialog.html'%}
+      </div>
+      <div class="modal-footer justify-content-center">
+        <div class="row w-100">
+          <div class="col-12 col-md-6 ">
+            <button id="btnAddGraph" type="button" class="btn btn-primary w-100" data-bs-dismiss="modal">Add
+              Graph</button>
+          </div>
+          <div class="col-12 col-md-6">
+            <button type="button" class="btn btn-warning  w-100" data-bs-dismiss="modal">Close</button>
+          </div>
         </div>
-        <div class="modal-body">
-            {% include 'components/graphviewfilters.html'%}
-        </div>
-        <div class="modal-footer">
-            <button id="btnAddGraph" type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Add Graph</button>
-          <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Close</button>
-        </div>
+        
+        
       </div>
     </div>
   </div>
+</div>
 </div>

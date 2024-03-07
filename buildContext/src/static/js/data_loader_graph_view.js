@@ -206,6 +206,7 @@ truelight.graphview = {
             todayHighlight: true,
             format: 'yyyy-mm-dd',
             multidate: false,
+            conatiner:'#odc',
             beforeShowDay: self.available,
             
           });

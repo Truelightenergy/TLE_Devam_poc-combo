@@ -56,6 +56,11 @@ class Util:
             return
         latest_curve_data = self.key_nodals(latest_curve_data, filename)
         prev_curve_data = self.key_nodals(prev_curve_data, filename)
+
+        if (latest_curve_data is None) or (prev_curve_data is None):
+            self.db_util.update_notification_status(curvestart, filename)
+            return
+        
         # increase volume
         increased_data = self.notifications_item_calculations(latest_curve_data, prev_curve_data, "increase")
         # decrease volume
@@ -75,6 +80,10 @@ class Util:
         """
         filters only key nodals point
         """
+        
+        if 'miso' in filename.lower():
+            return None
+        
         filters = []
 
         # for ercot
@@ -140,17 +149,17 @@ class Util:
 
 
         notification_data = sorted(notification_data, key=lambda x: x['price_shift_prct'],  reverse=True)[:9]
-        processed_notifications = []
-        for notification in notification_data:
-            if notification['price_shift'] == 'increase':
-                weigh = 'gain'
-            else:
-                weigh = 'loss'
-            val = "{:.5f}".format(notification['price_shift_value'])
-            processed_notifications.append(f"The prompt month energy in {notification['location']} has {notification['price_shift']} by ${val}($/kWh) resulting in a {round(notification['price_shift_prct'], 2)}% {weigh}.")
+        # processed_notifications = []
+        # for notification in notification_data:
+        #     if notification['price_shift'] == 'increase':
+        #         weigh = 'gain'
+        #     else:
+        #         weigh = 'loss'
+        #     val = "{:.5f}".format(notification['price_shift_value'])
+        #     processed_notifications.append(f"The prompt month energy in {notification['location']} has {notification['price_shift']} by ${val}($/kWh) resulting in a {round(notification['price_shift_prct'], 2)}% {weigh}.")
 
 
-        return processed_notifications
+        return notification_data
     
     def fetch_latest_time_stamp(self):
         """

@@ -92,13 +92,13 @@ function available(date) {
     }
 }
 
-function load_operating_day_calender(){
+function load_operating_day_calender(){    
     $("#operating_day").datepicker({
         todayHighlight: true,
         format: 'yyyy-mm-dd',
         multidate: false,
+        conatiner:'#odc',
         beforeShowDay: available,
-        
       });
 }
 
@@ -117,8 +117,6 @@ function load_operating_days(){
                 'Authorization': "Bearer "+token
             },
             success: function(response) {
-                
-                
                 availableDates = response;
                 load_operating_day_calender();
                 if(response[0]!= undefined){

@@ -1013,6 +1013,11 @@ services:
           ALTER TABLE  trueprice.price_changes_notifications
             ADD notification_date TIMESTAMPTZ DEFAULT '2023-12-12'::TIMESTAMPTZ;
 
+          
+          UPDATE trueprice.email_template_contents 
+          SET body_content  = '<html><body><p>Dear {username},<br/> Energy in {location} has {price_shift}d by {price_shift_value} resulting in a {price_shift_prct} {gl}.<br/>The TRUEPrice Team </p></body></html>'
+          where content_id  = 1;
+
         EOSQL
   # adminer: # for postgres, php admin interface
   #   image: adminer
