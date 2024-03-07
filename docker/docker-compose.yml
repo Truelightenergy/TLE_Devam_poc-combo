@@ -1015,7 +1015,7 @@ services:
 
           
           UPDATE trueprice.email_template_contents 
-          SET body_content  = '<html><body><p>Dear {username},<br/> Energy in {location} has {price_shift} by {price_shift_value} resulting in a {price_shift_prct} {gl}.<br/>The TRUEPrice Team </p></body></html>'
+          SET body_content  = '<html><body><p>Dear {username},<br/> Energy in {location} has {price_shift}d by {price_shift_value} resulting in a {price_shift_prct} {gl}.<br/>The TRUEPrice Team </p></body></html>'
           where content_id  = 1;
 
         EOSQL

@@ -536,3 +536,8 @@ h1 {
 .text-secondary{
     color: #005A9A !important;
 }
+
+.superScript{
+    top:-1em;
+    font-size: 0.5em;
+  }

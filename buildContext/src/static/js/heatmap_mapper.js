@@ -207,7 +207,7 @@ function plotHeatmap() {
                     .duration(200)
                     .style("opacity", .9);
                 const [x, y] = d3.pointer(event, svg.node());
-                tooltip.html("State: " + value.mean.toFixed(5))
+                tooltip.html(`${d.properties.google_name.split(' (')[0]} Headroom Mean: ${value.mean.toFixed(5)} ($/kWh)`)
                     .style("left", (x) + "px")
                     .style("top", (event.pageY) + "px"); // your content
             }
@@ -254,9 +254,9 @@ function plotHeatmap() {
 
     var legend = svg.append('g')
         .attr('class', 'legend')
-        .attr('transform', 'translate(' + legendX + ',' + legendY + ')')
+        .attr('transform', 'translate(' + legendX + ',' + (legendY - 10) + ')')
         .selectAll('g')
-        .data(colorScale.ticks(6).slice(1).reverse())
+        .data(colorScale.ticks(6).slice(1))
         .enter().append('g')
         .attr('transform', function (d, i) {
             return 'translate(' + i * (legendWidth + legendPadding) + ', 0)';
@@ -272,7 +272,18 @@ function plotHeatmap() {
         .attr('y', legendHeight + verticalPadding) // Position the text right below the rectangle
         .attr('dy', '0.35em') // Center the text vertically within the line height
         .style('text-anchor', 'middle') // Center the text horizontally
-        .text(function (d) { return d; });
+        .style('font-size','10px')
+        .each(function(d) {
+            var text = d3.select(this),
+                lines = [`${d}`, '($/kWh)']; // Split the text into two lines
+    
+            lines.forEach(function(line, i) {
+                text.append('tspan') // Append each line as a tspan
+                    .attr('x', legendWidth / 2) // Ensure each line is centered
+                    .attr('dy', i === 0 ? '0.35em' : '1em') // For the first line, use the original dy. For the second, advance a line.
+                    .text(line);
+            });
+        });
 
     top_entries = top_entries_extractor_global(json_data);
     populate_table(top_entries);

@@ -4504,3 +4504,8 @@ marquee {
 .datepicker td, .datepicker th{
   padding: 3px 0 0 0;
 }
+
+.superScript{
+  top:-1em;
+  font-size: 0.5em;
+}

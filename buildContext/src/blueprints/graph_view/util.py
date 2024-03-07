@@ -191,11 +191,12 @@ class Util:
                 if params['cob']== True or params['cob']=='true':
                     update = 'COB'
                 # df = self.db_model.get_data(**params)  # Unpacking parameters for the get_data method
+                label =params["control_table"].split('_')[0].upper() + " " + params.get("label", f"{params['loadZone']}: {params['operatin_day_timestamps']} {update}")
                 fig.add_trace(go.Scatter(
                     x=df["month"], 
                     y=df["data"], 
                     mode="markers+lines",
-                    name=params.get("label", f"{params['loadZone']}: {params['operatin_day_timestamps']} {update}"),  # You can pass a label for each line
+                    name=label,  # You can pass a label for each line
                     line=dict(
                         shape='spline',  
                         color=color,  

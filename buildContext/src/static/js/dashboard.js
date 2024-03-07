@@ -32,7 +32,11 @@ function populate_table(data) {
         <td class="text-nowrap px-1 ">
             <div class="d-flex cHeadroom">                
             </div>
-        </td>       
+        </td>   
+        <td class="text-nowrap px-1 ">
+            <div class="d-flex cHeadroomp">                
+            </div>
+        </td>     
     </tr>`);
 
     const table = $("#data-table");
@@ -45,7 +49,8 @@ function populate_table(data) {
         var row = rowTemplate.clone();
         row.find('.cUtility').html(`${itr}-${item['utility']} (${item['load_zone']})`);
         row.find('.cPrice').html(`$${item.retail_price}`);
-        row.find('.cHeadroom').html(`<span class="">$${item.headroom.toFixed(5)} (kWh)</span><span class="ms-1 me-25">${item.headroom_prct}%</span>`);
+        row.find('.cHeadroom').html(`<span class="">$${item.headroom.toFixed(5)} (kWh)</span>`);
+        row.find('.cHeadroomp').html(`<span class="ms-1 me-25">${item.headroom_prct}%</span>`);
         tbody.append(row);
     });
 }
@@ -137,7 +142,7 @@ function load_heatmap() {
                     .duration(200)
                     .style("opacity", .9);
                 const [x, y] = d3.pointer(event, svg.node());
-                tooltip.html("State: " + value.mean.toFixed(5))
+                tooltip.html(`${d.properties.google_name.split(' (')[0]} Headroom Mean: ${value.mean.toFixed(5)} ($/kWh)`)
                     .style("left", (x) + "px")
                     .style("top", (event.pageY) + "px"); // your content
             }
@@ -175,7 +180,7 @@ function load_heatmap() {
 
     var legend = svg.append('g')
         .attr('class', 'legend')
-        .attr('transform', 'translate(' + legendX + ',' + legendY + ')')
+        .attr('transform', 'translate(' + legendX + ',' + (legendY - 10) + ')')
         .selectAll('g')
         .data(colorScale.ticks(6).slice(1).reverse())
         .enter().append('g')
@@ -193,7 +198,18 @@ function load_heatmap() {
         .attr('y', legendHeight + verticalPadding) // Position the text right below the rectangle
         .attr('dy', '0.35em') // Center the text vertically within the line height
         .style('text-anchor', 'middle') // Center the text horizontally
-        .text(function (d) { return d; });
+        .style('font-size','10px')
+        .each(function(d) {
+            var text = d3.select(this),
+                lines = [`${d}`, '($/kWh)']; // Split the text into two lines
+    
+            lines.forEach(function(line, i) {
+                text.append('tspan') // Append each line as a tspan
+                    .attr('x', legendWidth / 2) // Ensure each line is centered
+                    .attr('dy', i === 0 ? '0.35em' : '1em') // For the first line, use the original dy. For the second, advance a line.
+                    .text(line);
+            });
+        });
 
     top_entries = top_entries_extractor(json_data);
     populate_table(top_entries);

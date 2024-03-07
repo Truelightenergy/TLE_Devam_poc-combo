@@ -89,7 +89,7 @@ truelight.notifications = truelight.notifications || {
 
                 myDiv.append(row);
 
-                var marqueItem = `The prompty month energy in <font style="color:#005A9A;">${location[0]}</font>, ${location[1].split('(')[0]} <font style="color:#005A9A;">${location[1].split('(')[1].replace(')', '')}</font>`;
+                var marqueItem = `The prompt month energy in <font style="color:#005A9A;">${location[0]}</font>, ${location[1].split('(')[0]} <font style="color:#005A9A;">${location[1].split('(')[1].replace(')', '')}</font>`;
                 marqueItem+=` has ${notification_data[i].price_shift}d by $${price.toFixed(2)}<b><font style="color:#005A9A;">($/MWh)</font></b> resulting in a`;
 
                 if(notification_data[i].price_shift === 'decrease'){
