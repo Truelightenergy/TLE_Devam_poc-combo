@@ -71,7 +71,57 @@ truelight.graphview.view = {
             data: JSON.stringify(payload),
             success: function (response) {
                 truelight.loader.hide();
-                Plotly.newPlot('chart', response['data'], response['layout'], {responsive: true});
+                var layout = {
+                    "xaxis": {
+                        "tickfont": {
+                            "size": 10,
+                            "color": "grey"
+                        },
+                        "showline": false,
+                        "mirror": true,
+                        "ticks": 'outside', // Ensure the ticks are outside the plot
+                        "ticklen": 5, // Length of the ticks
+                        showgrid: false
+                    },
+                    "yaxis": {
+                        "tickprefix": "$",
+                        "tickfont": {
+                            "size": 10,
+                            "color": "grey"
+                        },
+                        "showline": false,
+                        "linewidth": 2,
+                        "linecolor": 'black',
+                        "mirror": true,
+                        "ticks": 'outside', // Ensure the ticks are outside the plot
+                        "ticklen": 5, // Length of the ticks
+                        showgrid: false
+                    },
+                    "legend": {
+                        "orientation": "h",
+                        "x": 0.5,
+                        "xanchor": "center",
+                        "y": -0.2, // You may need to adjust this to place the legend below the plot
+                        "yanchor": "top" // Anchors the legend at the top of its bounding box
+                    },
+                    "hovermode": "x unified",
+                    "plot_bgcolor": "white",
+                    "margin": {
+                        "l": 50,
+                        "r": 50,
+                        "t": 100,
+                        "b": 100
+                    }
+                };
+            
+                Plotly.newPlot('chart', response['data'], layout,
+                    {
+                        responsive: true,
+                        // staticPlot: true,
+                        // displayModeBar: false
+                    }
+                );
+                // Plotly.newPlot('chart', response['data'], response['layout'], {responsive: true});
             },
             error: function (xhr, status, error) {
                 truelight.loader.hide();

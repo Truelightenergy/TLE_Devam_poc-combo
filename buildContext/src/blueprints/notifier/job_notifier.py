@@ -86,12 +86,21 @@ class Process_Notifier:
                 "body_content": ""
             }
             for i, row in enumerate(results):
+                if row["price_shift"] == "increase":
+                    gl = "gain"
+                else:
+                    gl = "loss"
 
                 notification_id = row["notification_id"]
                 user = row["user_id"]
                 head = row["subject_content"]
                 body = row["body_content"]
-                body = body.format(username = "User", location = row["location"], price_shift = row["price_shift"], price_shift_value= "$"+str(round(row["price_shift_value"], 2)), price_shift_prct = str(round( row["price_shift_prct"],2))+"%")
+                body = body.format(username = "User", 
+                                   location = row["location"], 
+                                   price_shift = row["price_shift"], 
+                                   price_shift_value= "$"+str(round(row["price_shift_value"], 2)), 
+                                   price_shift_prct = str(round( row["price_shift_prct"],2))+"%",
+                                   gl = gl)
                 header_body, body_content, tail_body = body.split("<br/>")
 
                 data['user_id'] = user

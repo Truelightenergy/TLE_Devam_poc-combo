@@ -212,14 +212,23 @@ def home():
 @auths.route('/get_graphview', methods=['GET', 'POST'])
 @roles.readonly_token_required
 def get_graphview():
-  notification_data = notifier_util.fetch_todays_notifications()
+  notification_data1 = notifier_util.fetch_todays_notifications()
+  processed_notifications = []
+  for notification in notification_data1:
+       if notification['price_shift'] == 'increase':
+           weigh = 'gain'
+       else:
+           weigh = 'loss'
+       val = "{:.5f}".format(notification['price_shift_value'])
+       processed_notifications.append(f"The prompt month energy in {notification['location']} has {notification['price_shift']} by ${val}($/kWh) resulting in a {round(notification['price_shift_prct'], 2)}% {weigh}.")
+
   curve_start = notifier_util.fetch_latest_time_stamp()
   operating_day_timestamp = curve_start.strftime('%Y-%m-%d %H:%M:%S')
   operating_day = curve_start.strftime('%Y-%m-%d')
   d_o_d_timestamp = (curve_start - timedelta(days=1)).strftime('%Y-%m-%d')
   start = d_o_d_timestamp
   end = (curve_start + relativedelta(months=61)).strftime('%Y-%m-%d')
-  graph, params = graph_view_util.generate_graph_view_for_home_screen(notification_data, operating_day,operating_day_timestamp, d_o_d_timestamp, start, end)
+  graph, params = graph_view_util.generate_graph_view_for_home_screen(processed_notifications, operating_day,operating_day_timestamp, d_o_d_timestamp, start, end)
   
   return {"graph":graph, "payload":params}
 

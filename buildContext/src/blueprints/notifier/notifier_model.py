@@ -100,8 +100,8 @@ class NotifierUtil:
         """
         fetch the notification events which are pending 
         """
-
-        query = "select * from trueprice.price_change_trigger where status = 'waiting';"
+        #currently we only send notifications for price change for 9 key nodal points from energy curve
+        query = """select * from trueprice.price_change_trigger where status = 'waiting' and filename  like '%%_energy';"""
         data = []
         try:
             results = self.engine.execute(query).fetchall()
@@ -109,7 +109,8 @@ class NotifierUtil:
                 data.append({"curvestart": row['curvestart'], "filename": row['filename']})
 
             return data
-        except:
+        except Exception as error:
+            print(error)
             return data
         
     def get_cuves_data(self, cuvestart, filename):

@@ -1,0 +1,104 @@
+<div class="row">
+    <div class="col-12 col-md-12">
+        <div class="form-control border-0 px-0">
+            <label for="data_type">Data Type</label>
+            <select name="data_type" id="data_type" class="select2-size-lg form-select">
+                <option value="Energy">Energy</option>
+            </select>
+        </div>
+        <div class="form-control border-0 px-0">
+            <label for="control_table">ISO</label>
+            <select name="control_table" id="control_table" class="select2-size-lg form-select">
+                <option value="ercot_energy">ERCOT</option>
+                <option value="nyiso_energy">NYISO</option>
+                <option value="miso_energy">MISO</option>
+                <option value="isone_energy">ISONE</option>
+                <option value="pjm_energy">PJM</option>
+
+            </select>
+        </div>
+        <div class="form-control border-0 px-0">
+            <label for="loadZone">Load Zone</label>
+            <select name="loadZone" id="loadZone" required class="select2-size-lg form-select">
+            </select>
+        </div>
+        <div class="form-control border-0 px-0">
+            <label for="operating_day">Operating Day</label>
+            <input type="date" readonly="readonly" class="form-control" id="operating_day" name="operating_day" />
+        </div>
+        <div class="operatin_day_timestamps form-control border-0 px-0" style="display: none;">
+            <label for="operatin_day_timestamps">Intraday or Close of Business</label>            
+            <select name="operatin_day_timestamps" id="operatin_day_timestamps" required class="select2-size-lg form-select">
+            </select>
+            <input type="hidden" id="history" name="history" value="" />
+            <input type="hidden" id="cob" name="cob" value="" />
+        </div>
+        <div class="dates form-control border-0 px-0">
+            <label for="start">Curve Start Date</label>
+            <input type="date" class="form-control" required id="start" name="start" />
+        </div>
+        <div class="form-control border-0 px-0">
+            <label for="end">Curve End Date</label>
+            <input type="date" class="form-control" required id="end" name="end" />
+        </div>
+    </div>  
+</div>
+
+<!-- 
+<div class="mb-3">
+    <label for="data_type" class="form-label">Data Type</label>
+    <select name="data_type" id ="data_type" class="form-control mt-2 form-select " >
+        <option value="Energy">Energy</option>
+    
+    </select>
+</div>
+
+<div class="mb-3">
+    <label for="control_table" class="form-label">ISO</label>
+    <select name="control_table" id ="control_table" class="form-control mt-2 form-select " >
+        <option value="ercot_energy">ERCOT</option>
+        <option value="nyiso_energy">NYISO</option>
+        <option value="miso_energy">MISO</option>
+        <option value="isone_energy">ISONE</option>
+        <option value="pjm_energy">PJM</option>
+
+    </select>
+</div>
+
+
+<div class="mb-3">
+    <label for="loadZone" class="form-label">Load Zone</label>
+    <select name="loadZone" id="loadZone"  required class="form-control mt-2 form-select " >                                        
+    </select>
+</div>
+
+<div class="mb-3">
+    <label for="operating_day" class="form-label">Operating Day</label>
+    <input type="date" readonly="readonly" class="form-control mt-2 " id="operating_day" name="operating_day"  >
+</div>
+
+<div class="mb-3 operatin_day_timestamps" style="display: none;">
+    <label for="operatin_day_timestamps" class="form-label">Intraday or Close of Business</label>
+    <select name="operatin_day_timestamps" id="operatin_day_timestamps"  required class="form-control mt-2  " >                                        
+    </select>
+    <input type="hidden" id="history" name="history" value=""/>
+    <input type="hidden" id="cob" name="cob" value=""/>
+</div>
+
+<div id="dates">
+    <div class="mb-3">
+
+        <label for="start" class="form-label">Curve Start Date</label>
+        <input type="date" class="form-control mt-2 " required id="start" name="start"  >
+        
+    </div>
+
+    
+
+    <div class="mb-3">
+        <label for="end" class="form-label">Curve End Date</label>
+        
+        <input type="date" class="form-control mt-2  " required id="end" name="end"  >
+    
+        </div>
+</div> -->
