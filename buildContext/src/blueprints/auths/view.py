@@ -43,8 +43,8 @@ def setup_session(auth_token):
     session["level"] = payload["role"]
 
 
-@auths.route('/signup', methods=['GET', 'POST'])
-def signup():
+@auths.route('/contactus', methods=['GET'])
+def contactus():
     """
     Signup to the application.
     ---
@@ -73,25 +73,25 @@ def signup():
     rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
     
 
-    if rest_api_condition:
-        if not (request.args.get("email") and request.args.get("password")):
-            return jsonify({"error": "Incorrect Params"}), 400
-        email = request.args.get("email")
-        password = request.args.get("password")
-        json_obj, status_code = api_util.signup(email, password)
-        return jsonify(json_obj), status_code
+    # if rest_api_condition:
+    #     if not (request.args.get("email") and request.args.get("password")):
+    #         return jsonify({"error": "Incorrect Params"}), 400
+    #     email = request.args.get("email")
+    #     password = request.args.get("password")
+    #     json_obj, status_code = api_util.signup(email, password)
+    #     return jsonify(json_obj), status_code
     
-    else:
-        if request.method=="POST":
-            email = request.form.get("email")
-            password = request.form.get("password")
-            json_obj, status_code = api_util.signup(email, password)
-            if json_obj["message_flag"]== "success":
-                return render_template('auths/signup.html',  flash_message=True, message_toast = "Signup Successfully", message_flag = "success"), 200
-            else:
-                return render_template('auths/signup.html',  flash_message=True, message_toast = "Signup Failed", message_flag = "error"), 403
-        else:
-            return render_template('auths/signup.html')
+    # else:
+        # if request.method=="POST":
+        #     email = request.form.get("email")
+        #     password = request.form.get("password")
+        #     json_obj, status_code = api_util.signup(email, password)
+        #     if json_obj["message_flag"]== "success":
+        #         return render_template('auths/signup.html',  flash_message=True, message_toast = "Signup Successfully", message_flag = "success"), 200
+        #     else:
+        #         return render_template('auths/signup.html',  flash_message=True, message_toast = "Signup Failed", message_flag = "error"), 403
+        # else:
+    return render_template('auths/signup.html')
         
 
 @auths.route('/login', methods=['GET', 'POST'])
