@@ -1,5 +1,8 @@
 ;
 $(document).ready(function () {
+	$(".btnUpload").click(function(){
+		$(this).attr('disabled', 'disabled');
+	});
 
 	function upload_file(formData) {
 		$("#process").show();
