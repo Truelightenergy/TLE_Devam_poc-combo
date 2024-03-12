@@ -197,6 +197,7 @@ class Util:
                     y=df["data"], 
                     mode="markers+lines",
                     name=label,  # You can pass a label for each line
+                    showlegend=True,
                     line=dict(
                         shape='spline',  
                         color=color,  
