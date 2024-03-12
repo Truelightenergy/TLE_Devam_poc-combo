@@ -58,9 +58,9 @@ class Process_Notifier:
                 strip = '5x16'
 
                 if (is_admin) or (self.valid_authorization(rules, control_table, load_zone, strip)):
-                    custom_notification_body = f"{custom_notification_body}<br/>{notif}"
+                    custom_notification_body = f"{custom_notification_body}<br />{notif}<br />"
 
-            custom_notification_body = f"{header_sec}<br/><br/>{custom_notification_body}<br/><br/>{tail_sec}"
+            custom_notification_body = f"{header_sec}<br/>{custom_notification_body}<br/>{tail_sec}"
             self.email_sender.send_email(head, custom_notification_body, email)
 
         for not_id in notification_id:
