@@ -7,6 +7,7 @@ import json
 import pandas as pd
 import plotly.io as pio
 import plotly.express as px
+import pytz
 from flask import session
 import datetime
 import numpy as np
@@ -87,7 +88,7 @@ class Util:
             data = self.headroom_model.get_waiting_headrooms()
             for instance in data:
                 control_areas = ['nyiso', 'pjm', 'ercot', 'miso', 'isone']
-                filename = next((region for region in control_areas if region in instance['filename']), None)
+                filename = next((region for region in control_areas if region in instance['filename'].lower()), None)
             
                 try:
                    
@@ -107,8 +108,12 @@ class Util:
                     current_ptc_date = current_ptc_date.replace(day=1)
                     # Set the time stamps to 0
                     current_ptc_date = current_ptc_date.replace(hour=0, minute=0, second=0, microsecond=0)
-                    ptc_df = ptc_df[ptc_df['month'] == current_ptc_date]
-
+                    # ptc_df = ptc_df[ptc_df['month'].dt.date == current_ptc_date.date]
+                    ptc_df = ptc_df[
+                        (ptc_df['month'].dt.year == current_ptc_date.year) &
+                        (ptc_df['month'].dt.month == current_ptc_date.month) &
+                        (ptc_df['month'].dt.day == current_ptc_date.day)
+                    ]
 
 
                     matrix_df = pd.DataFrame(matrix_data)

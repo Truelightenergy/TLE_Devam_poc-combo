@@ -37,7 +37,7 @@ class HeadroomModel:
         fetch the headroom events which are pending 
         """
 
-        query = "select * from trueprice.headroom_trigger where status = 'waiting';"
+        query = "select * from trueprice.headroom_trigger where status = 'waiting' order by change_id;"
         data = []
         try:
             results = self.engine.execute(query).fetchall()
