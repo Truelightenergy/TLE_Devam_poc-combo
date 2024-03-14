@@ -151,6 +151,7 @@ function plotHeatmap() {
     state_wise_data = data_adjustments(json_data);
 
     state_wise_data.forEach(stateData => {
+        
         var state = stateData.state;
         var headrooms = stateData.headrooms;
 
@@ -182,9 +183,11 @@ function plotHeatmap() {
         .projection(projection);
 
     // A color scale for commute times
-    var colorScale = d3.scaleDiverging()
-        .domain([-1.0, 0.01, 1.00]) // Example domain, adjust according to your data's range
-        .range(['rgb(0,73,137)', 'rgb(0,73,137)', 'rgb(251,83,83)']); // Blue to white to red color gradient
+    // var colorScale = d3.scaleDiverging()
+    //     .domain([0, 1,2.00]) // Example domain, adjust according to your data's range
+    //     .range(['rgb(0,73,137)', 'rgb(235, 79, 52)', 'rgb(241,64,45)']); // Blue to white to red color gradient
+
+    var colorScale = d3.scaleSequential([0, 2],d3.interpolateCubehelix.gamma(2)("orange", "red"));
 
     var tooltip = d3.select("#tooltip");
 
@@ -195,7 +198,7 @@ function plotHeatmap() {
         .attr('d', path)
         .attr('fill', function (d) {
             var value = stateMeanHeadroom[d.properties.iso3166_2];
-            if (!value) {
+            if (!value||value.mean<=0) {
                 return 'rgb(0,73,137)';
             }
             return colorScale(value.mean);
