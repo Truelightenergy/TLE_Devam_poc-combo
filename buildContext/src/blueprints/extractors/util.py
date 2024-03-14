@@ -133,7 +133,8 @@ class Util:
             query_strings["end"] = "".join(str(end).split("-"))
             
             data_frame, status = self.extractor.get_custom_data(query_strings, query_strings["type"])
-            file_name = f'{query_strings["curve_type"]}_{query_strings["iso"]}_{"_".join(query_strings["strip"])}_{query_strings["start"]}_{query_strings["end"]}'
+            cleaned_strings = [s.replace("strip_", "") for s in query_strings["strip"]]
+            file_name = f'{query_strings["curve_type"]}_{query_strings["iso"]}_{"_".join(cleaned_strings)}_{query_strings["operating_day"]}'
             if data_frame.empty:
                 return data_frame, "No Such Data Available"
             

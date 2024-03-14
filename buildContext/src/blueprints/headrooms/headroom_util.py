@@ -93,7 +93,7 @@ class Util:
                 try:
                    
                     matrix_data = self.headroom_model.get_matrix_data(instance['curvestart'], filename)
-                    ptc_data = self.headroom_model.get_ptc_data(filename)
+                    ptc_data = self.headroom_model.get_ptc_data(filename,instance['curvestart'])
 
                     # converting data to the dataframes
                     ptc_df = pd.DataFrame(ptc_data)

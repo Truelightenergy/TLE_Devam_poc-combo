@@ -89,11 +89,11 @@ function load_heatmap() {
         var headrooms = stateData.headrooms;
 
         let state_mean = calculate_mean(headrooms);
-        let normalized_mean = (state_mean - global_mean) / global_std;
-        if (state_mean == global_mean) {
-            normalized_mean = state_mean;
-        }
-        stateMeanHeadroom[state] = { mean: Math.round(normalized_mean * 100) / 100 };
+        // let normalized_mean = (state_mean - global_mean) / global_std;
+        // if (state_mean == global_mean) {
+        //     normalized_mean = state_mean;
+        // }
+        stateMeanHeadroom[state] = { mean: Math.round(state_mean * 100) / 100 };
 
     });
 
@@ -121,7 +121,7 @@ function load_heatmap() {
     //     .domain([-1.0, 0.01, 1.00]) // Example domain, adjust according to your data's range
     //     .range(['rgb(0,73,137)', 'rgb(0,73,137)', 'rgb(251,83,83)']); // Blue to white to red color gradient
 
-    var colorScale = d3.scaleSequential([0, 2],d3.interpolateCubehelix("orange", "red"));
+    var colorScale = d3.scaleSequential([0,0.1, 0.5],d3.interpolateCubehelix('rgb(245, 132, 66)','rgb(245, 93, 66)', 'rgb(245, 66, 66)'));
 
     var tooltip = d3.select("#tooltip");
 
@@ -131,8 +131,13 @@ function load_heatmap() {
         .attr('class', 'hex state')
         .attr('d', path)
         .attr('fill', function (d) {
+
+            //grey our for the state which are not part of the statemeanhedroom
             var value = stateMeanHeadroom[d.properties.iso3166_2];
-            if (!value||value.mean<=0) {
+            if (!value) {
+                return 'grey';
+            }
+            if (value.mean<=0) {
                 return 'rgb(0,73,137)';
             }
             return colorScale(value.mean);
