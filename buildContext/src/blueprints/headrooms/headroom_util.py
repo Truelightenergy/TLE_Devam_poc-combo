@@ -107,7 +107,7 @@ class Util:
 
                     current_ptc_date = current_ptc_date.replace(day=1)
                     # Set the time stamps to 0
-                    current_ptc_date = current_ptc_date.replace(hour=0, minute=0, second=0, microsecond=0)
+                    # current_ptc_date = current_ptc_date.replace(hour=0, minute=0, second=0, microsecond=0)
                     # ptc_df = ptc_df[ptc_df['month'].dt.date == current_ptc_date.date]
                     ptc_df = ptc_df[
                         (ptc_df['month'].dt.year == current_ptc_date.year) &
