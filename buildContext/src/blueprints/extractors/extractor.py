@@ -48,15 +48,16 @@ class Extractor:
             df["headroom"] = df["headroom"]* 1000
             df['curvestart'] = df['curvestart'].dt.strftime('%m/%d/%Y')
 
-            df = df[["control_area", "state", "utility", "load_profile","curvestart", "month", "ptc",  "term",  "month", "total_bundled_price", "headroom", "headroom_prct"]]
-            df.columns = ["ISO ", "State", "Utility", "Load Profile","Headroom Effective Date", "PTC Effective Date", "Utility PTC ($/MWh)", "TLE Price Term (months)", "TLE Price Start Date", "Truelight Price ($/MWh)", "Headroom ($/MWh)", "Headrrom (%)"]
+            df = df[["control_area", "state", "utility","load_zone", "load_profile","curvestart", "month", "ptc",  "term",  "beginning_date", "total_bundled_price", "headroom", "headroom_prct"]]
+            df.columns = ["ISO ", "State", "Utility","Load Zone", "Load Profile","Headroom Effective Date", "PTC Effective Date", "Utility PTC ($/MWh)", "TLE Price Term (months)", "TLE Price Start Date", "Truelight Price ($/MWh)", "Headroom ($/MWh)", "Headrrom (%)"]
             return df
 
         elif type=='matrix':
-
             # Assuming df is your DataFrame
             # Using pivot_table to handle potential duplicate entries
-            pivot_df = df.pivot_table(index=["matching_id", "lookup_id", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "term", "beginning_date", "load_profile"],
+          
+            # df.columns = ["matching_id", "lookup_id", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "term", "beginning_date", "load_profile", "sub_cost_component", "data"]
+            pivot_df = df.pivot_table(index=["matching_id", "lookup_id","control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "term", "beginning_date", "load_profile"],
                                     columns="sub_cost_component",
                                     values="data",
                                     aggfunc="first",  # You can choose an appropriate aggregation function
@@ -64,13 +65,14 @@ class Extractor:
 
             # Resetting index to make the columns flat
             reshaped_df = pivot_df.reset_index()
-
+           
             # Display the reshaped DataFrame
             reshaped_df = reshaped_df.transpose()
             # reshaped_df = reshaped_df.drop(0)
 
             # If you want to reset the index after removing the row
             reshaped_df=reshaped_df.rename_axis(None)
+            reshaped_df = reshaped_df.iloc[2:, :]
             return reshaped_df
 
             
@@ -78,16 +80,18 @@ class Extractor:
             pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month'], columns=["matching_id", "lookup_id", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "control_area_type", "utility_name", "profile_load"], aggfunc=list)
             pivoted_df.columns.name = None
             pivoted_df.index.name = None
-            
+           
             # Explode the lists into multiple rows
             flattened_df = pivoted_df.apply(lambda x: pd.Series(x).explode())
-
+           
+           
             # rename indexes
             flattened_df = flattened_df.rename_axis(index={'matching_id' : 'Matching ID', 'lookup_id': 'Lookup ID', 'curvestart': 'Curve Update Date', 'month': "Curve Start Month"})
-
             # renaming columns
             flattened_df.columns.names =  ["Matching ID", "Lookup ID", "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", "Control_area_type", "Utility_name", "Profile_load"]
-
+            
+            #remove matching id and lookup id, Control_area_type, Utility_name  rows.
+            flattened_df.columns = flattened_df.columns.droplevel([0, 1, 10,11])
             # returning dataframe
             return flattened_df
         
@@ -132,7 +136,7 @@ class Extractor:
         """
         try:
             if type == 'headroom':
-                columns=["control_area", "state", "utility", "load_profile","curvestart", "month", "ptc",  "term",  "month", "total_bundled_price", "headroom", "headroom_prct"]
+                columns=["control_area", "state", "utility","load_zone", "load_profile","curvestart", "month", "ptc",  "term",  "beginning_date", "total_bundled_price", "headroom", "headroom_prct"]
                 df= df[columns]
                 df = df.copy()
                
@@ -141,17 +145,17 @@ class Extractor:
                 df["headroom"] = df["headroom"]* 1000
                 df['curvestart'] = df['curvestart'].dt.strftime('%m/%d/%Y')
                 
-                df.columns = ["ISO ", "State", "Utility", "Load Profile","Headroom Effective Date", "PTC Effective Date", "Utility PTC ($/MWh)", "TLE Price Term (months)", "TLE Price Start Date", "Truelight Price ($/MWh)", "Headroom ($/MWh)", "Headrrom (%)"]
+                df.columns = ["ISO ", "State", "Utility","Load Zone", "Load Profile","Headroom Effective Date", "PTC Effective Date", "Utility PTC ($/MWh)", "TLE Price Term (months)", "TLE Price Start Date", "Truelight Price ($/MWh)", "Headroom ($/MWh)", "Headrrom (%)"]
                 return df
             
             elif type=='matrix':
-                columns=["matching_id", "lookup_id", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "term", "beginning_date", "load_profile"]
+                columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "term", "beginning_date", "load_profile"]
                 df= df[columns]
                 df = df.copy()
                 df.columns = columns
             
             elif type == 'ptc':
-                columns=["matching_id", "lookup_id", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "control_area_type", "utility_name", "profile_load"]
+                columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "profile_load"]
                 df= df[columns]
                 df = df.copy()
                 df.columns = columns
