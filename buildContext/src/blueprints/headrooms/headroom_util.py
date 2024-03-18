@@ -7,6 +7,7 @@ import json
 import pandas as pd
 import plotly.io as pio
 import plotly.express as px
+import pytz
 from flask import session
 import datetime
 import numpy as np
@@ -87,57 +88,67 @@ class Util:
             data = self.headroom_model.get_waiting_headrooms()
             for instance in data:
                 control_areas = ['nyiso', 'pjm', 'ercot', 'miso', 'isone']
-                filename = next((region for region in control_areas if region in instance['filename']), None)
-                matrix_data = self.headroom_model.get_matrix_data(instance['curvestart'], filename)
-                ptc_data = self.headroom_model.get_ptc_data(filename)
+                filename = next((region for region in control_areas if region in instance['filename'].lower()), None)
+            
+                try:
+                   
+                    matrix_data = self.headroom_model.get_matrix_data(instance['curvestart'], filename)
+                    ptc_data = self.headroom_model.get_ptc_data(filename,instance['curvestart'])
 
-                # converting data to the dataframes
-                ptc_df = pd.DataFrame(ptc_data)
-                # ptc_df = ptc_df.drop(columns=['lookup_id']) 
-
-                
-                matrix_df = pd.DataFrame(matrix_data)
-                # matrix_df = matrix_df.drop(columns=['matching_id'])
-
-                current_ptc_date = ptc_df['curvestart'].unique()[0]
-
-                current_ptc_date = current_ptc_date.replace(day=1)
-                # Set the time stamps to 0
-                current_ptc_date = current_ptc_date.replace(hour=0, minute=0, second=0, microsecond=0)
-                ptc_df = ptc_df[ptc_df['month'] == current_ptc_date]
-                
-
-                
-                matrix_df = pd.DataFrame(matrix_data)
-                # matrix_df = matrix_df.drop(columns=['matching_id'])
-
-                # convert MWH to KWH in matrix df
-                matrix_df['total_bundled_price'] = matrix_df['total_bundled_price'] / 1000
-                ptc_df['data'] = ptc_df['data'].astype(float)
-                matrix_df['total_bundled_price'] = matrix_df['total_bundled_price'].astype(float)
+                    # converting data to the dataframes
+                    ptc_df = pd.DataFrame(ptc_data)
+                    # ptc_df = ptc_df.drop(columns=['lookup_id']) 
 
 
-                # merging ptc and matrix dataframe on common characteristics
-                df = pd.merge(matrix_df, ptc_df, left_on='lookup_id', right_on='matching_id', how='inner')
+                    matrix_df = pd.DataFrame(matrix_data)
+                    # matrix_df = matrix_df.drop(columns=['matching_id'])
 
-                df = df.rename(columns={'data': 'ptc'})
-                df['headroom'] = df['ptc'] - df['total_bundled_price']
-                df['headroom_prct'] = (df['headroom'] / df['ptc'])*100
-                df['headroom_prct'] = df['headroom_prct'].replace(-np.inf, 0)
-                df['curvestart'] = instance['curvestart']
+                    current_ptc_date = ptc_df['curvestart'].unique()[0]
+
+                    current_ptc_date = current_ptc_date.replace(day=1)
+                    # Set the time stamps to 0
+                    # current_ptc_date = current_ptc_date.replace(hour=0, minute=0, second=0, microsecond=0)
+                    # ptc_df = ptc_df[ptc_df['month'].dt.date == current_ptc_date.date]
+                    ptc_df = ptc_df[
+                        (ptc_df['month'].dt.year == current_ptc_date.year) &
+                        (ptc_df['month'].dt.month == current_ptc_date.month) &
+                        (ptc_df['month'].dt.day == current_ptc_date.day)
+                    ]
 
 
-                df = df.drop([col for col in df.columns if '_y' in col], axis=1)
-                df.columns = [col.split('_x')[0] if '_x' in col else col for col in df.columns]
+                    matrix_df = pd.DataFrame(matrix_data)
+                    # matrix_df = matrix_df.drop(columns=['matching_id'])
 
-                
+                    # convert MWH to KWH in matrix df
+                    matrix_df['total_bundled_price'] = matrix_df['total_bundled_price'] / 1000
+                    ptc_df['data'] = ptc_df['data'].astype(float)
+                    matrix_df['total_bundled_price'] = matrix_df['total_bundled_price'].astype(float)
 
-                # ingest calculated values
-                if self.headroom_model.headroom_ingestion(df):
-                    self.headroom_model.mark_headroom_done(instance['curvestart'],instance['filename'])
-                    print("*** Headroom Ingestion Successful ***")
-                else:
-                    print("*** Headroom Ingestion Failed ***")
+
+                    # merging ptc and matrix dataframe on common characteristics
+                    df = pd.merge(matrix_df, ptc_df, left_on='lookup_id', right_on='matching_id', how='inner')
+
+                    df = df.rename(columns={'data': 'ptc'})
+                    df['headroom'] = df['ptc'] - df['total_bundled_price']
+                    df['headroom_prct'] = (df['headroom'] / df['ptc'])*100
+                    df['headroom_prct'] = df['headroom_prct'].replace(-np.inf, 0)
+                    df['curvestart'] = instance['curvestart']
+
+
+                    df = df.drop([col for col in df.columns if '_y' in col], axis=1)
+                    df.columns = [col.split('_x')[0] if '_x' in col else col for col in df.columns]
+
+
+
+                    # ingest calculated values
+                    if self.headroom_model.headroom_ingestion(df):
+                        self.headroom_model.mark_headroom_done(instance['curvestart'],instance['filename'])
+                        print("*** Headroom Ingestion Successful ***",filename)
+                    else:
+                        print("*** Headroom Ingestion Failed ***",filename)
+                except Exception as e:
+                    print(e)
+                    print("*** Headroom Ingestion Failed ***",filename)
         except:
             print("*** Headroom Ingestion Failed ***")
     

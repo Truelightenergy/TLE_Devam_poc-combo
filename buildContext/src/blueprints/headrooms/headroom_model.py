@@ -37,7 +37,7 @@ class HeadroomModel:
         fetch the headroom events which are pending 
         """
 
-        query = "select * from trueprice.headroom_trigger where status = 'waiting';"
+        query = "select * from trueprice.headroom_trigger where status = 'waiting' order by change_id;"
         data = []
         try:
             results = self.engine.execute(query).fetchall()
@@ -88,13 +88,14 @@ class HeadroomModel:
         except:
             return data
         
-    def get_ptc_data(self, filename):
+    def get_ptc_data(self, filename,curveStart):
         """
         fetches the latest ptc data from db
         """
 
 
-        query = f"select * from trueprice.ptc where control_area_type = '{filename}'  and curvestart = (Select curvestart from trueprice.ptc where control_area_type = '{filename}' ORDER BY curvestart DESC LIMIT 1);"
+        query = f"select * from trueprice.ptc where control_area_type = '{filename}'  and Date(curvestart) = (Select Date(curvestart) from trueprice.ptc where control_area_type = '{filename}' AND Date(curvestart) <= Date('{curveStart}') ORDER BY curvestart DESC LIMIT 1);"
+        
         data = []
         try:
             results = self.engine.execute(query).fetchall()

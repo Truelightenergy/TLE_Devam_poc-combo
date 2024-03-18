@@ -80,7 +80,7 @@ class MatrixHelper:
                     resultant_df = pd.concat([resultant_df, new_row.to_frame().T], ignore_index=True)
 
             resultant_df['Data'].fillna(0, inplace=True)
-            resultant_df['Data'].replace('-', '0', regex=True, inplace=True)
+            # resultant_df['Data'].replace('-', '0', regex=True, inplace=True)
             resultant_df['Data'].replace(' ', '0', regex=True, inplace=True)
             resultant_df['Data'].replace('', '0', regex=True, inplace=True)
             resultant_df['Data'].replace('[\$,]', '', regex=True, inplace=True)

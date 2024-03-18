@@ -144,22 +144,23 @@ function data_adjustments(data) {
 function plotHeatmap() {
     $("#heapmap_graph").html('');
     var stateMeanHeadroom = {};
-    let allHeadrooms = json_data.flatMap(data => parseFloat(data.headroom));
-    let global_mean = calculate_mean(allHeadrooms);
-    let global_std = calculate_std(allHeadrooms, global_mean);
+    // let allHeadrooms = json_data.flatMap(data => parseFloat(data.headroom));
+    // let global_mean = calculate_mean(allHeadrooms);
+    // let global_std = calculate_std(allHeadrooms, global_mean);
 
     state_wise_data = data_adjustments(json_data);
 
     state_wise_data.forEach(stateData => {
+        
         var state = stateData.state;
         var headrooms = stateData.headrooms;
 
         let state_mean = calculate_mean(headrooms);
-        let normalized_mean = (state_mean - global_mean) / global_std;
-        if (state_mean == global_mean) {
-            normalized_mean = state_mean;
-        }
-        stateMeanHeadroom[state] = { mean: Math.round(normalized_mean * 100) / 100 };
+        // let normalized_mean = (state_mean - global_mean) / global_std;
+        // if (state_mean == global_mean) {
+        //     normalized_mean = state_mean;
+        // }
+        stateMeanHeadroom[state] = { mean: Math.round(state_mean * 100) / 100 };
 
     });
 
@@ -182,12 +183,13 @@ function plotHeatmap() {
         .projection(projection);
 
     // A color scale for commute times
-    var colorScale = d3.scaleDiverging()
-        .domain([-1.0, 0.01, 1.00]) // Example domain, adjust according to your data's range
-        .range(['rgb(0,73,137)', 'rgb(0,73,137)', 'rgb(251,83,83)']); // Blue to white to red color gradient
+    // var colorScale = d3.scaleDiverging()
+    //     .domain([0, 1,2.00]) // Example domain, adjust according to your data's range
+    //     .range(['rgb(0,73,137)', 'rgb(235, 79, 52)', 'rgb(241,64,45)']); // Blue to white to red color gradient
+
+    var colorScale = d3.scaleSequential([0,0.1, 0.5],d3.interpolateCubehelix('rgb(245, 132, 66)','rgb(245, 93, 66)', 'rgb(245, 66, 66)'));
 
     var tooltip = d3.select("#tooltip");
-
     svg.selectAll('.hex')
         .data(geoJSON.features)
         .enter().append('path')
@@ -196,6 +198,9 @@ function plotHeatmap() {
         .attr('fill', function (d) {
             var value = stateMeanHeadroom[d.properties.iso3166_2];
             if (!value) {
+                return 'grey';
+            }
+            if (value.mean<=0) {
                 return 'rgb(0,73,137)';
             }
             return colorScale(value.mean);
