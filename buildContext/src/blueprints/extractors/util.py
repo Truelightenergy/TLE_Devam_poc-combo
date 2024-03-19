@@ -134,7 +134,7 @@ class Util:
             
             data_frame, status = self.extractor.get_custom_data(query_strings, query_strings["type"])
             cleaned_strings = [s.replace("strip_", "") for s in query_strings["strip"]]
-            file_name = f'{query_strings["curve_type"]}_{query_strings["iso"]}_{"_".join(cleaned_strings)}_{query_strings["operating_day"]}'
+            file_name = f'{query_strings["curve_type"]}_{query_strings["iso"]}_{"_".join(cleaned_strings)}_{operating_day}'
             if data_frame.empty:
                 return data_frame, "No Such Data Available"
             
