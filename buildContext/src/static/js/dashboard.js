@@ -49,7 +49,7 @@ function populate_table(data) {
         var row = rowTemplate.clone();
         row.find('.cUtility').html(`${itr}-${item['utility']} (${item['load_zone']})`);
         row.find('.cPrice').html(`$${item.utility_price}`);
-        row.find('.cHeadroom').html(`<span class="">$${item.headroom.toFixed(5)} (kWh)</span>`);
+        row.find('.cHeadroom').html(`<span class="">$${item.headroom.toFixed(5)}</span>`);
         row.find('.cHeadroomp').html(`<span class="ms-1 me-25">${item.headroom_prct}%</span>`);
         tbody.append(row);
     });

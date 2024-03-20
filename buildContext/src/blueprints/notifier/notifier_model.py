@@ -246,6 +246,8 @@ class NotifierUtil:
         try:
             results = self.engine.execute(query).fetchall()
             for row in results:
+                if not (any(sub in row['location'].lower() for sub in ['ercot, north zone', 'nyiso, zone a', 'nyiso, zone g', 'nyiso, zone j', 'pjm, ad hub', 'pjm, west hub', 'pjm, east hub', 'pjm, ni hub', 'isone, mass hub'])) or 'Control Area: ' in row['location']:
+                    continue
                 data.append({"price_shift_value": row['price_shift_value'], "price_shift_prct": row['price_shift_prct'],
                              "price_shift": row['price_shift'], "location": row['location']
                              })
