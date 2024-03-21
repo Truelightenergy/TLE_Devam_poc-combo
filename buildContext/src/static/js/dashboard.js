@@ -97,6 +97,8 @@ function load_heatmap() {
 
     });
 
+    debugger
+
     var svg = d3.select("#heapmap_graph");
     svg.on("mouseleave", function () {
         // Hide the tooltip
@@ -185,38 +187,50 @@ function load_heatmap() {
     var legendX = (width - totalLegendWidth) / 2;
     var verticalPadding = 10; // Decrease this value to reduce the space
 
+    var legendData = [
+        // { text: '-0.01', color: 'rgb(0,73,137)' },
+        { text: 'N/A', color: 'grey' },
+        { text: '<= 0', color: 'rgb(0,73,137)' },
+        { text: '0.005', color: 'rgb(245, 130, 66)' },
+        { text: '0.01', color: 'rgb(245, 128, 65)' },
+        { text: '0.1', color: 'rgb(245, 93, 66)' }        
+    ];
+    
     var legend = svg.append('g')
         .attr('class', 'legend')
         .attr('transform', 'translate(' + legendX + ',' + (legendY - 10) + ')')
         .selectAll('g')
-        .data(colorScale.ticks(6).slice(1))
+        .data(legendData)
         .enter().append('g')
         .attr('transform', function (d, i) {
             return 'translate(' + i * (legendWidth + legendPadding) + ', 0)';
         });
-
+    
     legend.append('rect')
         .attr('width', legendWidth)
         .attr('height', legendHeight)
-        .style('fill', colorScale);
-
+        .style('fill', function(d) { return d.color; });
+    
     legend.append('text')
         .attr('x', legendWidth / 2) // Center the text within the rectangle horizontally
         .attr('y', legendHeight + verticalPadding) // Position the text right below the rectangle
-        .attr('dy', '0.35em') // Center the text vertically within the line height
+        .attr('dy', '0.35em') // Adjust vertical centering
         .style('text-anchor', 'middle') // Center the text horizontally
-        .style('font-size','10px')
-        .each(function(d) {
+        .style('font-size', '10px')
+        .text(function(d) { return d.text; })
+        .each(function(d, i) {
             var text = d3.select(this),
-                lines = [`${d}`, '($/kWh)']; // Split the text into two lines
+                lines = [`${d.text}`]; // Split the text into two lines
     
-            lines.forEach(function(line, i) {
+            text.text(''); // Clear the initial text
+            lines.forEach(function(line, index) {
                 text.append('tspan') // Append each line as a tspan
                     .attr('x', legendWidth / 2) // Ensure each line is centered
-                    .attr('dy', i === 0 ? '0.35em' : '1em') // For the first line, use the original dy. For the second, advance a line.
+                    .attr('dy', index === 0 ? '0.35em' : '1em') // Adjust the line spacing
                     .text(line);
             });
         });
+    
 
     top_entries = top_entries_extractor(json_data);
     populate_table(top_entries);
