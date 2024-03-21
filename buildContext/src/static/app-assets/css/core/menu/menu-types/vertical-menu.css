@@ -136,11 +136,15 @@
 
 .vertical-layout.vertical-menu-modern.menu-collapsed .navbar.fixed-top,
 .vertical-layout.vertical-menu-modern.menu-collapsed .navbar.floating-nav {
-  left: 80px;
+  left: 120px;
 }
 
 .vertical-layout.vertical-menu-modern.menu-collapsed .main-menu {
   width: 80px;
+}
+
+.vertical-layout.vertical-menu-modern.menu-collapsed .user-nav {
+  visibility: hidden;
 }
 
 .vertical-layout.vertical-menu-modern.menu-collapsed
