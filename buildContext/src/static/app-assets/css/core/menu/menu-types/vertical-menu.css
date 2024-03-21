@@ -143,6 +143,10 @@
   width: 80px;
 }
 
+.vertical-layout.vertical-menu-modern.menu-collapsed .user-nav {
+  visibility: hidden;
+}
+
 .vertical-layout.vertical-menu-modern.menu-collapsed
   .main-menu
   .navbar-header
