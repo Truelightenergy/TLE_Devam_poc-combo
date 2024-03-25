@@ -214,17 +214,17 @@
               <img src="/static/app-assets/media/angleLeft.svg" alt="" class="" width="24px" height="24px" />
               <img src="/static/app-assets/media/angleRight.svg" alt="" width="24px" height="24px" />
             </div>
-            <div class="nav-item dropdown dropdown-user flex flex-row flex-wrap align-items-center px-1 d-flex">
-              <span class="avatar">
-                <span id="userInitials" class="avatar" style=""></span>
-
-                <!-- <img class="round" src="/static/app-assets/media/profile.png" alt="avatar" height="40" width="40" /> -->
-                <span class="avatar-status-online"></span>
-              </span>
-              <a class="nav-link dropdown-toggle dropdown-user-link" id="dropdown-user" href="#"
+            <div class="nav-item dropdown dropdown-user flex flex-row align-items-center px-1 d-flex">
+              <a class="nav-item dropdown dropdown-user flex flex-row align-items-center px-1 d-flex nav-link dropdown-toggle dropdown-user-link" id="dropdown-user" href="#"
                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <div class="user-nav d-sm-flex flex-wrap d-none mt-2">
-                  <span class="user-name fw-bolder text-dark text-wrap">{{session['user'].split('@')[0]}}</span>
+                <span class="avatar">
+                  <span id="userInitials" class="avatar" style=""></span>
+  
+                  <!-- <img class="round" src="/static/app-assets/media/profile.png" alt="avatar" height="40" width="40" /> -->
+                  <span class="avatar-status-online"></span>
+                </span>
+                <div class="user-nav  my-1 mx-2" style="align-items: center;">
+                  <span class="user-name fw-bolder text-dark text-wrap" style="align-items: center;">{{session['user'].split('@')[0]}}</span>
                 </div>
               </a>
               <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-user">
