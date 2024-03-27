@@ -93,7 +93,7 @@ function load_heatmap() {
         // if (state_mean == global_mean) {
         //     normalized_mean = state_mean;
         // }
-        stateMeanHeadroom[state] = { mean: Math.round(state_mean * 100) / 100 };
+        stateMeanHeadroom[state] = { mean: state_mean };
 
     });
 
