@@ -151,7 +151,7 @@ function plotHeatmap() {
     state_wise_data = data_adjustments(json_data);
 
     state_wise_data.forEach(stateData => {
-        
+
         var state = stateData.state;
         var headrooms = stateData.headrooms;
 
@@ -163,8 +163,6 @@ function plotHeatmap() {
         stateMeanHeadroom[state] = { mean: state_mean };
 
     });
-
-
 
     var svg = d3.select("#heapmap_graph");
     svg.on("mouseleave", function () {
@@ -187,7 +185,12 @@ function plotHeatmap() {
     //     .domain([0, 1,2.00]) // Example domain, adjust according to your data's range
     //     .range(['rgb(0,73,137)', 'rgb(235, 79, 52)', 'rgb(241,64,45)']); // Blue to white to red color gradient
 
-    var colorScale = d3.scaleSequential([0,0.1, 0.5],d3.interpolateCubehelix('rgb(245, 132, 66)','rgb(245, 93, 66)', 'rgb(245, 66, 66)'));
+    // var colorScale = d3.scaleSequential([0,0.1, 0.5],d3.interpolateCubehelix('rgb(245, 132, 66)','rgb(245, 93, 66)', 'rgb(245, 66, 66)'));
+
+    var colorScale = d3.scaleDiverging(t => {
+        if (t <= 0.5) return d3.interpolateRgb('rgb(35, 102, 156)', 'rgb(0,73,137)')(2 * t);
+        return d3.interpolateRgb('rgb(245, 130, 66)', 'red')(2 * (t - 0.5));
+    }).domain([-0.1, 0, 0.5]);
 
     var tooltip = d3.select("#tooltip");
     svg.selectAll('.hex')
@@ -200,7 +203,7 @@ function plotHeatmap() {
             if (!value) {
                 return 'grey';
             }
-            if (value.mean<=0) {
+            if (value.mean == 0) {
                 return 'rgb(0,73,137)';
             }
             return colorScale(value.mean);
@@ -257,11 +260,39 @@ function plotHeatmap() {
     var legendX = (width - totalLegendWidth) / 2;
     var verticalPadding = 10; // Decrease this value to reduce the space
 
+
+    const values = Object.values(stateMeanHeadroom).map(obj => obj.mean);
+
+    // Sort the array
+    values.sort((a, b) => a - b);
+
+    // Get min and max values
+    const min = values[0];
+    const max = values[values.length - 1];
+
+    // Find three middle values
+    const midIndex = Math.floor(values.length / 2);
+    const middleIndices = values.length % 2 === 0
+        ? [midIndex - 1, midIndex, midIndex + 1]
+        : [midIndex - 1, midIndex, midIndex + 1];
+
+    const middleValues = middleIndices.map(index => ({
+        text: values[index].toFixed(5),
+        color: colorScale(values[index])
+    }));
+
+    // Construct the legendData array
+    var legendData = [
+        { text: min.toFixed(5), color: colorScale(min) },
+        ...middleValues,
+        { text: max.toFixed(5), color: colorScale(max) }
+    ];
+
     var legend = svg.append('g')
         .attr('class', 'legend')
         .attr('transform', 'translate(' + legendX + ',' + (legendY - 10) + ')')
         .selectAll('g')
-        .data(colorScale.ticks(6).slice(1))
+        .data(legendData)
         .enter().append('g')
         .attr('transform', function (d, i) {
             return 'translate(' + i * (legendWidth + legendPadding) + ', 0)';
@@ -270,22 +301,24 @@ function plotHeatmap() {
     legend.append('rect')
         .attr('width', legendWidth)
         .attr('height', legendHeight)
-        .style('fill', colorScale);
+        .style('fill', function (d) { return d.color; });
 
     legend.append('text')
         .attr('x', legendWidth / 2) // Center the text within the rectangle horizontally
         .attr('y', legendHeight + verticalPadding) // Position the text right below the rectangle
-        .attr('dy', '0.35em') // Center the text vertically within the line height
+        .attr('dy', '0.35em') // Adjust vertical centering
         .style('text-anchor', 'middle') // Center the text horizontally
-        .style('font-size','10px')
-        .each(function(d) {
+        .style('font-size', '10px')
+        .text(function (d) { return d.text; })
+        .each(function (d, i) {
             var text = d3.select(this),
-                lines = [`${d}`, '($/kWh)']; // Split the text into two lines
-    
-            lines.forEach(function(line, i) {
+                lines = [`${d.text}`]; // Split the text into two lines
+
+            text.text(''); // Clear the initial text
+            lines.forEach(function (line, index) {
                 text.append('tspan') // Append each line as a tspan
                     .attr('x', legendWidth / 2) // Ensure each line is centered
-                    .attr('dy', i === 0 ? '0.35em' : '1em') // For the first line, use the original dy. For the second, advance a line.
+                    .attr('dy', index === 0 ? '0.35em' : '1em') // Adjust the line spacing
                     .text(line);
             });
         });

@@ -96,9 +96,7 @@ function load_heatmap() {
         stateMeanHeadroom[state] = { mean: state_mean };
 
     });
-
-    debugger
-
+   
     var svg = d3.select("#heapmap_graph");
     svg.on("mouseleave", function () {
         // Hide the tooltip
@@ -123,7 +121,12 @@ function load_heatmap() {
     //     .domain([-1.0, 0.01, 1.00]) // Example domain, adjust according to your data's range
     //     .range(['rgb(0,73,137)', 'rgb(0,73,137)', 'rgb(251,83,83)']); // Blue to white to red color gradient
 
-    var colorScale = d3.scaleSequential([0,0.1, 0.5],d3.interpolateCubehelix('rgb(245, 132, 66)','rgb(245, 93, 66)', 'rgb(245, 66, 66)'));
+    // var colorScale = d3.scaleSequential([0,0.1, 0.5],d3.interpolateCubehelix('rgb(245, 132, 66)','rgb(245, 93, 66)', 'rgb(245, 66, 66)'));
+
+    var colorScale = d3.scaleDiverging(t => {
+        if (t <= 0.5) return d3.interpolateRgb('rgb(35, 102, 156)', 'rgb(0,73,137)')(2 * t);
+        return d3.interpolateRgb('rgb(245, 130, 66)', 'red')(2 * (t - 0.5));       
+    }).domain([-0.1, 0, 0.5]);
 
     var tooltip = d3.select("#tooltip");
 
@@ -139,7 +142,7 @@ function load_heatmap() {
             if (!value) {
                 return 'grey';
             }
-            if (value.mean<=0) {
+            if (value.mean == 0) {
                 return 'rgb(0,73,137)';
             }
             return colorScale(value.mean);
@@ -187,15 +190,34 @@ function load_heatmap() {
     var legendX = (width - totalLegendWidth) / 2;
     var verticalPadding = 10; // Decrease this value to reduce the space
 
+
+    const values = Object.values(stateMeanHeadroom).map(obj => obj.mean);
+
+    // Sort the array
+    values.sort((a, b) => a - b);
+
+    // Get min and max values
+    const min = values[0];
+    const max = values[values.length - 1];
+
+    // Find three middle values
+    const midIndex = Math.floor(values.length / 2);
+    const middleIndices = values.length % 2 === 0
+        ? [midIndex - 1, midIndex, midIndex + 1]
+        : [midIndex - 1, midIndex, midIndex + 1];
+
+    const middleValues = middleIndices.map(index => ({
+        text: values[index].toFixed(5),
+        color: colorScale(values[index])
+    }));
+
+    // Construct the legendData array
     var legendData = [
-        // { text: '-0.01', color: 'rgb(0,73,137)' },
-        { text: 'N/A', color: 'grey' },
-        { text: '<= 0', color: 'rgb(0,73,137)' },
-        { text: '0.005', color: 'rgb(245, 130, 66)' },
-        { text: '0.01', color: 'rgb(245, 128, 65)' },
-        { text: '0.1', color: 'rgb(245, 93, 66)' }        
+        { text: min.toFixed(5), color: colorScale(min) },
+        ...middleValues,
+        { text: max.toFixed(5), color: colorScale(max) }
     ];
-    
+
     var legend = svg.append('g')
         .attr('class', 'legend')
         .attr('transform', 'translate(' + legendX + ',' + (legendY - 10) + ')')
@@ -205,32 +227,32 @@ function load_heatmap() {
         .attr('transform', function (d, i) {
             return 'translate(' + i * (legendWidth + legendPadding) + ', 0)';
         });
-    
+
     legend.append('rect')
         .attr('width', legendWidth)
         .attr('height', legendHeight)
-        .style('fill', function(d) { return d.color; });
-    
+        .style('fill', function (d) { return d.color; });
+
     legend.append('text')
         .attr('x', legendWidth / 2) // Center the text within the rectangle horizontally
         .attr('y', legendHeight + verticalPadding) // Position the text right below the rectangle
         .attr('dy', '0.35em') // Adjust vertical centering
         .style('text-anchor', 'middle') // Center the text horizontally
         .style('font-size', '10px')
-        .text(function(d) { return d.text; })
-        .each(function(d, i) {
+        .text(function (d) { return d.text; })
+        .each(function (d, i) {
             var text = d3.select(this),
                 lines = [`${d.text}`]; // Split the text into two lines
-    
+
             text.text(''); // Clear the initial text
-            lines.forEach(function(line, index) {
+            lines.forEach(function (line, index) {
                 text.append('tspan') // Append each line as a tspan
                     .attr('x', legendWidth / 2) // Ensure each line is centered
                     .attr('dy', index === 0 ? '0.35em' : '1em') // Adjust the line spacing
                     .text(line);
             });
         });
-    
+
 
     top_entries = top_entries_extractor(json_data);
     populate_table(top_entries);
@@ -321,7 +343,7 @@ function load_data() {
             load_graph_view();
         }
     });
-   
+
 }
 
 function listners() {
@@ -362,7 +384,7 @@ $(document).ready(function () {
     listners();
 
 
-   
+
 });
 
 $(window).resize(function () {
