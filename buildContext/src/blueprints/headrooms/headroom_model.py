@@ -54,7 +54,12 @@ class HeadroomModel:
         mark process done after applying some operations
         """
 
-        query = f"UPDATE trueprice.headroom_trigger set status = 'processed' where curvestart = '{curvestart}' and filename ='{filename}';"
+        # Given string
+        
+        # Strip directory and replace 'matrix' with 'headroom' and convert to uppercase
+        headroomFileName = filename.split('/')[-1].lower().replace('matrix', 'headroom').upper()
+
+        query = f"UPDATE trueprice.headroom_trigger set status = 'processed' where curvestart = '{curvestart}' and filename ='{filename}';INSERT INTO trueprice.uploads(timestamp, email, filename) VALUES ('{curvestart}', 'system', '{headroomFileName}');"
         try:
             result = self.engine.execute(query)
             if result.rowcount > 0:
