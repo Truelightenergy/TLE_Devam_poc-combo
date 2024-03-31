@@ -125,8 +125,8 @@ function load_heatmap() {
 
     var colorScale = d3.scaleDiverging(t => {
         if (t <= 0.5) return d3.interpolateRgb('rgb(35, 102, 156)', 'rgb(0,73,137)')(2 * t);
-        return d3.interpolateRgb('rgb(245, 130, 66)', 'red')(2 * (t - 0.5));       
-    }).domain([-0.1, 0, 0.5]);
+        return d3.interpolateRgb('orange', 'red')(2 * (t - 0.5));
+    }).domain([-0.1, 0, 0.1]);
 
     var tooltip = d3.select("#tooltip");
 
