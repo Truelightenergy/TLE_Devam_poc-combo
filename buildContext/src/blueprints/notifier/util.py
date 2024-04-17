@@ -25,7 +25,12 @@ class Util:
         calculate difference between datas
         """
         data_items = []
+        #only date part matters for month column
+        latest_curve_data['month'] = pd.to_datetime(latest_curve_data['month'])
+        prev_curve_data['month'] = pd.to_datetime(prev_curve_data['month'])
 
+        latest_curve_data['month'] = latest_curve_data['month'].dt.date
+        prev_curve_data['month'] = prev_curve_data['month'].dt.date
         
         merged_df = pd.merge(latest_curve_data, prev_curve_data, on=['month', 'control_area', 'state', 'load_zone', 'capacity_zone', 'capacity_zone', 'utility', 'strip', 'cost_group', 'cost_component', 'sub_cost_component'], suffixes=('_latest', '_prev'))
         if volume == "increase":

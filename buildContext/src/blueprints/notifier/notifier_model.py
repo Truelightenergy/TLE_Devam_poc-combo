@@ -75,16 +75,16 @@ class NotifierUtil:
         """
         data = []
         try:
-            query = f"""SELECT
-                            *
+            # get notifications for prompt month only
+            query = f"""SELECT *
                         FROM trueprice.languages AS lg
                         JOIN trueprice.email_templates AS et ON lg.language_code = 'en' -- Replace 'en' with the appropriate language code
                         JOIN trueprice.email_template_contents AS etc ON et.template_id = etc.template_id AND lg.language_id = etc.language_id
                         JOIN trueprice.notification_events AS ne ON ne.event_name <> '' 
                         JOIN trueprice.price_changes_notifications as pcg ON pcg.event_id= ne.event_id AND pcg.status='waiting' AND pcg.retries<5
                         JOIN trueprice.notifications AS ntf ON ntf.event_id = ne.event_id AND ntf.template_id = et.template_id
-                        JOIN trueprice.schedule_patterns as sch ON ntf.notification_id = sch.notification_id AND sch.next_notification_time <= '{datetime.datetime.now()}';
-                        
+                        JOIN trueprice.schedule_patterns as sch ON ntf.notification_id = sch.notification_id AND sch.next_notification_time <= '{datetime.datetime.now()}'
+                        where pcg.curvestart::date = (date_trunc('month', CURRENT_DATE) + interval '1 month')::date     and pcg.notification_date::DATE = CURRENT_DATE AND pcg.status='waiting' AND pcg.retries<5;
                         """
             results = self.engine.execute(query).fetchall()
             for row in results:
@@ -232,15 +232,19 @@ class NotifierUtil:
         """
         extracts all latest notifications
         """
-
+        #Get notifications for prompt month only
         query = """
-                SELECT DISTINCT ON (location) change_id, price_shift_value, price_shift_prct, price_shift, location
-                FROM (                                        
-                    SELECT change_id, price_shift_value, price_shift_prct, price_shift, location
-                    FROM trueprice.price_changes_notifications
-                    ORDER BY change_id DESC
-                ) AS bottom_9
-                ORDER BY location, change_id DESC;
+                 SELECT DISTINCT ON (location) change_id, price_shift_value, price_shift_prct, price_shift, location
+                    FROM (                                        
+                        SELECT  change_id, price_shift_value, price_shift_prct, price_shift, location 
+                        FROM trueprice.price_changes_notifications
+                        where  
+                        	curvestart::date = (date_trunc('month', CURRENT_DATE) + interval '1 month')::date 
+                        and 
+                        		notification_date::DATE = CURRENT_DATE
+                        ORDER BY price_shift_prct desc, notification_date desc
+                    ) AS bottom_9
+                    ORDER BY location DESC;
                 """
         data = []
         try:
