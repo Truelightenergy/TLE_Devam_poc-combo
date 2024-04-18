@@ -755,7 +755,7 @@ def update_password():
 @roles.readonly_token_required
 def curves_catalog():
     """
-    insert_nodals
+    Get catalog data for monthly normalized data used for curves.
     """
     try:
         result = notifier_util.curves_catalog()
