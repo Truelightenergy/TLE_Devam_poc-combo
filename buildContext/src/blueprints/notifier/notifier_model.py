@@ -302,7 +302,19 @@ class NotifierUtil:
         except:
             return date
 
+    def curves_catalog(self):
+        query = '''
+                select * from trueprice.monthly_reference_data;
+        '''
+        try:
 
+            df = pd.read_sql_query(query, self.engine)
+            return df.to_csv(index=False)
+        
+        except Exception as e:
+            print('Error:', str(e))
+
+        return {}
 
 
 

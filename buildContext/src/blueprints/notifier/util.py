@@ -177,3 +177,9 @@ class Util:
         fetch latest curvestart from the ingestion
         """
         return self.db_util.fetch_latest_curve_date()
+    
+    def curves_catalog(self):
+        """
+        Get catalog data for monthly normalized data used for curves.
+        """
+        return self.db_util.curves_catalog()

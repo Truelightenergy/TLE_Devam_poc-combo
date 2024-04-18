@@ -1018,6 +1018,145 @@ services:
           SET body_content  = '<html><body><p>Dear {username},<br/> Energy in {location} has {price_shift}d by {price_shift_value} resulting in a {price_shift_prct} {gl}.<br/>The TRUEPrice Team </p></body></html>'
           where content_id  = 1;
 
+          CREATE TABLE trueprice.curve_type (
+                    id SERIAL PRIMARY KEY,
+                    name VARCHAR(20),
+                    description VARCHAR(20)
+                );
+                INSERT INTO trueprice.curve_type (name, description) VALUES 
+                ('ISONE', 'ISONE'),
+                ('ERCOT', 'ERCOT'),
+                ('PJM', 'PJM'),
+                ('NYISO', 'NYISO'),
+                ('MISO', 'MISO');
+
+          CREATE TABLE trueprice.seasons (
+              id SERIAL PRIMARY KEY,
+              name VARCHAR(20),
+              description VARCHAR(20)
+          );
+          INSERT INTO trueprice.seasons (name, description) VALUES 
+          ('Winter', 'Winter'),
+          ('Spring', 'Spring'),
+          ('Summer', 'Summer'),
+          ('Fall', 'Fall');
+
+          CREATE TABLE trueprice.curve_type_seasons (
+              id SERIAL PRIMARY KEY,
+              season_id INTEGER,
+              curve_type_id INTEGER,
+              "month" INTEGER
+          );
+          insert into trueprice.curve_type_seasons (curve_type_id,season_id, month)
+          SELECT    
+              ct.id as curve_type_id,
+              CASE
+                  WHEN gs.month BETWEEN 1 AND 2 THEN (select id from trueprice.seasons where name='Winter' limit 1)
+                  WHEN gs.month BETWEEN 11 AND 12 THEN (select id from trueprice.seasons where name='Winter' limit 1)
+                  WHEN gs.month BETWEEN 3 AND 6 THEN (select id from trueprice.seasons where name='Spring' limit 1)
+                  WHEN gs.month BETWEEN 7 AND 8 THEN (select id from trueprice.seasons where name='Summer' limit 1)
+                  WHEN gs.month BETWEEN 9 AND 10 THEN (select id from trueprice.seasons where name='Fall' limit 1)
+                  ELSE 1 -- This ELSE is technically redundant since all cases are covered
+              END AS season_id,
+              gs.month
+          FROM
+              generate_series(1, 12) AS gs(month)
+          CROSS JOIN
+              trueprice.curve_type ct
+          order by ct.name, gs.month;
+
+          CREATE TABLE trueprice.hour_types (
+              id SERIAL PRIMARY KEY,
+              "hour" INTEGER,
+              curve_type_id INTEGER,
+              hourtype INTEGER
+          );
+          insert  into trueprice.hour_types (hour,curve_type_id ,hourtype)
+          SELECT
+              gs.hour,
+              ct.id as curve_type_id ,
+              CASE
+                  WHEN gs.hour BETWEEN 8 AND 22 THEN 2 --onpeak
+                  WHEN gs.hour = 7 AND ct.id = 2 THEN 2 --onpeak
+                  WHEN gs.hour = 23 AND ct.id <> 2 THEN 2 --onpeak
+                  ELSE 1 --offpeak
+              END AS hourtype
+          FROM
+              generate_series(1, 24) AS gs(hour)
+          CROSS JOIN
+              trueprice.curve_type ct;
+        CREATE TABLE trueprice.hourly_reference_data (
+          "ISO" varchar(20) NULL,
+          "CalDate" date NULL,
+          "Year" numeric NULL,
+          "YearType" text NULL,
+          "Month" numeric NULL,
+          "Season" varchar(20) NULL,
+          "Day" numeric NULL,
+          "DayType" text NULL,
+          "Hour" int4 NULL,
+          "HourType" text NULL,
+          "BlockType" text NULL
+        );
+        CREATE TABLE trueprice.monthly_reference_data (
+          "ISO" varchar(20) NULL,
+          "CalMonth" text NULL,
+          "5x16" int8 NULL,
+          "7x8" int8 NULL,
+          "2x16" int8 NULL,
+          "7x24" int8 NULL
+        );
+
+
+        -- To insert into hourly reference data
+        INSERT INTO trueprice.hourly_reference_data("ISO", "CalDate", "Year", "YearType", "Month", "Season", "Day", "DayType", "Hour", "HourType", "BlockType")
+        select "ISO", "CalDate","Year","YearType","Month","Season","Day", "DayType", "Hour", hourtypename as "HourType",
+        case 
+        when "DayType" = 'weekday' and "HourType" = 2 then '5x16'
+        when "DayType" = 'weekend' and "HourType" = 2 then '2x16'
+        else '7x8' end as "BlockType"
+        from 
+        (
+        select  ct.name as "ISO", date_value::Date as "CalDate", EXTRACT(YEAR FROM date_value) as "Year", 
+        CASE
+        WHEN (EXTRACT(YEAR FROM date_value) % 4 = 0 AND EXTRACT(YEAR FROM date_value) % 100 != 0) OR (EXTRACT(YEAR FROM date_value) % 400 = 0) THEN 'Leap'
+        ELSE 'NonLeap'
+        END AS "YearType",
+        EXTRACT(MONTH FROM date_value) as "Month",
+        s."name" as "Season", 
+        EXTRACT(DAY FROM date_value) as "Day",
+        CASE WHEN EXTRACT(DOW  FROM date_value) IN (0, 6) THEN 'weekend' else 'weekday' end as "DayType",
+        ht.hour as "Hour",
+        ht.hourtype as "HourType", (case when ht.hourtype = 1 then 'OffPeak' else 'OnPeak' end) as hourtypeName	
+        from generate_series('2000-01-01'::date, '2100-12-31'::date, '1 day'::interval) AS dts(date_value)
+        cross join hour_types ht 
+        inner join curve_type ct on ct.id = ht.curve_type_id
+        inner join curve_type_seasons cts on cts.curve_type_id  = ct.id and cts."month" = EXTRACT(MONTH FROM date_value)
+        inner join seasons s on s.id = cts.season_id
+        --where ht.curve_type_id = 5
+        order by ct.name,date_value,ht.hour
+        )
+        as derived;
+
+
+        -- to insert into monthly reference data
+        INSERT INTO trueprice.monthly_reference_data("ISO", "CalMonth", "5x16", "7x8", "2x16", "7x24")
+          select 
+          "ISO",
+          to_char("CalDate", 'YYYY-MM') "CalMonth", 
+          COUNT(*) FILTER (WHERE "BlockType" = '5x16') AS "5x16",
+          COUNT(*) FILTER (WHERE "BlockType" = '7x8') AS "7x8",
+          COUNT(*) FILTER (WHERE "BlockType" = '2x16') AS "2x16",
+          COUNT(*) as "7x24"
+          from 
+          (
+          	select "ISO", "CalDate","Year","YearType","Month","Season","Day", "DayType", "Hour", "HourType","BlockType"
+          	from hourly_reference_data hrd  
+
+          ) temp 
+          group by "ISO", to_char("CalDate", 'YYYY-MM')
+          order by to_char("CalDate", 'YYYY-MM'), "ISO";
+        
         EOSQL
   # adminer: # for postgres, php admin interface
   #   image: adminer
