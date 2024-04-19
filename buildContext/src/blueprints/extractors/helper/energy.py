@@ -94,10 +94,24 @@ class Energy:
                     """
                 else:
                     psql_query = f"""
-                        select id, cob, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
+                        select 'Distributed' "my_order",id, cob, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
                         where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         
                     """
+                    psql_query_7x24 = f"""
+                                            union all
+                                            select 'Normalized' "my_order",row_number() over () as id,cob ,"month" ,curvestart , TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend,
+                                            ROUND((sum(case
+                                            when e."strip" = '2x16' then e."data" * r."2x16"
+                                            when e."strip" = '5x16' then e."data" * r."5x16"
+                                            else e."data" * r."7x8"
+                                            end)/r."7x24")::numeric,2) as "data" ,
+                                            control_area ,state ,load_zone ,capacity_zone ,utility , '7x24' "strip" ,cost_group ,cost_component ,sub_cost_component
+                                            from trueprice.{control_area}_energy e
+                                            join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
+                                            where 
+                                            month::date >= '{start_date}' and month::date <= '{end_date}'
+                                        """
             elif control_area == "nyiso":
                 if query_strings["history"]:
                     psql_query = f"""
@@ -137,13 +151,19 @@ class Energy:
                 psql_query = f"""
                             {psql_query} and curvestart::date >= '{curve_start}' and curvestart::date <= '{curve_end}'
                             """
-                
+                psql_query_7x24 = f"""
+                            {psql_query_7x24} and curvestart::date >= '{curve_start}' and curvestart::date <= '{curve_end}'
+                            """
             if 'cob' in query_strings:
                 psql_query = f"""{psql_query} and cob='{query_strings['cob']}'"""
+                psql_query_7x24 = f"""{psql_query_7x24} and cob='{query_strings['cob']}'"""
 
             # end up the query
             psql_query =    f"""
-                            {psql_query} order by curvestart desc,strip;
+                            {psql_query} 
+                            {psql_query_7x24}
+                            group by cob ,curvestart ,"month" ,control_area ,state ,load_zone ,capacity_zone ,utility ,cost_group ,cost_component ,sub_cost_component, r."7x24"
+                            order by curvestart desc, month , "my_order", strip;
                             """
             data_frame = None
             data_frame = pd.read_sql_query(sql=psql_query, con=self.engine.connect())
