@@ -62,10 +62,24 @@ class Energy:
                     """
                 else:
                     psql_query = f"""
-                        select id, cob,  month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
+                        select 'Distributed' "my_order",id, cob, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
                         where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         
                     """
+                    psql_query_7x24 = f"""
+                                            union all
+                                            select 'Normalized' "my_order",row_number() over () as id,cob ,"month" ,curvestart , TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend,
+                                            ROUND((sum(case
+                                            when e."strip" = '2x16' then e."data" * r."2x16"
+                                            when e."strip" = '5x16' then e."data" * r."5x16"
+                                            else e."data" * r."7x8"
+                                            end)/r."7x24")::numeric,2) as "data" ,
+                                            control_area ,state ,load_zone ,capacity_zone ,utility , '7x24' "strip" ,cost_group ,cost_component ,sub_cost_component
+                                            from trueprice.{control_area}_energy e
+                                            join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
+                                            where 
+                                            month::date >= '{start_date}' and month::date <= '{end_date}'
+                                        """
             elif control_area == "pjm":
                 if query_strings["history"]:
                     psql_query = f"""
@@ -78,10 +92,24 @@ class Energy:
                     """
                 else:
                     psql_query = f"""
-                        select id, cob, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
+                        select 'Distributed' "my_order",id, cob, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
                         where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         
                     """
+                    psql_query_7x24 = f"""
+                                            union all
+                                            select 'Normalized' "my_order",row_number() over () as id,cob ,"month" ,curvestart , TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend,
+                                            ROUND((sum(case
+                                            when e."strip" = '2x16' then e."data" * r."2x16"
+                                            when e."strip" = '5x16' then e."data" * r."5x16"
+                                            else e."data" * r."7x8"
+                                            end)/r."7x24")::numeric,2) as "data" ,
+                                            control_area ,state ,load_zone ,capacity_zone ,utility , '7x24' "strip" ,cost_group ,cost_component ,sub_cost_component
+                                            from trueprice.{control_area}_energy e
+                                            join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
+                                            where 
+                                            month::date >= '{start_date}' and month::date <= '{end_date}'
+                                        """
             elif control_area == "ercot":
                 if query_strings["history"]:
                     psql_query = f"""
@@ -124,10 +152,24 @@ class Energy:
                     """
                 else:
                     psql_query = f"""
-                        select id, cob, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
+                        select 'Distributed' "my_order",id, cob, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
                         where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         
                     """
+                    psql_query_7x24 = f"""
+                                            union all
+                                            select 'Normalized' "my_order",row_number() over () as id,cob ,"month" ,curvestart , TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend,
+                                            ROUND((sum(case
+                                            when e."strip" = '2x16' then e."data" * r."2x16"
+                                            when e."strip" = '5x16' then e."data" * r."5x16"
+                                            else e."data" * r."7x8"
+                                            end)/r."7x24")::numeric,2) as "data" ,
+                                            control_area ,state ,load_zone ,capacity_zone ,utility , '7x24' "strip" ,cost_group ,cost_component ,sub_cost_component
+                                            from trueprice.{control_area}_energy e
+                                            join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
+                                            where 
+                                            month::date >= '{start_date}' and month::date <= '{end_date}'
+                                        """
 
             elif control_area == "miso":
                 if query_strings["history"]:
@@ -141,10 +183,24 @@ class Energy:
                     """
                 else:
                     psql_query = f"""
-                        select id, cob, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
+                        select 'Distributed' "my_order",id, cob, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy 
                         where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'
                         
                     """
+                    psql_query_7x24 = f"""
+                                            union all
+                                            select 'Normalized' "my_order",row_number() over () as id,cob ,"month" ,curvestart , TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend,
+                                            ROUND((sum(case
+                                            when e."strip" = '2x16' then e."data" * r."2x16"
+                                            when e."strip" = '5x16' then e."data" * r."5x16"
+                                            else e."data" * r."7x8"
+                                            end)/r."7x24")::numeric,2) as "data" ,
+                                            control_area ,state ,load_zone ,capacity_zone ,utility , '7x24' "strip" ,cost_group ,cost_component ,sub_cost_component
+                                            from trueprice.{control_area}_energy e
+                                            join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
+                                            where 
+                                            month::date >= '{start_date}' and month::date <= '{end_date}'
+                                        """
                 
 
             if operating_day_flag:
