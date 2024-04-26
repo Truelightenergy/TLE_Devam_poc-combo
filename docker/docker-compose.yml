@@ -1144,7 +1144,7 @@ services:
 
 
         -- to insert into monthly reference data
-        INSERT INTO trueprice.monthly_reference_data("ISO", "CalMonth", "5x16", "7x8", "2x16", "7x24")
+        INSERT INTO trueprice.monthly_reference_data("ISO", "CalMonth", "5x16", "7x8", "2x16", "7x24", "WE", "WD", "OnPeak", "OffPeak")
           select 
           "ISO",
           to_char("CalDate", 'YYYY-MM') "CalMonth", 
