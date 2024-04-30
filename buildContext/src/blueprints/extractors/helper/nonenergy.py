@@ -77,12 +77,20 @@ class NonEnergy:
                         when LOWER("strip") = '7x24' and 
                         (LOWER(cost_component) like 'black start charge%')
                         then (data/r."7x24")
+                        when LOWER("strip") = '7x24' and LOWER(cost_component) like 'capacity charge%'
+                        then ((data/r."7x24")*1000) * coalesce( (select data from trueprice.{control_area}_nonenergy s 
+                        where s.curvestart=e.curvestart and s."month"=e."month" 
+                        and s.control_area=e.control_area and s.state=e.state and s.load_zone=e.load_zone 
+                        and s.capacity_zone=e.capacity_zone  and s.utility=e.utility and s.cost_group=e.cost_group 
+                        and lower(s.cost_component)='capacity scaling factor' and s.sub_cost_component=e.sub_cost_component
+                        limit 1), 1)
                         else data
                         end as "data", 
                         control_area, state, load_zone, capacity_zone, utility, strip, '' "distribution_category", cost_group, cost_component, sub_cost_component 
                         from trueprice.{control_area}_nonenergy e
                         join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                         where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}'
+                        and lower(e.cost_component)<>'capacity scaling factor'
                         UNION
                         select 'Distributed' "my_order",id, month, curvestart, curveend, 
                         case
@@ -95,13 +103,20 @@ class NonEnergy:
                         when LOWER("strip") = '7x24' and 
                         (LOWER(cost_component) like 'black start charge%')
                         then (data/r."7x24")
+                        when LOWER("strip") = '7x24' and LOWER(cost_component) like 'capacity charge%'
+                        then ((data/r."7x24")*1000) * coalesce( (select data from trueprice.{control_area}_nonenergy s 
+                        where s.curvestart=e.curvestart and s."month"=e."month" 
+                        and s.control_area=e.control_area and s.state=e.state and s.load_zone=e.load_zone 
+                        and s.capacity_zone=e.capacity_zone  and s.utility=e.utility and s.cost_group=e.cost_group 
+                        and lower(s.cost_component)='capacity scaling factor' and s.sub_cost_component=e.sub_cost_component
+                        limit 1), 1)
                         else data
-                        end as "data",
+                        end as "data", 
                         control_area, state, load_zone, capacity_zone, utility, strip, '' "distribution_category", cost_group, cost_component, sub_cost_component 
                         from trueprice.{control_area}_nonenergy_history e
                         join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                         where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}'
-                        
+                        and lower(e.cost_component)<>'capacity scaling factor'
                     """
                     psql_query_7x24 = f"""
                                         union all
@@ -169,13 +184,20 @@ class NonEnergy:
                         when LOWER("strip") = '7x24' and 
                         (LOWER(cost_component) like 'black start charge%')
                         then (data/r."7x24")
+                        when LOWER("strip") = '7x24' and LOWER(cost_component) like 'capacity charge%'
+                        then ((data/r."7x24")*1000) * coalesce( (select data from trueprice.{control_area}_nonenergy s 
+                        where s.curvestart=e.curvestart and s."month"=e."month" 
+                        and s.control_area=e.control_area and s.state=e.state and s.load_zone=e.load_zone 
+                        and s.capacity_zone=e.capacity_zone  and s.utility=e.utility and s.cost_group=e.cost_group 
+                        and lower(s.cost_component)='capacity scaling factor' and s.sub_cost_component=e.sub_cost_component
+                        limit 1), 1)
                         else data
                         end as "data", 
                         control_area, state, load_zone, capacity_zone, utility, strip, '' "distribution_category", cost_group, cost_component, sub_cost_component 
                         from trueprice.{control_area}_nonenergy e
                         join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                         where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}'
-                        
+                        and lower(e.cost_component)<>'capacity scaling factor'
                     """
                     psql_query_7x24 = f"""
                                         union all
@@ -218,12 +240,20 @@ class NonEnergy:
                         when LOWER("strip") = '7x24' and 
                         (LOWER(cost_component) like 'black start charge%')
                         then (data/r."7x24")
+                        when LOWER("strip") = '7x24' and LOWER(cost_component) like 'capacity charge%'
+                        then ((data/r."7x24")*1000) * coalesce( (select data from trueprice.{control_area}_nonenergy s 
+                        where s.curvestart=e.curvestart and s."month"=e."month" 
+                        and s.control_area=e.control_area and s.state=e.state and s.load_zone=e.load_zone 
+                        and s.capacity_zone=e.capacity_zone  and s.utility=e.utility and s.cost_group=e.cost_group 
+                        and lower(s.cost_component)='capacity scaling factor' and s.sub_cost_component=e.sub_cost_component
+                        limit 1), 1)
                         else data
                         end as "data", 
                         control_area, state, load_zone, capacity_zone, utility, strip, '' "distribution_category", cost_group, cost_component, sub_cost_component 
                         from trueprice.{control_area}_nonenergy e
                         join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                         where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}'
+                        and lower(e.cost_component)<>'capacity scaling factor'
                         UNION
                         select 'Distributed' "my_order",id, month, curvestart, curveend, 
                         case
@@ -236,13 +266,20 @@ class NonEnergy:
                         when LOWER("strip") = '7x24' and 
                         (LOWER(cost_component) like 'black start charge%')
                         then (data/r."7x24")
+                        when LOWER("strip") = '7x24' and LOWER(cost_component) like 'capacity charge%'
+                        then ((data/r."7x24")*1000) * coalesce( (select data from trueprice.{control_area}_nonenergy s 
+                        where s.curvestart=e.curvestart and s."month"=e."month" 
+                        and s.control_area=e.control_area and s.state=e.state and s.load_zone=e.load_zone 
+                        and s.capacity_zone=e.capacity_zone  and s.utility=e.utility and s.cost_group=e.cost_group 
+                        and lower(s.cost_component)='capacity scaling factor' and s.sub_cost_component=e.sub_cost_component
+                        limit 1), 1)
                         else data
-                        end as "data",
+                        end as "data", 
                         control_area, state, load_zone, capacity_zone, utility, strip, '' "distribution_category", cost_group, cost_component, sub_cost_component 
                         from trueprice.{control_area}_nonenergy_history e
                         join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                         where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}'
-                        
+                        and lower(e.cost_component)<>'capacity scaling factor'
                     """
                     psql_query_7x24 = f"""
                                         union all
@@ -310,13 +347,20 @@ class NonEnergy:
                         when LOWER("strip") = '7x24' and 
                         (LOWER(cost_component) like 'black start charge%')
                         then (data/r."7x24")
+                        when LOWER("strip") = '7x24' and LOWER(cost_component) like 'capacity charge%'
+                        then ((data/r."7x24")*1000) * coalesce( (select data from trueprice.{control_area}_nonenergy s 
+                        where s.curvestart=e.curvestart and s."month"=e."month" 
+                        and s.control_area=e.control_area and s.state=e.state and s.load_zone=e.load_zone 
+                        and s.capacity_zone=e.capacity_zone  and s.utility=e.utility and s.cost_group=e.cost_group 
+                        and lower(s.cost_component)='capacity scaling factor' and s.sub_cost_component=e.sub_cost_component
+                        limit 1), 1)
                         else data
                         end as "data", 
                         control_area, state, load_zone, capacity_zone, utility, strip, '' "distribution_category", cost_group, cost_component, sub_cost_component 
                         from trueprice.{control_area}_nonenergy e
                         join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                         where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}'
-                        
+                        and lower(e.cost_component)<>'capacity scaling factor'
                     """
                     psql_query_7x24 = f"""
                                         union all
@@ -358,12 +402,20 @@ class NonEnergy:
                         when LOWER("strip") = '7x24' and 
                         (LOWER(cost_component) like 'black start charge%')
                         then (data/r."7x24")
+                        when LOWER("strip") = '7x24' and LOWER(cost_component) like 'capacity charge%'
+                        then ((data/r."7x24")*1000) * coalesce( (select data from trueprice.{control_area}_nonenergy s 
+                        where s.curvestart=e.curvestart and s."month"=e."month" 
+                        and s.control_area=e.control_area and s.state=e.state and s.load_zone=e.load_zone 
+                        and s.capacity_zone=e.capacity_zone  and s.utility=e.utility and s.cost_group=e.cost_group 
+                        and lower(s.cost_component)='capacity scaling factor' and s.sub_cost_component=e.sub_cost_component
+                        limit 1), 1)
                         else data
                         end as "data", 
                         control_area, state, load_zone, capacity_zone, utility, strip, '' "distribution_category", cost_group, cost_component, sub_cost_component 
                         from trueprice.{control_area}_nonenergy e
                         join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                         where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}'
+                        and lower(e.cost_component)<>'capacity scaling factor'
                         UNION
                         select 'Distributed' "my_order",id, month, curvestart, curveend, 
                         case
@@ -376,13 +428,20 @@ class NonEnergy:
                         when LOWER("strip") = '7x24' and 
                         (LOWER(cost_component) like 'black start charge%')
                         then (data/r."7x24")
+                        when LOWER("strip") = '7x24' and LOWER(cost_component) like 'capacity charge%'
+                        then ((data/r."7x24")*1000) * coalesce( (select data from trueprice.{control_area}_nonenergy s 
+                        where s.curvestart=e.curvestart and s."month"=e."month" 
+                        and s.control_area=e.control_area and s.state=e.state and s.load_zone=e.load_zone 
+                        and s.capacity_zone=e.capacity_zone  and s.utility=e.utility and s.cost_group=e.cost_group 
+                        and lower(s.cost_component)='capacity scaling factor' and s.sub_cost_component=e.sub_cost_component
+                        limit 1), 1)
                         else data
-                        end as "data",
+                        end as "data", 
                         control_area, state, load_zone, capacity_zone, utility, strip, '' "distribution_category", cost_group, cost_component, sub_cost_component 
                         from trueprice.{control_area}_nonenergy_history e
                         join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                         where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}'
-                        
+                        and lower(e.cost_component)<>'capacity scaling factor'
                     """
                     psql_query_7x24 = f"""
                                         union all
@@ -450,13 +509,20 @@ class NonEnergy:
                         when LOWER("strip") = '7x24' and 
                         (LOWER(cost_component) like 'black start charge%')
                         then (data/r."7x24")
+                        when LOWER("strip") = '7x24' and LOWER(cost_component) like 'capacity charge%'
+                        then ((data/r."7x24")*1000) * coalesce( (select data from trueprice.{control_area}_nonenergy s 
+                        where s.curvestart=e.curvestart and s."month"=e."month" 
+                        and s.control_area=e.control_area and s.state=e.state and s.load_zone=e.load_zone 
+                        and s.capacity_zone=e.capacity_zone  and s.utility=e.utility and s.cost_group=e.cost_group 
+                        and lower(s.cost_component)='capacity scaling factor' and s.sub_cost_component=e.sub_cost_component
+                        limit 1), 1)
                         else data
                         end as "data", 
                         control_area, state, load_zone, capacity_zone, utility, strip, '' "distribution_category", cost_group, cost_component, sub_cost_component 
                         from trueprice.{control_area}_nonenergy e
                         join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                         where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}'
-                        
+                        and lower(e.cost_component)<>'capacity scaling factor'
                     """
                     psql_query_7x24 = f"""
                                         union all
@@ -498,12 +564,20 @@ class NonEnergy:
                         when LOWER("strip") = '7x24' and 
                         (LOWER(cost_component) like 'black start charge%')
                         then (data/r."7x24")
+                        when LOWER("strip") = '7x24' and LOWER(cost_component) like 'capacity charge%'
+                        then ((data/r."7x24")*1000) * coalesce( (select data from trueprice.{control_area}_nonenergy s 
+                        where s.curvestart=e.curvestart and s."month"=e."month" 
+                        and s.control_area=e.control_area and s.state=e.state and s.load_zone=e.load_zone 
+                        and s.capacity_zone=e.capacity_zone  and s.utility=e.utility and s.cost_group=e.cost_group 
+                        and lower(s.cost_component)='capacity scaling factor' and s.sub_cost_component=e.sub_cost_component
+                        limit 1), 1)
                         else data
                         end as "data", 
                         control_area, state, load_zone, capacity_zone, utility, strip, '' "distribution_category", cost_group, cost_component, sub_cost_component 
                         from trueprice.{control_area}_nonenergy e
                         join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                         where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}'
+                        and lower(e.cost_component)<>'capacity scaling factor'
                         UNION
                         select 'Distributed' "my_order",id, month, curvestart, curveend, 
                         case
@@ -516,13 +590,20 @@ class NonEnergy:
                         when LOWER("strip") = '7x24' and 
                         (LOWER(cost_component) like 'black start charge%')
                         then (data/r."7x24")
+                        when LOWER("strip") = '7x24' and LOWER(cost_component) like 'capacity charge%'
+                        then ((data/r."7x24")*1000) * coalesce( (select data from trueprice.{control_area}_nonenergy s 
+                        where s.curvestart=e.curvestart and s."month"=e."month" 
+                        and s.control_area=e.control_area and s.state=e.state and s.load_zone=e.load_zone 
+                        and s.capacity_zone=e.capacity_zone  and s.utility=e.utility and s.cost_group=e.cost_group 
+                        and lower(s.cost_component)='capacity scaling factor' and s.sub_cost_component=e.sub_cost_component
+                        limit 1), 1)
                         else data
-                        end as "data",
+                        end as "data", 
                         control_area, state, load_zone, capacity_zone, utility, strip, '' "distribution_category", cost_group, cost_component, sub_cost_component 
                         from trueprice.{control_area}_nonenergy_history e
                         join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                         where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}'
-                        
+                        and lower(e.cost_component)<>'capacity scaling factor'
                     """
                     psql_query_7x24 = f"""
                                         union all
@@ -590,13 +671,20 @@ class NonEnergy:
                         when LOWER("strip") = '7x24' and 
                         (LOWER(cost_component) like 'black start charge%')
                         then (data/r."7x24")
+                        when LOWER("strip") = '7x24' and LOWER(cost_component) like 'capacity charge%'
+                        then ((data/r."7x24")*1000) * coalesce( (select data from trueprice.{control_area}_nonenergy s 
+                        where s.curvestart=e.curvestart and s."month"=e."month" 
+                        and s.control_area=e.control_area and s.state=e.state and s.load_zone=e.load_zone 
+                        and s.capacity_zone=e.capacity_zone  and s.utility=e.utility and s.cost_group=e.cost_group 
+                        and lower(s.cost_component)='capacity scaling factor' and s.sub_cost_component=e.sub_cost_component
+                        limit 1), 1)
                         else data
                         end as "data", 
                         control_area, state, load_zone, capacity_zone, utility, strip, '' "distribution_category", cost_group, cost_component, sub_cost_component 
                         from trueprice.{control_area}_nonenergy e
                         join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                         where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}'
-                        
+                        and lower(e.cost_component)<>'capacity scaling factor'
                     """
                     psql_query_7x24 = f"""
                                         union all
@@ -638,12 +726,20 @@ class NonEnergy:
                         when LOWER("strip") = '7x24' and 
                         (LOWER(cost_component) like 'black start charge%')
                         then (data/r."7x24")
+                        when LOWER("strip") = '7x24' and LOWER(cost_component) like 'capacity charge%'
+                        then ((data/r."7x24")*1000) * coalesce( (select data from trueprice.{control_area}_nonenergy s 
+                        where s.curvestart=e.curvestart and s."month"=e."month" 
+                        and s.control_area=e.control_area and s.state=e.state and s.load_zone=e.load_zone 
+                        and s.capacity_zone=e.capacity_zone  and s.utility=e.utility and s.cost_group=e.cost_group 
+                        and lower(s.cost_component)='capacity scaling factor' and s.sub_cost_component=e.sub_cost_component
+                        limit 1), 1)
                         else data
                         end as "data", 
                         control_area, state, load_zone, capacity_zone, utility, strip, '' "distribution_category", cost_group, cost_component, sub_cost_component 
                         from trueprice.{control_area}_nonenergy e
                         join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                         where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}'
+                        and lower(e.cost_component)<>'capacity scaling factor'
                         UNION
                         select 'Distributed' "my_order",id, month, curvestart, curveend, 
                         case
@@ -656,13 +752,20 @@ class NonEnergy:
                         when LOWER("strip") = '7x24' and 
                         (LOWER(cost_component) like 'black start charge%')
                         then (data/r."7x24")
+                        when LOWER("strip") = '7x24' and LOWER(cost_component) like 'capacity charge%'
+                        then ((data/r."7x24")*1000) * coalesce( (select data from trueprice.{control_area}_nonenergy s 
+                        where s.curvestart=e.curvestart and s."month"=e."month" 
+                        and s.control_area=e.control_area and s.state=e.state and s.load_zone=e.load_zone 
+                        and s.capacity_zone=e.capacity_zone  and s.utility=e.utility and s.cost_group=e.cost_group 
+                        and lower(s.cost_component)='capacity scaling factor' and s.sub_cost_component=e.sub_cost_component
+                        limit 1), 1)
                         else data
-                        end as "data",
+                        end as "data", 
                         control_area, state, load_zone, capacity_zone, utility, strip, '' "distribution_category", cost_group, cost_component, sub_cost_component 
                         from trueprice.{control_area}_nonenergy_history e
                         join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                         where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}'
-                        
+                        and lower(e.cost_component)<>'capacity scaling factor'
                     """
                     psql_query_7x24 = f"""
                                         union all
@@ -730,13 +833,20 @@ class NonEnergy:
                         when LOWER("strip") = '7x24' and 
                         (LOWER(cost_component) like 'black start charge%')
                         then (data/r."7x24")
+                        when LOWER("strip") = '7x24' and LOWER(cost_component) like 'capacity charge%'
+                        then ((data/r."7x24")*1000) * coalesce( (select data from trueprice.{control_area}_nonenergy s 
+                        where s.curvestart=e.curvestart and s."month"=e."month" 
+                        and s.control_area=e.control_area and s.state=e.state and s.load_zone=e.load_zone 
+                        and s.capacity_zone=e.capacity_zone  and s.utility=e.utility and s.cost_group=e.cost_group 
+                        and lower(s.cost_component)='capacity scaling factor' and s.sub_cost_component=e.sub_cost_component
+                        limit 1), 1)
                         else data
                         end as "data", 
                         control_area, state, load_zone, capacity_zone, utility, strip, '' "distribution_category", cost_group, cost_component, sub_cost_component 
                         from trueprice.{control_area}_nonenergy e
                         join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                         where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}'
-                        
+                        and lower(e.cost_component)<>'capacity scaling factor'
                     """
                     psql_query_7x24 = f"""
                                         union all
