@@ -1104,7 +1104,11 @@ services:
           "5x16" int8 NULL,
           "7x8" int8 NULL,
           "2x16" int8 NULL,
-          "7x24" int8 NULL
+          "7x24" int8 NULL,
+          "WE" int8 NULL,
+          "WD" int8 NULL,
+          "OnPeak" int8 NULL,
+          "OffPeak" int8 NULL
         );
 
 
@@ -1140,14 +1144,18 @@ services:
 
 
         -- to insert into monthly reference data
-        INSERT INTO trueprice.monthly_reference_data("ISO", "CalMonth", "5x16", "7x8", "2x16", "7x24")
+        INSERT INTO trueprice.monthly_reference_data("ISO", "CalMonth", "5x16", "7x8", "2x16", "7x24", "WE", "WD", "OnPeak", "OffPeak")
           select 
           "ISO",
           to_char("CalDate", 'YYYY-MM') "CalMonth", 
           COUNT(*) FILTER (WHERE "BlockType" = '5x16') AS "5x16",
           COUNT(*) FILTER (WHERE "BlockType" = '7x8') AS "7x8",
           COUNT(*) FILTER (WHERE "BlockType" = '2x16') AS "2x16",
-          COUNT(*) as "7x24"
+          COUNT(*) as "7x24",
+          COUNT(*) FILTER (WHERE "DayType" = 'weekend') AS "WE",
+          COUNT(*) FILTER (WHERE "DayType" = 'weekday') AS "WD",
+          COUNT(*) FILTER (WHERE "BlockType" = '5x16' or "BlockType" = '2x16') AS "OnPeak",
+          COUNT(*) FILTER (WHERE "BlockType" = '7x8') AS "OffPeak"
           from 
           (
           	select "ISO", "CalDate","Year","YearType","Month","Season","Day", "DayType", "Hour", "HourType","BlockType"
