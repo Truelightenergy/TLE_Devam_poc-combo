@@ -93,10 +93,31 @@ class Util:
         converts the dataframe to excel
         """
         output = BytesIO()
-        writer = pd.ExcelWriter(output, engine='xlsxwriter')
-        data_frame.to_excel(writer, sheet_name='Sheet1')
-        writer.save()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            data_frame.to_excel(writer, sheet_name='Sheet1')
 
+        output.seek(0)
+        return output
+    
+    def to_excel_new(self, data_frame):
+        """
+        converts the dataframe to excel
+        """
+        formated = data_frame.reset_index().T.reset_index()
+        formated.insert(len(data_frame.columns.names), 'New_Column', '')
+        formated = formated.T
+        for i in range(len(data_frame.index.names)):
+            formated.iloc[len(data_frame.columns.names), i] = formated.iloc[0, i]
+            formated.iloc[0, i] = ''
+        formated = formated.reset_index()
+        for i in range(len(data_frame.columns.names)-1):
+            formated.iloc[i, 1] = formated.iloc[i, 0]
+            formated.iloc[i, 1] = formated.iloc[i, 0]
+        formated = formated.drop('index', axis = 1)
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            formated.to_excel(writer, sheet_name='Sheet1', index=False, header=False)
+        
         output.seek(0)
         return output
     
@@ -153,31 +174,31 @@ class Util:
                 return data_frame, "No Such Data Available"
             
             if status == "success":
-                if query_strings["type"].lower()=="excel":
+                if query_strings["type"].lower()=="xlsx":
 
                     if (query_strings["curve_type"]).lower() == 'matrix':
-                        data =data_frame.to_excel(header=None)
+                        data = self.to_excel_new(data_frame)
                         resp = Response(
                         data,
                         mimetype="text/xlsx",
                         headers={"Content-disposition":
                         "attachment; filename="+file_name+".xlsx"}), status
                     elif(query_strings["curve_type"]).lower() == 'headroom':
-                        data = data_frame.to_excel(index=False)
+                        data = self.to_excel_new(data_frame)
                         resp = Response(
                         data,
                         mimetype="text/csv",
                         headers={"Content-disposition":
                         "attachment; filename="+file_name+".xlsx"}), status
                     else:
-                        data = self.to_exce(data_frame)
+                        data = self.to_excel_new(data_frame)
                         resp = Response(
                             data,
-                            mimetype="text/csv",
+                            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                             headers={"Content-disposition":
                             "attachment; filename="+file_name+".xlsx"}), status
                         
-                if query_strings["type"].lower()=="csv":
+                elif query_strings["type"].lower()=="csv":
 
                     if (query_strings["curve_type"]).lower() == 'matrix':
                         data = self.get_csv_string_with_disclaimer(data_frame.to_csv(header=None))
