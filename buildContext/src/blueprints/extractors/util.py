@@ -9,6 +9,8 @@ import shutil
 import time
 import zipfile
 import json
+from io import BytesIO
+import pandas as pd
 import datetime
 import utils.trueprice_database as tpdb
 from werkzeug.utils import secure_filename
@@ -86,6 +88,18 @@ class Util:
             
         return response, status
          
+    def to_exce(self, data_frame):
+        """
+        converts the dataframe to excel
+        """
+        output = BytesIO()
+        writer = pd.ExcelWriter(output, engine='xlsxwriter')
+        data_frame.to_excel(writer, sheet_name='Sheet1')
+        writer.save()
+
+        output.seek(0)
+        return output
+    
     def get_csv_string_with_disclaimer(self,csv_string):
         """
         Converts a DataFrame to a CSV string and appends a disclaimer.
@@ -139,6 +153,30 @@ class Util:
                 return data_frame, "No Such Data Available"
             
             if status == "success":
+                if query_strings["type"].lower()=="excel":
+
+                    if (query_strings["curve_type"]).lower() == 'matrix':
+                        data =data_frame.to_excel(header=None)
+                        resp = Response(
+                        data,
+                        mimetype="text/xlsx",
+                        headers={"Content-disposition":
+                        "attachment; filename="+file_name+".xlsx"}), status
+                    elif(query_strings["curve_type"]).lower() == 'headroom':
+                        data = data_frame.to_excel(index=False)
+                        resp = Response(
+                        data,
+                        mimetype="text/csv",
+                        headers={"Content-disposition":
+                        "attachment; filename="+file_name+".xlsx"}), status
+                    else:
+                        data = self.to_exce(data_frame)
+                        resp = Response(
+                            data,
+                            mimetype="text/csv",
+                            headers={"Content-disposition":
+                            "attachment; filename="+file_name+".xlsx"}), status
+                        
                 if query_strings["type"].lower()=="csv":
 
                     if (query_strings["curve_type"]).lower() == 'matrix':
