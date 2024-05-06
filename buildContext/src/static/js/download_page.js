@@ -99,6 +99,13 @@ function load_operating_day_calender() {
         conatiner: '#odc',
         beforeShowDay: available,
     });
+    $("#operating_day_end").datepicker({
+        todayHighlight: true,
+        format: 'yyyy-mm-dd',
+        multidate: false,
+        conatiner: '#odce',
+        beforeShowDay: available,
+    });
 }
 
 function load_operating_days() {
@@ -120,10 +127,13 @@ function load_operating_days() {
                 load_operating_day_calender();
                 if (response[0] != undefined) {
                     $('#operating_day').datepicker("setDate", new Date(response[0]));
+                    $('#operating_day_end').datepicker("setDate", new Date(response[0]));
                 }
                 else {
                     $('#operating_day').datepicker('refresh');
                     $('#operating_day').datepicker("setDate", null);
+                    $('#operating_day_end').datepicker('refresh');
+                    $('#operating_day_end').datepicker("setDate", null);
                 }
             }
         });

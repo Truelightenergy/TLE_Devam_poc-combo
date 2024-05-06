@@ -80,6 +80,7 @@ class Util:
 
         query_strings["offset"] =  0
         query_strings["operating_day"] = request.form.get('operating_day')
+        query_strings["operating_day_end"] = request.form.get('operating_day_end')
 
         
         response, status= self.extract_data(query_strings)
@@ -130,16 +131,18 @@ class Util:
 
             if ('operating_day' not in query_strings)or (query_strings['operating_day'] == ''):
                 operating_day, offset = self.db_model.fetch_latest_operating_day(f"{query_strings['iso']}_{query_strings['curve_type']}")
+                operating_day_end = operating_day
             else:
                 offset= query_strings["offset"]
                 operating_day = query_strings["operating_day"]
+                operating_day_end = query_strings["operating_day_end"]
                 
             start = query_strings["start"]
             end = query_strings["end"]
             if operating_day:
                 curvestart = self.get_operating_days(operating_day, offset)
                 query_strings["curvestart"] = "".join(str(curvestart).split("-"))
-                query_strings["curveend"] = "".join(str(operating_day).split("-"))
+                query_strings["curveend"] = "".join(str(operating_day_end).split("-"))
             else:
                 query_strings["curvestart"] = None
                 query_strings["curveend"] = None
