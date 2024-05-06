@@ -146,7 +146,6 @@ class Extractor:
             
             # returning dataframe
             return flattened_df
-        
     
     def post_processing_json(self, df,type):
         """
@@ -229,7 +228,7 @@ class Extractor:
                 if status != "success":
                     return None, "No Subscription available"
 
-            if download_type.lower()=="csv":
+            if download_type.lower() in ("csv", "xlsx"):
                 dataframe = self.post_processing_csv(dataframe, str(query_strings["curve_type"]).lower())
             else:
                 dataframe = self.post_processing_json(dataframe,str(query_strings["curve_type"]).lower())

@@ -9,6 +9,9 @@ import shutil
 import time
 import zipfile
 import json
+from io import BytesIO
+from io import StringIO
+import pandas as pd
 import datetime
 import utils.trueprice_database as tpdb
 from werkzeug.utils import secure_filename
@@ -86,6 +89,18 @@ class Util:
             
         return response, status
          
+    def pd_str_to_excel(self, data_frame):
+        """
+        converts the dataframe to excel
+        """
+        data_frame = pd.read_csv(StringIO(data_frame), header = None)
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            data_frame.to_excel(writer, sheet_name='Sheet1', index=False, header=False)
+
+        output.seek(0)
+        return output
+    
     def get_csv_string_with_disclaimer(self,csv_string):
         """
         Converts a DataFrame to a CSV string and appends a disclaimer.
@@ -139,7 +154,34 @@ class Util:
                 return data_frame, "No Such Data Available"
             
             if status == "success":
-                if query_strings["type"].lower()=="csv":
+                if query_strings["type"].lower()=="xlsx":
+
+                    if (query_strings["curve_type"]).lower() == 'matrix':
+                        data = self.get_csv_string_with_disclaimer(data_frame.to_csv(header=None))
+                        data = self.pd_str_to_excel(data)
+                        resp = Response(
+                        data,
+                        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            headers={"Content-disposition":
+                            "attachment; filename="+file_name+".xlsx"}), status
+                    elif(query_strings["curve_type"]).lower() == 'headroom':
+                        data = self.get_csv_string_with_disclaimer(data_frame.to_csv(index=False))
+                        data = self.pd_str_to_excel(data)
+                        resp = Response(
+                        data,
+                        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            headers={"Content-disposition":
+                            "attachment; filename="+file_name+".xlsx"}), status
+                    else:
+                        data = self.get_csv_string_with_disclaimer(data_frame.to_csv())
+                        data = self.pd_str_to_excel(data)
+                        resp = Response(
+                            data,
+                            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            headers={"Content-disposition":
+                            "attachment; filename="+file_name+".xlsx"}), status
+                        
+                elif query_strings["type"].lower()=="csv":
 
                     if (query_strings["curve_type"]).lower() == 'matrix':
                         data = self.get_csv_string_with_disclaimer(data_frame.to_csv(header=None))
