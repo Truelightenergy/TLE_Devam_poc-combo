@@ -51,22 +51,34 @@ class ExtractorUtil:
         fetches the latest operating day from table
         """
         operating_days = []
-        if curve.lower() in ['energy', 'nonenergy', 'rec']:
-            table = f"{iso}_{curve}"
-            query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table};"
-        else:
-            table = curve
-            query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table} WHERE control_area_type = '{iso}';"
         try:
-            operating_days = []
-            result = self.engine.execute(query)
-            if result.rowcount >0:
-                for row in result:
-                    result = row
-                    operating_days.append(result[0].strftime('%Y-%m-%d'))
-            return operating_days
+            if curve.lower() in ['energy', 'nonenergy', 'rec']:
+                if iso == 'all':
+                    iso_list = ["ERCOT", "ISONE", "NYISO","MISO", "PJM"]
+                else:
+                    iso_list = [iso]
+                for iso in iso_list:
+                    table = f"{iso}_{curve}"
+                    query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table};"
+                    result = self.engine.execute(query)
+                    if result.rowcount >0:
+                        for row in result:
+                            result = row
+                            operating_days.append(result[0].strftime('%Y-%m-%d'))
+            else:
+                table = curve
+                query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table}"
+                if iso != 'all':
+                    query = query + f" WHERE control_area_type = '{iso}'"
+                query = query + ";"
+                result = self.engine.execute(query)
+                if result.rowcount >0:
+                    for row in result:
+                        result = row
+                        operating_days.append(result[0].strftime('%Y-%m-%d'))
         except:
             return operating_days
+        return operating_days
         
     def get_all_operating_days_with_load_zone(self, table, load_zone):
         """

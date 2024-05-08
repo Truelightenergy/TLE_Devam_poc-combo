@@ -191,9 +191,9 @@ def get_options():
     """
     curve = request.json['curve']
     if curve == "rec":
-        option = ["ERCOT", "ISONE", "NYISO", "PJM"]
+        option = ["ERCOT", "ISONE", "NYISO", "PJM", "ALL"]
     else:
-        option = ["ERCOT", "ISONE", "NYISO","MISO", "PJM"]
+        option = ["ERCOT", "ISONE", "NYISO","MISO", "PJM", "ALL"]
     return jsonify(option)
 
 @extractors.route('/get_operating_day', methods=['GET', 'POST'])
