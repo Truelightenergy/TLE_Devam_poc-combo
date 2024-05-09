@@ -174,10 +174,10 @@ def get_options_for_strips():
     makes the current drop down dynamic
     """
     curve = request.json['curve']
-    if curve.lower() == "nonenergy":
+    if curve.lower() in ("nonenergy", "all"):
         option = ["7x24","5x16", "7x8", "2x16", "WD", "WE"]
     elif curve.lower() == "energy":
-        option = ["5x16", "7x8", "2x16", "7x24"]
+        option = ["7x24", "5x16", "7x8", "2x16"]
     else:
         option = ['7x24']
     return jsonify(option)

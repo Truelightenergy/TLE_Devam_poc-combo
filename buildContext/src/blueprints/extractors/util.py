@@ -169,7 +169,7 @@ class Util:
                     data_frame, status = self.extractor.get_custom_data(query_strings, query_strings["type"])
                     cleaned_strings = [s.replace("strip_", "") for s in query_strings["strip"]]
                     file_name = f'{query_strings["curve_type"]}_{query_strings["iso"]}_{"_".join(cleaned_strings)}_{operating_day}'
-                    if data_frame.empty:
+                    if not isinstance(data_frame, pd.DataFrame) or (isinstance(data_frame, pd.DataFrame) and data_frame.empty):
                         continue
                         # return data_frame, "No Such Data Available"
                     
@@ -223,18 +223,18 @@ class Util:
                             response_dataframes[0][0],
                             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                             headers={"Content-disposition":
-                            "attachment; filename="+response_dataframes[0][1]}), status
+                            "attachment; filename="+response_dataframes[0][1]}), 'success'
             elif len(response_dataframes)==1 and query_strings["type"].lower()=="csv":
                 resp = Response(
                                 response_dataframes[0][0],
                                 mimetype="text/csv",
                                 headers={"Content-disposition":
-                                "attachment; filename="+response_dataframes[0][1]}), status
+                                "attachment; filename="+response_dataframes[0][1]}), 'success'
             elif len(response_dataframes)==1:
                 resp = Response(response_dataframes[0][0], 
                         mimetype='application/json',
                         headers={'Content-Disposition':
-                                 'attachment;filename='+response_dataframes[0][1]}), status
+                                 'attachment;filename='+response_dataframes[0][1]}), 'success'
             else:
                 log_info = "Unable to Fetch Data"
                 resp = None, 'Unable to Fetch Data'

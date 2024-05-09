@@ -52,30 +52,38 @@ class ExtractorUtil:
         """
         operating_days = []
         try:
-            if curve.lower() in ['energy', 'nonenergy', 'rec']:
-                if iso == 'all':
-                    iso_list = ["ERCOT", "ISONE", "NYISO","MISO", "PJM"]
+            if curve.lower() == 'all':
+                curve_list = ['energy', 'nonenergy', 'rec', 'ptc', 'matrix', 'headroom']
+            else:
+                curve_list = [curve.lower()]
+            if iso == 'all':
+                iso_list = ["ERCOT", "ISONE", "NYISO","MISO", "PJM"]
+            else:
+                iso_list = [iso]
+            
+            for curve in curve_list:
+                if curve in ['energy', 'nonenergy', 'rec']:
+                    for iso in iso_list:
+                        if curve == 'rec' and iso.lower() == 'miso':
+                            continue
+                        table = f"{iso}_{curve}"
+                        query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table};"
+                        result = self.engine.execute(query)
+                        if result.rowcount >0:
+                            for row in result:
+                                result = row
+                                operating_days.append(result[0].strftime('%Y-%m-%d'))
                 else:
-                    iso_list = [iso]
-                for iso in iso_list:
-                    table = f"{iso}_{curve}"
-                    query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table};"
+                    table = curve
+                    query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table}"
+                    if iso != 'all':
+                        query = query + f" WHERE control_area_type = '{iso}'"
+                    query = query + ";"
                     result = self.engine.execute(query)
                     if result.rowcount >0:
                         for row in result:
                             result = row
                             operating_days.append(result[0].strftime('%Y-%m-%d'))
-            else:
-                table = curve
-                query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table}"
-                if iso != 'all':
-                    query = query + f" WHERE control_area_type = '{iso}'"
-                query = query + ";"
-                result = self.engine.execute(query)
-                if result.rowcount >0:
-                    for row in result:
-                        result = row
-                        operating_days.append(result[0].strftime('%Y-%m-%d'))
         except:
             return operating_days
         return operating_days
