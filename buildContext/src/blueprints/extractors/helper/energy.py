@@ -183,7 +183,7 @@ class Energy:
                         where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
                         UNION
                         select 'Distributed' "my_order",id, cob, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_energy_history
-                        where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}'  curve_start_replace
+                        where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
                         
                     """
                     psql_query_7x24 = f"""
@@ -354,7 +354,10 @@ class Energy:
                 
 
             if operating_day_flag:
-                curve_start_replace = f"""  and curvestart::date >= '{curve_start}' and curvestart::date <= '{curve_end}' """
+                if query_strings["idcob"].lower()=='all':
+                    curve_start_replace = f"""  and curvestart::date >= '{curve_start}' and curvestart::date <= '{curve_end}' """
+                else:
+                    curve_start_replace = f"""  and TO_CHAR(curvestart, 'YYYY-MM-DD HH24:MI') = '{query_strings["idcob"].lower()}' """
                 psql_query = psql_query.replace('curve_start_replace', curve_start_replace)
                 psql_query_7x24 = psql_query_7x24.replace('curve_start_replace', curve_start_replace)
                 psql_query_7x24_hist = psql_query_7x24_hist.replace('curve_start_replace', curve_start_replace)
