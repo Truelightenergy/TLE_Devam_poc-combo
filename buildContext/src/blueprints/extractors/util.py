@@ -67,6 +67,7 @@ class Util:
         query_strings["type"] = request.form.get('type')
         query_strings["start"] = str(request.form.get('start'))
         query_strings["end"] = str(request.form.get('end'))
+        query_strings["idcob"] = str(request.form.get('idcob'))
 
         if  'history' not in request.form:
             query_strings['history'] = False
@@ -267,6 +268,9 @@ class Util:
         finds the availability check for cob
         """
         return self.db_model.cob_availability(table, date)
-        
-
-
+    
+    def intraday_timestamps_download(self, curve, iso, operating_day_start, operating_day_end):
+        """
+        finds the availabile timestamps from DB
+        """
+        return self.db_model.intraday_timestamps_download(curve, iso, operating_day_start, operating_day_end)

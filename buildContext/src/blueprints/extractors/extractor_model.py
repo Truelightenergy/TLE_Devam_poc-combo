@@ -120,3 +120,54 @@ class ExtractorUtil:
             return False
         except:
             return False
+    
+    def intraday_timestamps_download(self, curve, iso, operating_day_start, operating_day_end):
+        """
+        extracts all the intraday timestamps and their history status from the database
+        """
+        try:
+            timestamps = []
+            if curve.lower() == 'all':
+                curve_list = ['energy', 'nonenergy', 'rec', 'ptc', 'matrix', 'headroom']
+            else:
+                curve_list = [curve.lower()]
+            if iso == 'all':
+                iso_list = ["ERCOT", "ISONE", "NYISO","MISO", "PJM"]
+            else:
+                iso_list = [iso]
+            
+            for curve in curve_list:
+                if curve in ['energy', 'nonenergy', 'rec']:
+                    for iso in iso_list:
+                        if curve == 'rec' and iso.lower() == 'miso':
+                            continue
+                        table = f"{iso}_{curve}"
+                        query = f"""
+                            SELECT distinct curvestart, cob FROM trueprice.{table}_history 
+                            WHERE curvestart::date >= '{operating_day_start}' and curvestart::date <= '{operating_day_end}'
+                            UNION 
+                            SELECT distinct curvestart, cob FROM trueprice.{table} 
+                            WHERE curvestart::date >= '{operating_day_start}' and curvestart::date <= '{operating_day_end}';
+                        """
+                        results = self.engine.execute(query).fetchall()
+                        timestamps.extend([{'timestamp': row['curvestart'].strftime('%Y-%m-%d %H:%M'),'cob':row['cob']} for row in results])
+                else:
+                    table = curve
+                    # Will add "strip='7x24'" in query just to replace with strings below else its not necessary
+                    query = f"""
+                        SELECT distinct curvestart, cob FROM trueprice.{table}_history 
+                        WHERE curvestart::date >= '{operating_day_start}' and curvestart::date <= '{operating_day_end}' AND strip='7x24'
+                        UNION 
+                        SELECT distinct curvestart, cob FROM trueprice.{table} 
+                        WHERE curvestart::date >= '{operating_day_start}' and curvestart::date <= '{operating_day_end}' AND strip='7x24';
+                    """
+                    if iso != 'all':
+                        query = query.replace("AND strip='7x24'", f" and control_area_type = '{iso}'")
+                    else:
+                        query = query.replace("AND strip='7x24'", '')
+                    query = query + ";"
+                    results = self.engine.execute(query).fetchall()
+                    timestamps.extend([{'timestamp': row['curvestart'].strftime('%Y-%m-%d %H:%M'),'cob':row['cob']} for row in results])
+            return timestamps
+        except:
+            return []

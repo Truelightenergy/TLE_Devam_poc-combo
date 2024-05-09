@@ -24,17 +24,17 @@
                                     </select>
                                 </div>
                                 <div class="form-control border-0 px-0">
-                                    <label for="strip">Strip</label>
-                                    <select name="strip" required id="strip" class="select2-size-lg form-select w-100" multiple data-live-search="true" data-select-all="true">
-                                    </select>
-                                </div>
-                                <div class="form-control border-0 px-0">
                                     <label for="start">Start Date</label>
                                     <input type="date" class="form-control" required id="start" name="start" />
                                 </div>
                                 <div class="form-control border-0 px-0">
                                     <label for="end">End Date</label>
                                     <input type="date" class="form-control " required id="end" name="end">
+                                </div>
+                                <div class="form-control border-0 px-0">
+                                    <label for="strip">Strip</label>
+                                    <select name="strip" required id="strip" class="select2-size-lg form-select w-100" multiple data-live-search="true" data-select-all="true">
+                                    </select>
                                 </div>
                             </div>
                             <div class="col-12 col-md-6">
@@ -43,14 +43,18 @@
                                     <select name="iso" id="iso" class="select2-size-lg form-select"></select>
                                 </div>
                                 <div class="form-control border-0 px-0" id="odc">
-                                    <label for="operating_day">Operating Day</label>
+                                    <label for="operating_day">Operating Day Start</label>
                                     <input readonly type="text" required class="form-control " id="operating_day"
                                         name="operating_day" />
                                 </div>
                                 <div class="form-control border-0 px-0" id="odce">
-                                    <label for="operating_day">Operating Day end</label>
+                                    <label for="operating_day_end">Operating Day end</label>
                                     <input readonly type="text" required class="form-control " id="operating_day_end"
                                         name="operating_day_end" />
+                                </div>
+                                <div class="form-control border-0 px-0">
+                                    <label for="idcob">Intraday or Close of Business</label>
+                                    <select name="idcob" id="idcob" class="select2-size-lg form-select"></select>
                                 </div>
                             </div>
                             <div class="mt-2 d-flex align-items-center">
