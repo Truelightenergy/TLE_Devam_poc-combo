@@ -187,7 +187,7 @@ class Util:
                             else:
                                 data = self.get_csv_string_with_disclaimer(data_frame.to_csv())
                                 data = self.pd_str_to_excel(data)
-                            response_dataframes.append((data, file_name+".xlsx"))
+                            response_dataframes.append((data.getvalue(), file_name+".xlsx"))
                             
                         elif query_strings["type"].lower()=="csv":
                             if (query_strings["curve_type"]).lower() == 'matrix':
@@ -212,7 +212,7 @@ class Util:
                 with zipfile.ZipFile(zip_buffer, 'a', zipfile.ZIP_DEFLATED, False) as zip_file:
                     # Write Excel files to zip
                     for dataframe in response_dataframes:
-                        zip_file.writestr(dataframe[1], dataframe[0].getvalue())
+                        zip_file.writestr(dataframe[1], dataframe[0])
                 # Reset buffer position
                 zip_buffer.seek(0)
 
