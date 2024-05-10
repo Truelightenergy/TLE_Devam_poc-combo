@@ -64,7 +64,6 @@ $(document).ready(function() {
                             button.removeClass("btn-success").addClass("btn-warning");
                             button.next().removeClass("btn-success").addClass("btn-warning");
                             // document.getElementById(curve).classList.add('btn-warning');
-                            // debugger
                             
                         }
                         // control area
@@ -283,7 +282,6 @@ $(document).ready(function() {
     // empty divs before placing them
     function empty_divs(items){
         for(let i = 0; i < items.length; i++){
-            // debugger
             $("."+items[i]).hide();
             document.getElementById(items[i]).innerHTML = "";
         }

@@ -247,7 +247,7 @@ class Util:
         
         except Exception as e:
             # Print the error to console
-            # print("An error occurred while adding the disclaimer:", e, file=sys.stderr)
+            print("An error occurred while adding the disclaimer:", e, file=sys.stderr)
             resp = None, 'Unable to Fetch Data'
             return resp
         

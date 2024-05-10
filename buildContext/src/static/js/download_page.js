@@ -188,7 +188,6 @@ function cob_check(date, curve, iso) {
 
 function cobdates() {
     $('#operating_day').change(function () {
-        debugger;
         var selectedcurve = $('#curve_type').val()
         var selectediso = $('#iso').val()
         var operating_day_start = $('#operating_day').val();
@@ -219,7 +218,6 @@ function cobdates() {
         });
         });
         $('#operating_day_end').change(function () {
-            debugger;
             var selectedcurve = $('#curve_type').val()
             var selectediso = $('#iso').val()
             var operating_day_start = $('#operating_day').val();
