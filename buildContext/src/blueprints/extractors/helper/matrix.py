@@ -53,7 +53,7 @@ class Matrix:
             elif control_area == "isone":
                 if query_strings["history"]:
                     psql_query = f"""
-                        select id, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component, data, term, beginning_date, load_profile,  from trueprice.matrix 
+                        select id, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component, data, term, beginning_date, load_profile from trueprice.matrix 
                         where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace 
                         UNION
                         select id, curvestart, curveend, matching_id, lookup_id,  control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component, data, term, beginning_date, load_profile from trueprice.matrix_history

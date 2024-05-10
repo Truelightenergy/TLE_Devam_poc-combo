@@ -143,23 +143,25 @@ class ExtractorUtil:
                             continue
                         table = f"{iso}_{curve}"
                         query = f"""
-                            SELECT distinct curvestart, cob FROM trueprice.{table}_history 
+                            SELECT distinct curvestart, false "cob" FROM trueprice.{table}_history 
                             WHERE curvestart::date >= '{operating_day_start}' and curvestart::date <= '{operating_day_end}'
                             UNION 
-                            SELECT distinct curvestart, cob FROM trueprice.{table} 
+                            SELECT distinct curvestart, false "cob" FROM trueprice.{table} 
                             WHERE curvestart::date >= '{operating_day_start}' and curvestart::date <= '{operating_day_end}';
                         """
+                        if curve == 'energy':
+                            query = query.replace('false "cob"', 'cob')
                         results = self.engine.execute(query).fetchall()
                         timestamps.extend([{'timestamp': row['curvestart'].strftime('%Y-%m-%d %H:%M'),'cob':row['cob']} for row in results])
                 else:
                     table = curve
                     # Will add "strip='7x24'" in query just to replace with strings below else its not necessary
                     query = f"""
-                        SELECT distinct curvestart, cob FROM trueprice.{table}_history 
+                        SELECT distinct curvestart, false "cob" FROM trueprice.{table}_history 
                         WHERE curvestart::date >= '{operating_day_start}' and curvestart::date <= '{operating_day_end}' AND strip='7x24'
                         UNION 
-                        SELECT distinct curvestart, cob FROM trueprice.{table} 
-                        WHERE curvestart::date >= '{operating_day_start}' and curvestart::date <= '{operating_day_end}' AND strip='7x24';
+                        SELECT distinct curvestart, false "cob" FROM trueprice.{table} 
+                        WHERE curvestart::date >= '{operating_day_start}' and curvestart::date <= '{operating_day_end}' AND strip='7x24'
                     """
                     if iso != 'all':
                         query = query.replace("AND strip='7x24'", f" and control_area_type = '{iso}'")

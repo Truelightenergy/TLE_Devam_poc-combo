@@ -69,15 +69,17 @@ class Util:
         query_strings["end"] = str(request.form.get('end'))
         query_strings["idcob"] = str(request.form.get('idcob'))
 
-        if  'history' not in request.form:
-            query_strings['history'] = False
+        # if  'history' not in request.form:
+        #     query_strings['history'] = False
         
-        elif request.form.get('history').lower()=='all':
-            query_strings['history'] = True
+        # elif request.form.get('history').lower()=='all':
+        #     query_strings['history'] = True
 
-        else:
-            query_strings['history'] = False
-            query_strings['cob'] = True
+        # else:
+        #     query_strings['history'] = False
+        #     query_strings['cob'] = True
+        query_strings['history'] = True
+        # query_strings['cob'] = True
 
         query_strings["offset"] =  0
         query_strings["operating_day"] = request.form.get('operating_day')
