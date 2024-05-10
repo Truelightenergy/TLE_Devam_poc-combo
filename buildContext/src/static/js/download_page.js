@@ -192,6 +192,11 @@ function cobdates() {
         var selectediso = $('#iso').val()
         var operating_day_start = $('#operating_day').val();
         var operating_day_end = $('#operating_day_end').val();
+        if (operating_day_start > operating_day_end){
+            $('#operating_day_end').datepicker("setDate", new Date(operating_day_start));
+            // $('#operating_day_end').val(operating_day_start)
+            operating_day_end = operating_day_start
+        }
         $.ajax({
             url: '/intraday_timestamps_download',
             type: 'POST',
@@ -209,9 +214,9 @@ function cobdates() {
                 $('#idcob').append(html);
                 $.each(response, function (index, value) {
                     if (value.cob === true)
-                        var html = '<option value="' + value['timestamp'].toLowerCase() + '">Close of Business: ' + value['timestamp'] + '</option>';
+                        var html = '<option value="' + value['timestamp'].toLowerCase() + '">'+value['curve']+' Close of Business: ' + value['timestamp'] + '</option>';
                     else
-                        var html = '<option value="' + value['timestamp'].toLowerCase() + '">Intraday: ' + value['timestamp'] + '</option>';
+                        var html = '<option value="' + value['timestamp'].toLowerCase() + '">'+value['curve']+' Intraday: ' + value['timestamp'] + '</option>';
                     $('#idcob').append(html);
                 });
             }
@@ -222,6 +227,11 @@ function cobdates() {
             var selectediso = $('#iso').val()
             var operating_day_start = $('#operating_day').val();
             var operating_day_end = $('#operating_day_end').val();
+            if (operating_day_start > operating_day_end){
+                $('#operating_day').datepicker("setDate", new Date(operating_day_end));
+                // $('#operating_day').val(operating_day_end)
+                operating_day_start = operating_day_end
+            }
             $.ajax({
                 url: '/intraday_timestamps_download',
                 type: 'POST',
@@ -239,9 +249,9 @@ function cobdates() {
                     $('#idcob').append(html);
                     $.each(response, function (index, value) {
                         if (value.cob === true)
-                            var html = '<option value="' + value['timestamp'].toLowerCase() + '">Close of Business: ' + value['timestamp'] + '</option>';
+                            var html = '<option value="' + value['timestamp'].toLowerCase() + '">'+value['curve']+' Close of Business: ' + value['timestamp'] + '</option>';
                         else
-                            var html = '<option value="' + value['timestamp'].toLowerCase() + '">Intraday: ' + value['timestamp'] + '</option>';
+                            var html = '<option value="' + value['timestamp'].toLowerCase() + '">'+value['curve']+' Intraday: ' + value['timestamp'] + '</option>';
                         $('#idcob').append(html);
                     });
                 }

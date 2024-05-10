@@ -147,12 +147,13 @@ class ExtractorUtil:
                             WHERE curvestart::date >= '{operating_day_start}' and curvestart::date <= '{operating_day_end}'
                             UNION 
                             SELECT distinct curvestart, false "cob" FROM trueprice.{table} 
-                            WHERE curvestart::date >= '{operating_day_start}' and curvestart::date <= '{operating_day_end}';
+                            WHERE curvestart::date >= '{operating_day_start}' and curvestart::date <= '{operating_day_end}'
+                            order by curvestart desc;
                         """
                         if curve == 'energy':
                             query = query.replace('false "cob"', 'cob')
                         results = self.engine.execute(query).fetchall()
-                        timestamps.extend([{'timestamp': row['curvestart'].strftime('%Y-%m-%d %H:%M'),'cob':row['cob']} for row in results])
+                        timestamps.extend([{'timestamp': row['curvestart'].strftime('%Y-%m-%d %H:%M'),'cob':row['cob'], 'curve': table} for row in results])
                 else:
                     table = curve
                     # Will add "strip='7x24'" in query just to replace with strings below else its not necessary
@@ -162,6 +163,7 @@ class ExtractorUtil:
                         UNION 
                         SELECT distinct curvestart, false "cob" FROM trueprice.{table} 
                         WHERE curvestart::date >= '{operating_day_start}' and curvestart::date <= '{operating_day_end}' AND strip='7x24'
+                        order by curvestart desc
                     """
                     if iso != 'all':
                         query = query.replace("AND strip='7x24'", f" and control_area_type = '{iso}'")
@@ -169,7 +171,7 @@ class ExtractorUtil:
                         query = query.replace("AND strip='7x24'", '')
                     query = query + ";"
                     results = self.engine.execute(query).fetchall()
-                    timestamps.extend([{'timestamp': row['curvestart'].strftime('%Y-%m-%d %H:%M'),'cob':row['cob']} for row in results])
+                    timestamps.extend([{'timestamp': row['curvestart'].strftime('%Y-%m-%d %H:%M'),'cob':row['cob'], 'curve': table} for row in results])
             return timestamps
         except:
             return []
