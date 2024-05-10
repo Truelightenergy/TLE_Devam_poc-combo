@@ -174,10 +174,10 @@ def get_options_for_strips():
     makes the current drop down dynamic
     """
     curve = request.json['curve']
-    if curve.lower() == "nonenergy":
+    if curve.lower() in ("nonenergy", "all"):
         option = ["7x24","5x16", "7x8", "2x16", "WD", "WE"]
     elif curve.lower() == "energy":
-        option = ["5x16", "7x8", "2x16", "7x24"]
+        option = ["7x24", "5x16", "7x8", "2x16"]
     else:
         option = ['7x24']
     return jsonify(option)
@@ -191,9 +191,9 @@ def get_options():
     """
     curve = request.json['curve']
     if curve == "rec":
-        option = ["ERCOT", "ISONE", "NYISO", "PJM"]
+        option = ["ERCOT", "ISONE", "NYISO", "PJM", "ALL"]
     else:
-        option = ["ERCOT", "ISONE", "NYISO","MISO", "PJM"]
+        option = ["ERCOT", "ISONE", "NYISO","MISO", "PJM", "ALL"]
     return jsonify(option)
 
 @extractors.route('/get_operating_day', methods=['GET', 'POST'])
@@ -238,6 +238,15 @@ def get_operating_days():
     return jsonify(operating_days)
     
 
-
-        
-
+@extractors.route('/intraday_timestamps_download', methods=['GET', 'POST'])
+@roles.readonly_token_required
+def intraday_timestamps_download():
+    """
+    returns the intraday timestamps
+    """
+    curve = request.json.get('curve')
+    iso = request.json.get('iso')
+    operating_day_start = request.json.get("operating_day_start")
+    operating_day_end = request.json.get("operating_day_end")
+    timestamps = api_util.intraday_timestamps_download(curve, iso, operating_day_start, operating_day_end)
+    return jsonify(timestamps)
