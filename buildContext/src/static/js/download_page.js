@@ -183,12 +183,14 @@ function cob_check(sdate, edate, curve, iso) {
         },
         success: function (response) {
             $('#idcob').empty();
-            var html = '<option value="all">ALL available curves</option>';
+            var html = '<option value="latestall">All Curves</option>';
             $('#idcob').append(html);
-            var html = '<option value="latest">ALL latest curves (intradays and close of business)</option>';
-            $('#idcob').append(html);
-            if (response) {
-                var html = '<option value="cobonly">ALL latest curves (close of business only)</option>';
+            if (response.noncob) {
+                var html = '<option value="intradayonly">All Curves (intradays only)</option>';
+                $('#idcob').append(html);
+            }
+            if (response.cob) {
+                var html = '<option value="cobonly">All Curves (close of business only)</option>';
                 $('#idcob').append(html);
             }
         }

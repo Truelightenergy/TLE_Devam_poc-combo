@@ -110,8 +110,9 @@ class ExtractorUtil:
         """
         availability check for cob
         """
-
         try:
+            cob = False
+            noncob = False
             if iso=='all':
                 iso_list = ["isone", "pjm", "ercot", "nyiso", "miso"]
             else:
@@ -120,10 +121,17 @@ class ExtractorUtil:
                 query = f"SELECT * FROM trueprice.{iso}_energy where cob = {True} and curvestart::date>='{sdate}' and curvestart::date<='{edate}';"
                 result = self.engine.execute(query)
                 if result.rowcount >0:
-                    return True
-            return False
+                    cob =  True
+                    break
+            for iso in iso_list:
+                query = f"SELECT * FROM trueprice.{iso}_energy where cob = {False} and curvestart::date>='{sdate}' and curvestart::date<='{edate}';"
+                result = self.engine.execute(query)
+                if result.rowcount >0:
+                    noncob =  True
+                    break
+            return cob, noncob
         except:
-            return False
+            return False, False
     
     def intraday_timestamps_download(self, curve, iso, operating_day_start, operating_day_end):
         """

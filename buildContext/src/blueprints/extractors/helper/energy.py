@@ -27,6 +27,7 @@ class Energy:
         try:
             history = (query_strings["idcob"].lower() == 'all')
             cobonly = (query_strings["idcob"].lower() == 'cobonly')
+            intradayonly  = (query_strings["idcob"].lower() == 'intradayonly')
             control_area = query_strings["iso"]
             strips = query_strings["strip"]
             strip_filters = list()
@@ -127,7 +128,9 @@ class Energy:
             if cobonly:
                 psql_query = f"""{psql_query} and cob='{True}'"""
                 psql_query_7x24 = f"""{psql_query_7x24} and cob='{True}'"""
-            
+            elif intradayonly:
+                psql_query = f"""{psql_query} and cob='{False}'"""
+                psql_query_7x24 = f"""{psql_query_7x24} and cob='{False}'"""
             if normal_strip:
                 psql_query_7x24 = psql_query_7x24+\
                             """ group by cob ,curvestart, curveend ,"month" ,control_area ,state ,load_zone ,capacity_zone ,utility ,cost_group ,cost_component ,sub_cost_component, r."7x24" """
