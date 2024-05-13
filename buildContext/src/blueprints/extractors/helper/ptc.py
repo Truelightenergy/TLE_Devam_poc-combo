@@ -25,6 +25,7 @@ class Ptc:
         Handling extraction for ancillarydata
         """
         try:
+            history = (query_strings["idcob"].lower() == 'all')
             control_area = str(query_strings["iso"]).lower()
             strips = query_strings["strip"]
             strip_filters = list()
@@ -49,96 +50,24 @@ class Ptc:
 
             if control_area not in ["nyiso", "miso", "ercot", "pjm", "isone"]:
                 return None, "Unable to Fetch Results"
+            elif history:
+                psql_query = f"""
+                    select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc 
+                    where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
+                    UNION
+                    select id, month, curvestart, curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc_history
+                    where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
+                    
+                """
+            else:
+                psql_query = f"""
+                    select id,    month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc 
+                    where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
+                    
+                """
             
-            elif control_area == "isone":
-                if query_strings["history"]:
-                    psql_query = f"""
-                        select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc 
-                        where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
-                        UNION
-                        select id, month, curvestart, curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc_history
-                        where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
-                        
-                    """
-                else:
-                    psql_query = f"""
-                        select id,    month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc 
-                        where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
-                        
-                    """
-            elif control_area == "pjm":
-                if query_strings["history"]:
-                    psql_query = f"""
-                        select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc
-                        where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
-                        UNION
-                        select id, month, curvestart, curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc_history
-                        where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
-                        
-                    """
-                else:
-                    psql_query = f"""
-                        select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc
-                        where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
-                        
-                    """
-            elif control_area == "ercot":
-                if query_strings["history"]:
-                    psql_query = f"""
-                        select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc
-                        where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
-                        UNION
-                        select id,   month, curvestart, curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc_history
-                        where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace 
-                        
-                    """
-                else:
-                    psql_query = f"""
-                        select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc
-                        where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
-                        
-                    """
-            elif control_area == "nyiso":
-                if query_strings["history"]:
-                    psql_query = f"""
-                        select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc
-                        where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
-                        UNION
-                        select id, month, curvestart, curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc_history
-                        where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
-                        
-                    """
-                else:
-                    psql_query = f"""
-                        select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc
-                        where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
-                        
-                    """
-
-            elif control_area == "miso":
-                if query_strings["history"]:
-                    psql_query = f"""
-                        select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc
-                        where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
-                        UNION
-                        select id, month, curvestart, curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc_history
-                        where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
-                        
-                    """
-                else:
-                    psql_query = f"""
-                        select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc
-                        where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
-                        
-                    """
-                
-
-            if operating_day_flag:
-                if query_strings["idcob"].lower()=='all':
-                    curve_start_replace = f"""  and curvestart::date >= '{curve_start}' and curvestart::date <= '{curve_end}' """
-                else:
-                    curve_start_replace = f"""  and TO_CHAR(curvestart, 'YYYY-MM-DD HH24:MI') = '{query_strings["idcob"].lower()}' """
-                psql_query = psql_query.replace('curve_start_replace', curve_start_replace)
+            curve_start_replace = f"""  and curvestart::date >= '{curve_start}' and curvestart::date <= '{curve_end}' """
+            psql_query = psql_query.replace('curve_start_replace', curve_start_replace)
             # end up the query
             psql_query =    f"""
                             {psql_query} order by curvestart desc,strip;

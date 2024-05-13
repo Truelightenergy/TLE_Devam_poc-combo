@@ -106,17 +106,21 @@ class ExtractorUtil:
         except:
             return operating_days
         
-    def cob_availability(self, table, date):
+    def cob_availability(self, iso, sdate, edate):
         """
         availability check for cob
         """
 
         try:
-
-            query = f"SELECT * FROM trueprice.{table} where cob = {True} and curvestart::date='{date}';"
-            result = self.engine.execute(query)
-            if result.rowcount >0:
-                return True
+            if iso=='all':
+                iso_list = ["isone", "pjm", "ercot", "nyiso", "miso"]
+            else:
+                iso_list = [iso]
+            for iso in iso_list:
+                query = f"SELECT * FROM trueprice.{iso}_energy where cob = {True} and curvestart::date>='{sdate}' and curvestart::date<='{edate}';"
+                result = self.engine.execute(query)
+                if result.rowcount >0:
+                    return True
             return False
         except:
             return False
