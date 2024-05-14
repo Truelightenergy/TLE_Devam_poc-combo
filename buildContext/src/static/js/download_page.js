@@ -153,22 +153,28 @@ function filling_dates(selected_date) {
 }
 function date_updates() {
     $('#operating_day').on("changeDate", function () {
-        var selected_date = $(this).val();
-        if (selected_date != null) {
-            filling_dates(selected_date);
-            cob_check(selected_date, $('#operating_day_end').val(), $('#curve_type').val(), $('#iso').val());
+        var operating_day_start = $('#operating_day').val();
+        var operating_day_end = $('#operating_day_end').val();
+        if (operating_day_start > operating_day_end){
+            $('#operating_day_end').datepicker("setDate", new Date(operating_day_start));
+            operating_day_end = operating_day_start
         }
-
-
+        if (operating_day_start != null) {
+            filling_dates(operating_day_start);
+            cob_check(operating_day_start, operating_day_end, $('#curve_type').val(), $('#iso').val());
+        }
     });
     
     $('#operating_day_end').on("changeDate", function () {
-        var selected_date = $('#operating_day').val();
-        if (selected_date != null) {
-            cob_check(selected_date, $('#operating_day_end').val(), $('#curve_type').val(), $('#iso').val());
+        var operating_day_start = $('#operating_day').val();
+        var operating_day_end = $('#operating_day_end').val();
+        if (operating_day_start > operating_day_end){
+            $('#operating_day').datepicker("setDate", new Date(operating_day_end));
+            operating_day_start = operating_day_end
         }
-
-
+        if (operating_day_start != null) {
+            cob_check(operating_day_start, $('#operating_day_end').val(), $('#curve_type').val(), $('#iso').val());
+        }
     });
 }
 
@@ -198,35 +204,8 @@ function cob_check(sdate, edate, curve, iso) {
 
 }
 
-
-
-function date_ranges() {
-    $('#operating_day').change(function () {
-        var operating_day_start = $('#operating_day').val();
-        var operating_day_end = $('#operating_day_end').val();
-        if (operating_day_start > operating_day_end){
-            $('#operating_day_end').datepicker("setDate", new Date(operating_day_start));
-            // $('#operating_day_end').val(operating_day_start)
-            operating_day_end = operating_day_start
-        }
-        });
-        $('#operating_day_end').change(function () {
-            var operating_day_start = $('#operating_day').val();
-            var operating_day_end = $('#operating_day_end').val();
-            if (operating_day_start > operating_day_end){
-                $('#operating_day').datepicker("setDate", new Date(operating_day_end));
-                operating_day_start = operating_day_end
-            }
-            });
-}
-
-
-
-
 $(document).ready(function () {
     data_loader();
     load_operating_days();
     date_updates();
-    date_ranges();
-
 });
