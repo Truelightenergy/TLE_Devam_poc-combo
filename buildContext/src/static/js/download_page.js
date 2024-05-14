@@ -156,28 +156,42 @@ function date_updates() {
         var selected_date = $(this).val();
         if (selected_date != null) {
             filling_dates(selected_date);
-            cob_check(selected_date, $('#curve_type').val(), $('#iso').val());
+            cob_check(selected_date, $('#operating_day_end').val(), $('#curve_type').val(), $('#iso').val());
+        }
+
+
+    });
+    
+    $('#operating_day_end').on("changeDate", function () {
+        var selected_date = $('#operating_day').val();
+        if (selected_date != null) {
+            cob_check(selected_date, $('#operating_day_end').val(), $('#curve_type').val(), $('#iso').val());
         }
 
 
     });
 }
 
-function cob_check(date, curve, iso) {
+function cob_check(sdate, edate, curve, iso) {
     $.ajax({
         url: '/cob_check',
         type: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({ 'operating_day': date, 'curve': curve, 'iso': iso }),
+        data: JSON.stringify({ 'operating_day': sdate, 'operating_day_end': edate, 'curve': curve, 'iso': iso }),
         headers: {
             'Authorization': "Bearer " + token
         },
         success: function (response) {
-            if (response) {
-                $("#cob").prop("disabled", false); // disable
+            $('#idcob').empty();
+            var html = '<option value="latestall">All Curves</option>';
+            $('#idcob').append(html);
+            if (response.noncob) {
+                var html = '<option value="intradayonly">All Curves (intradays only)</option>';
+                $('#idcob').append(html);
             }
-            else {
-                $("#cob").prop("disabled", true); // disable
+            if (response.cob) {
+                var html = '<option value="cobonly">All Curves (close of business only)</option>';
+                $('#idcob').append(html);
             }
         }
     });
@@ -186,66 +200,23 @@ function cob_check(date, curve, iso) {
 
 
 
-function cobdates() {
+function date_ranges() {
     $('#operating_day').change(function () {
-        var selectedcurve = $('#curve_type').val()
-        var selectediso = $('#iso').val()
         var operating_day_start = $('#operating_day').val();
         var operating_day_end = $('#operating_day_end').val();
-        $.ajax({
-            url: '/intraday_timestamps_download',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ 'curve': selectedcurve, 
-                                    'iso': selectediso, 
-                                    'operating_day_start': operating_day_start, 
-                                    'operating_day_end': operating_day_end}),
-            headers: {
-                'Authorization': "Bearer " + token
-            },
-            success: function (response) {
-                $('#idcob').empty();
-                var html = '<option value="all">ALL</option>';
-                $('#idcob').append(html);
-                $.each(response, function (index, value) {
-                    if (value.cob === true)
-                        var html = '<option value="' + value['timestamp'].toLowerCase() + '">Close of Business: ' + value['timestamp'] + '</option>';
-                    else
-                        var html = '<option value="' + value['timestamp'].toLowerCase() + '">Intraday: ' + value['timestamp'] + '</option>';
-                    $('#idcob').append(html);
-                });
-            }
-        });
+        if (operating_day_start > operating_day_end){
+            $('#operating_day_end').datepicker("setDate", new Date(operating_day_start));
+            // $('#operating_day_end').val(operating_day_start)
+            operating_day_end = operating_day_start
+        }
         });
         $('#operating_day_end').change(function () {
-            var selectedcurve = $('#curve_type').val()
-            var selectediso = $('#iso').val()
             var operating_day_start = $('#operating_day').val();
             var operating_day_end = $('#operating_day_end').val();
-            $.ajax({
-                url: '/intraday_timestamps_download',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ 'curve': selectedcurve, 
-                                        'iso': selectediso, 
-                                        'operating_day_start': operating_day_start, 
-                                        'operating_day_end': operating_day_end}),
-                headers: {
-                    'Authorization': "Bearer " + token
-                },
-                success: function (response) {
-                    $('#idcob').empty();
-                    var html = '<option value="all">ALL</option>';
-                    $('#idcob').append(html);
-                    $.each(response, function (index, value) {
-                        if (value.cob === true)
-                            var html = '<option value="' + value['timestamp'].toLowerCase() + '">Close of Business: ' + value['timestamp'] + '</option>';
-                        else
-                            var html = '<option value="' + value['timestamp'].toLowerCase() + '">Intraday: ' + value['timestamp'] + '</option>';
-                        $('#idcob').append(html);
-                    });
-                }
-            });
+            if (operating_day_start > operating_day_end){
+                $('#operating_day').datepicker("setDate", new Date(operating_day_end));
+                operating_day_start = operating_day_end
+            }
             });
 }
 
@@ -256,6 +227,6 @@ $(document).ready(function () {
     data_loader();
     load_operating_days();
     date_updates();
-    cobdates();
+    date_ranges();
 
 });

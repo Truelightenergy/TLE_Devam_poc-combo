@@ -69,18 +69,6 @@ class Util:
         query_strings["end"] = str(request.form.get('end'))
         query_strings["idcob"] = str(request.form.get('idcob'))
 
-        # if  'history' not in request.form:
-        #     query_strings['history'] = False
-        
-        # elif request.form.get('history').lower()=='all':
-        #     query_strings['history'] = True
-
-        # else:
-        #     query_strings['history'] = False
-        #     query_strings['cob'] = True
-        query_strings['history'] = True
-        # query_strings['cob'] = True
-
         query_strings["offset"] =  0
         query_strings["operating_day"] = request.form.get('operating_day')
         query_strings["operating_day_end"] = request.form.get('operating_day_end')
@@ -265,11 +253,11 @@ class Util:
 
         return self.db_model.get_all_operating_days_with_load_zone(table, load_zone)
     
-    def cob_availability_check(self, table, date):
+    def cob_availability_check(self, iso, sdate, edate):
         """
         finds the availability check for cob
         """
-        return self.db_model.cob_availability(table, date)
+        return self.db_model.cob_availability(iso, sdate, edate)
     
     def intraday_timestamps_download(self, curve, iso, operating_day_start, operating_day_end):
         """

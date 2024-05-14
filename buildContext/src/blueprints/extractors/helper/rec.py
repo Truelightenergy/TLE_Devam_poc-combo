@@ -25,6 +25,7 @@ class Rec:
         Handling extraction for recdata
         """
         try:
+            history = (query_strings["idcob"].lower() == 'all')
             control_area = query_strings["iso"]
             strips = query_strings["strip"]
             strip_filters = list()
@@ -49,78 +50,24 @@ class Rec:
             if control_area not in ["nyiso", "ercot", "pjm", "isone"]:
                 return None, "Unable to Fetch Results"
 
-            elif control_area == "isone":
-                if query_strings["history"]:
-                    psql_query = f"""
-                        select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_rec 
-                        where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
-                        UNION
-                        select id, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_rec_history
-                        where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
-                        
-                    """
-                else:
-                    psql_query = f"""
-                        select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_rec 
-                        where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
-                        
-                    """
-            elif control_area == "pjm":
-                if query_strings["history"]:
-                    psql_query = f"""
-                        select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_rec 
-                        where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
-                        UNION
-                        select id, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_rec_history
-                        where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
-                        
-                    """
-                else:
-                    psql_query = f"""
-                        select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_rec 
-                        where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
-                        
-                    """
-            elif control_area == "ercot":
-                if query_strings["history"]:
-                    psql_query = f"""
-                        select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_rec 
-                        where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
-                        UNION
-                        select id, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_rec_history
-                        where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
-                        
-                    """
-                else:
-                    psql_query = f"""
-                        select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_rec 
-                        where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
-                        
-                    """
-
-            elif control_area == "nyiso":
-                if query_strings["history"]:
-                    psql_query = f"""
-                        select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_rec 
-                        where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
-                        UNION
-                        select id, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_rec_history
-                        where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
-                        
-                    """
-                else:
-                    psql_query = f"""
-                        select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_rec 
-                        where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
-                        
-                    """
-
-            if operating_day_flag:
-                if query_strings["idcob"].lower()=='all':
-                    curve_start_replace = f"""  and curvestart::date >= '{curve_start}' and curvestart::date <= '{curve_end}' """
-                else:
-                    curve_start_replace = f"""  and TO_CHAR(curvestart, 'YYYY-MM-DD HH24:MI') = '{query_strings["idcob"].lower()}' """
-                psql_query = psql_query.replace('curve_start_replace', curve_start_replace)
+            elif history:
+                psql_query = f"""
+                    select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_rec 
+                    where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
+                    UNION
+                    select id, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_rec_history
+                    where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
+                    
+                """
+            else:
+                psql_query = f"""
+                    select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component from trueprice.{control_area}_rec 
+                    where ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
+                    
+                """
+            
+            curve_start_replace = f"""  and curvestart::date >= '{curve_start}' and curvestart::date <= '{curve_end}' """
+            psql_query = psql_query.replace('curve_start_replace', curve_start_replace)
             # end up the query
             psql_query =    f"""
                             {psql_query} order by curvestart desc,strip;

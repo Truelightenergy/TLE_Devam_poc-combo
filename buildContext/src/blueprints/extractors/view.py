@@ -219,10 +219,11 @@ def cob_check():
     """
     curve = request.json['curve']
     iso = request.json['iso']
-    flag = False
-    if curve.lower() == 'energy':
-      flag=api_util.cob_availability_check( f'{iso}_{curve}', request.json['operating_day'])
-    return jsonify(flag)
+    cob = False
+    noncob  = False
+    if curve.lower() in ('energy', 'all'):
+      cob, noncob = api_util.cob_availability_check(iso, request.json['operating_day'], request.json['operating_day_end'])
+    return jsonify({'cob': cob, 'noncob': noncob})
 
 @extractors.route('/get_operating_days', methods=['GET', 'POST'])
 @roles.readonly_token_required
