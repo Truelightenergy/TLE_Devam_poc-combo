@@ -186,11 +186,11 @@ function cob_check(sdate, edate, curve, iso) {
             var html = '<option value="latestall">All Curves</option>';
             $('#idcob').append(html);
             if (response.noncob) {
-                var html = '<option value="intradayonly">All Curves (intradays only)</option>';
+                var html = '<option value="intradayonly">Intradays</option>';
                 $('#idcob').append(html);
             }
             if (response.cob) {
-                var html = '<option value="cobonly">All Curves (close of business only)</option>';
+                var html = '<option value="cobonly">Close of Business</option>';
                 $('#idcob').append(html);
             }
         }
