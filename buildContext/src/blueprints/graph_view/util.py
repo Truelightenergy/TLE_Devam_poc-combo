@@ -139,8 +139,8 @@ class Util:
         """
         generates line charts for each set of parameters in the array
         """
-        pio.templates.default = "plotly"
-        fig = go.Figure()
+        # pio.templates.default = "plotly"
+        # fig = go.Figure()
 
 
         for i, params in enumerate(parameters_array):
@@ -192,9 +192,9 @@ class Util:
                     update = 'COB'
                 # df = self.db_model.get_data(**params)  # Unpacking parameters for the get_data method
                 label =params["control_table"].split('_')[0].upper() + " " + params.get("label", f"{params['loadZone']}: {params['operatin_day_timestamps']} {update}")
-                fig.add_trace(go.Scatter(
-                    x=df["month"], 
-                    y=df["data"], 
+                fig = dict(
+                    x=list(df["month"].astype(str)), 
+                    y=list(df["data"]), 
                     mode="markers+lines",
                     name=label,  # You can pass a label for each line
                     showlegend=True,
@@ -210,29 +210,29 @@ class Util:
                             color=markerColor,
                             width=2  
                         )
-                    )
-                    # line_shape='linear'
-                    # line=dict(color=color),  # Set the line color here if it's the same for all
-                ))
-
-                fig.update_layout(
-                    # template="plotly",
-                    # title="<b>Energy Prices Over Time (5x16)</b>",
-                    title_x=0.5,
-                    xaxis_title="<b>Date</b>",
-                    yaxis_title="<b>Price ($/MWh)</b>",
-                    xaxis=dict(showgrid=False),
-                    yaxis=dict(showgrid=False),
-                    hovermode="x unified",
-            )
-                fig.update_yaxes(tickprefix="$", tickfont_size=16)
-                fig.update_xaxes(tickfont_size=16)
-                
-
-        
-        graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+                    ))
+                fig2 = dict(
+                    x=list(df["month"].astype(str)), 
+                    y=list(df["data"]+15), 
+                    mode="markers+lines",
+                    name=label,  # You can pass a label for each line
+                    showlegend=True,
+                    line=dict(
+                        shape='spline',  
+                        color='rgb(240,112,5)',  
+                        width=4  
+                    ),
+                    marker=dict(
+                        size=8,  
+                        color=markerColor,  
+                        line=dict(
+                            color=markerColor,
+                            width=2  
+                        )
+                    ))
+        graphJSON = json.dumps([fig, fig2])
         return graphJSON
-    
+
     def validate_access(self, rules, control_table, load_zone):
         """
         check availability of access to current user

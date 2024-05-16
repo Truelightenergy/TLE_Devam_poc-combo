@@ -49,9 +49,9 @@ truelight.graphview.view = {
         let self = truelight.graphview.view;
         let filters = localStorage.getItem('dashboard_filters');
         let extraFilters = localStorage.getItem('dashboard_extra_filters');
-        if (filters)
+        if (filters && typeof filters !== 'string')
             self.cache.defaultFilters = JSON.parse(filters);
-        if (extraFilters)
+        if (extraFilters && typeof extraFilters !== 'string')
             self.cache.extraFilters = [JSON.parse(extraFilters)];
     },
     populateGraph: (data) => {
@@ -114,7 +114,7 @@ truelight.graphview.view = {
                     }
                 };
             
-                Plotly.newPlot('chart', response['data'], layout,
+                Plotly.newPlot('chart', response, layout,
                     {
                         responsive: true,
                         // staticPlot: true,
