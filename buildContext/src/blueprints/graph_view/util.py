@@ -142,6 +142,7 @@ class Util:
         # pio.templates.default = "plotly"
         # fig = go.Figure()
         fig = []
+        hours = []
         for i, params in enumerate(parameters_array):
             if i>0:
                 try:
@@ -210,7 +211,8 @@ class Util:
                             width=2  
                         )
                     )))
-        graphJSON = json.dumps(fig)
+                hours.append(list(df["7x24"]))
+        graphJSON = json.dumps({'data':fig, 'hours': hours})
         return graphJSON
 
     def validate_access(self, rules, control_table, load_zone):

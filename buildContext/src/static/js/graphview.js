@@ -113,14 +113,15 @@ truelight.graphview.view = {
                         "b": 100
                     }
                 };
-            
-                Plotly.newPlot('chart', response, layout,
+                Plotly.newPlot('chart', response["data"], layout,
                     {
                         responsive: true,
                         // staticPlot: true,
                         // displayModeBar: false
                     }
                 );
+                if (response["data"].length>1)
+                {self.convertDivToTable('chart2', response)}
                 // Plotly.newPlot('chart', response['data'], response['layout'], {responsive: true});
             },
             error: function (xhr, status, error) {
@@ -265,6 +266,49 @@ truelight.graphview.view = {
             if(filters.length>1)
                 self.cache.extraFilters = filters.slice(1);
         }
+    },
+    convertDivToTable(divId, response) {
+        // Get the div by its ID
+        const div = document.getElementById(divId);
+
+        // Create a table element
+        const table = document.createElement('table');
+        table.border = 1; // Optional: add a border to the table for better visibility
+
+        // Create table headers (optional)
+        const headerRow = document.createElement('tr');
+        const headers = ['Curve Title', response['data'][0]['name'].split(' ')[0], response['data'][1]['name'].split(' ')[0], 'Market Price VS Mark Price']; // Adjust headers as needed
+        headers.forEach(headerText => {
+            const th = document.createElement('th');
+            th.textContent = headerText;
+            th.style.border = '1px solid black';
+            th.style.padding = '8px';
+            th.style.textAlign = 'left';
+            headerRow.appendChild(th);
+        });
+        table.appendChild(headerRow);
+
+        // Create table rows and cells (sample data)
+        const data = [
+            ['Prompt Month Price Movement', response['data'][0]['y'][0], response['data'][1]['y'][0], response['data'][1]['y'][0]-response['data'][0]['y'][0]]
+        ];
+
+        data.forEach(rowData => {
+            const row = document.createElement('tr');
+            rowData.forEach(cellData => {
+                const cell = document.createElement('td');
+                cell.textContent = cellData;
+                cell.style.border = '1px solid black';
+                cell.style.padding = '8px';
+                cell.style.textAlign = 'left';
+                row.appendChild(cell);
+            });
+            table.appendChild(row);
+        });
+
+        // Clear the div's content and append the table
+        div.innerHTML = '';
+        div.appendChild(table);
     }
 };
 

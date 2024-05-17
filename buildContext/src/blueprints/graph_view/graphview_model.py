@@ -62,14 +62,30 @@ class GraphView_Util:
             tableName = tableName + '_history'
             curvestartfilter = f"and curvestart::date = '{operatin_day_timestamp}'"
 
-        query = f"""SELECT DISTINCT ON (month::date) month::date, curvestart, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component FROM trueprice.{tableName} 
-                        where strip='5x16' and sub_cost_component='{location}' 
-                        and month::date >= '{start_date}' 
-                        and month::date <= '{end_date}' 
-                        {curvestartfilter}
-                        and cob = {cob==True or cob=='true'} 
-                        --and curvestart::timestamp = '{operatin_day_timestamp}' 
-                        ORDER BY month::date, curvestart DESC;"""
+        # query = f"""SELECT DISTINCT ON (month::date) month::date, curvestart, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component FROM trueprice.{tableName} 
+        #                 where strip='5x16' and sub_cost_component='{location}' 
+        #                 and month::date >= '{start_date}' 
+        #                 and month::date <= '{end_date}' 
+        #                 {curvestartfilter}
+        #                 and cob = {cob==True or cob=='true'} 
+        #                 --and curvestart::timestamp = '{operatin_day_timestamp}' 
+        #                 ORDER BY month::date, curvestart DESC;"""
+        query = f"""select DISTINCT ON (month::date) month::date, curvestart, 
+                    ROUND((sum(case
+                    when e."strip" = '2x16' then e."data" * r."2x16"
+                    when e."strip" = '5x16' then e."data" * r."5x16"
+                    else e."data" * r."7x8"
+                    end)/r."7x24")::numeric,2) as "data" ,
+                    control_area, state, load_zone, capacity_zone, utility, '7x24' "strip", cost_group, cost_component, sub_cost_component, r."7x24" as "7x24"
+                    from trueprice.{tableName} e
+                    join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{tableName.split('_')[0].upper()}'
+                    where 
+                    month::date >= '{start_date}'  and month::date <= '{end_date}'
+                    and sub_cost_component='{location}' 
+                    {curvestartfilter}
+                    and cob = {cob==True or cob=='true'} 
+                    group by cob ,curvestart, "month" ,control_area ,state ,load_zone ,capacity_zone ,utility ,cost_group ,cost_component ,sub_cost_component, r."7x24"
+                    ORDER BY month::date, curvestart DESC;"""
         
         data_frame = pd.read_sql_query(sql=query, con=self.engine.connect())
         data_frame.sort_values(by='month', inplace = True)
