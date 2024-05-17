@@ -141,8 +141,7 @@ class Util:
         """
         # pio.templates.default = "plotly"
         # fig = go.Figure()
-
-
+        fig = []
         for i, params in enumerate(parameters_array):
             if i>0:
                 try:
@@ -192,7 +191,7 @@ class Util:
                     update = 'COB'
                 # df = self.db_model.get_data(**params)  # Unpacking parameters for the get_data method
                 label =params["control_table"].split('_')[0].upper() + " " + params.get("label", f"{params['loadZone']}: {params['operatin_day_timestamps']} {update}")
-                fig = dict(
+                fig.append(dict(
                     x=list(df["month"].astype(str)), 
                     y=list(df["data"]), 
                     mode="markers+lines",
@@ -210,27 +209,8 @@ class Util:
                             color=markerColor,
                             width=2  
                         )
-                    ))
-                fig2 = dict(
-                    x=list(df["month"].astype(str)), 
-                    y=list(df["data"]+15), 
-                    mode="markers+lines",
-                    name=label,  # You can pass a label for each line
-                    showlegend=True,
-                    line=dict(
-                        shape='spline',  
-                        color='rgb(240,112,5)',  
-                        width=4  
-                    ),
-                    marker=dict(
-                        size=8,  
-                        color=markerColor,  
-                        line=dict(
-                            color=markerColor,
-                            width=2  
-                        )
-                    ))
-        graphJSON = json.dumps([fig, fig2])
+                    )))
+        graphJSON = json.dumps(fig)
         return graphJSON
 
     def validate_access(self, rules, control_table, load_zone):
@@ -243,6 +223,7 @@ class Util:
                 flag = True
                 break
         return flag
+    
     def generate_graph_view_for_home_screen(self, notification_params, operating_day, operating_day_ts, prev_day, start, end):
         """
         creates the graphview based on the raw parameters
