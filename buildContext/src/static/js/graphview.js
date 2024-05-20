@@ -267,7 +267,8 @@ truelight.graphview.view = {
                 self.cache.extraFilters = filters.slice(1);
         }
     },
-    convertDivToTable(divId, response) {
+    convertDivToTable:(divId, response)=> {
+        let self = truelight.graphview.view;
         // Get the div by its ID
         const div = document.getElementById(divId);
 
@@ -290,7 +291,15 @@ truelight.graphview.view = {
 
         // Create table rows and cells (sample data)
         const data = [
-            ['Prompt Month Price Movement', response['data'][0]['y'][0], response['data'][1]['y'][0], response['data'][1]['y'][0]-response['data'][0]['y'][0]]
+            ['Prompt Month Price Movement', response['data'][0]['y'][0], response['data'][1]['y'][0], response['data'][1]['y'][0]-response['data'][0]['y'][0]],
+            ['12 Month Price Movement', 
+            self.weightedAverage( response['data'][0]['y'].slice(0, 12), response['hours'][0].slice(0, 12) ).toFixed(2), 
+            self.weightedAverage(response['data'][1]['y'].slice(0, 12) , response['hours'][1].slice(0, 12)).toFixed(2),
+            (self.weightedAverage( response['data'][0]['y'].slice(0, 12), response['hours'][0].slice(0, 12) ) - self.weightedAverage(response['data'][1]['y'].slice(0, 12) , response['hours'][1].slice(0, 12))).toFixed(2) ],
+            ['24 Month Price Movement', 
+            self.weightedAverage( response['data'][0]['y'].slice(0, 24), response['hours'][0].slice(0, 24) ).toFixed(2), 
+            self.weightedAverage(response['data'][1]['y'].slice(0, 24) , response['hours'][1].slice(0, 24)).toFixed(2),
+            (self.weightedAverage( response['data'][0]['y'].slice(0, 24), response['hours'][0].slice(0, 24) ) - self.weightedAverage(response['data'][1]['y'].slice(0, 24) , response['hours'][1].slice(0, 24))).toFixed(2) ]
         ];
 
         data.forEach(rowData => {
@@ -309,6 +318,16 @@ truelight.graphview.view = {
         // Clear the div's content and append the table
         div.innerHTML = '';
         div.appendChild(table);
+    },
+    sumProduct:(array1, array2)=> {
+        return array1.reduce((sum, value, index) => sum + value * array2[index], 0);
+    },
+    sum:(array)=> {
+        return array.reduce((sum, value) => sum + value, 0);
+    },
+    weightedAverage:(values, weights)=> {
+        let self = truelight.graphview.view;
+        return self.sumProduct(values, weights) / self.sum(weights);
     }
 };
 
