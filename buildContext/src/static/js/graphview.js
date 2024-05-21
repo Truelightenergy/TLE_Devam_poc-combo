@@ -109,19 +109,83 @@ truelight.graphview.view = {
                     "margin": {
                         "l": 50,
                         "r": 50,
-                        "t": 100,
-                        "b": 100
+                        "t": 20,
+                        "b": 20
                     }
                 };
-                Plotly.newPlot('chart', response["data"], layout,
+                var layout2 = {
+                    "xaxis": {
+                        "tickfont": {
+                            "size": 10,
+                            "color": "grey"
+                        },
+                        "showline": false,
+                        "mirror": true,
+                        "ticks": 'outside', // Ensure the ticks are outside the plot
+                        "ticklen": 5, // Length of the ticks
+                        showgrid: false
+                    },
+                    "yaxis": {
+                        "tickprefix": "$",
+                        "tickfont": {
+                            "size": 10,
+                            "color": "grey"
+                        },
+                        "showline": false,
+                        "linewidth": 2,
+                        "linecolor": 'black',
+                        "mirror": true,
+                        "ticks": 'outside', // Ensure the ticks are outside the plot
+                        "ticklen": 5, // Length of the ticks
+                        showgrid: false
+                    },
+                    "legend": {
+                        "orientation": "h",
+                        "x": 0.5,
+                        "xanchor": "center",
+                        "y": -0.2, // You may need to adjust this to place the legend below the plot
+                        "yanchor": "top" // Anchors the legend at the top of its bounding box
+                    },
+                    "hovermode": "x unified",
+                    "barmode": 'group',
+                    "plot_bgcolor": "white",
+                    "margin": {
+                        "l": 50,
+                        "r": 50,
+                        "t": 20,
+                        "b": 20
+                    }
+                };
+                Plotly.newPlot('linechart', response["data"], layout,
                     {
                         responsive: true,
                         // staticPlot: true,
                         // displayModeBar: false
                     }
                 );
+                var testdata = [
+                    {
+                      x: ['giraffes', 'orangutans', 'monkeys'],
+                      y: [20, 14, 23],
+                      type: 'bar'
+                    }
+                  ];
+                response["data"][0]['type']= 'bar'
                 if (response["data"].length>1)
-                {self.convertDivToTable('chart2', response)}
+                // {response["data"][1]['type']= 'bar'}
+                {
+                    var differenceValues = response["data"][0].y.map((value, index) => value - response["data"][1].y[index]);
+                    var difference_graph = response["data"][0]
+                    difference_graph['y'] = differenceValues
+                    difference_graph = [difference_graph]
+                    Plotly.newPlot('barchart', difference_graph, layout2, 
+                        {
+                            responsive: true
+                        }
+                    );
+                }
+                if (response["data"].length>1)
+                {self.convertDivToTable('comparisontable', response)}
                 // Plotly.newPlot('chart', response['data'], response['layout'], {responsive: true});
             },
             error: function (xhr, status, error) {
@@ -291,7 +355,7 @@ truelight.graphview.view = {
 
         // Create table rows and cells (sample data)
         const data = [
-            ['Prompt Month Price Movement', response['data'][0]['y'][0], response['data'][1]['y'][0], response['data'][1]['y'][0]-response['data'][0]['y'][0]],
+            ['Prompt Month Price Movement', response['data'][0]['y'][0], response['data'][1]['y'][0], (response['data'][1]['y'][0]-response['data'][0]['y'][0]).toFixed(2)],
             ['12 Month Price Movement', 
             self.weightedAverage( response['data'][0]['y'].slice(0, 12), response['hours'][0].slice(0, 12) ).toFixed(2), 
             self.weightedAverage(response['data'][1]['y'].slice(0, 12) , response['hours'][1].slice(0, 12)).toFixed(2),
