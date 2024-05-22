@@ -170,22 +170,106 @@ truelight.graphview.view = {
                       type: 'bar'
                     }
                   ];
-                response["data"][0]['type']= 'bar'
-                if (response["data"].length>1)
-                // {response["data"][1]['type']= 'bar'}
-                {
-                    var differenceValues = response["data"][0].y.map((value, index) => value - response["data"][1].y[index]);
-                    var difference_graph = response["data"][0]
-                    difference_graph['y'] = differenceValues
-                    difference_graph = [difference_graph]
-                    Plotly.newPlot('barchart', difference_graph, layout2, 
-                        {
-                            responsive: true
-                        }
-                    );
-                }
-                if (response["data"].length>1)
-                {self.convertDivToTable('comparisontable', response)}
+                // response["data"][0]['type']= 'bar'
+                if (response["data"].length==1) 
+                    {
+                        document.getElementById('barchart').style.display = 'none';
+                        var Prompt_Month_curve1 = response['data'][0]['y'][0]
+                        var Price_Movement_12_1 = self.weightedAverage(response['data'][0]['y'].slice(0, 12), response['hours'][0].slice(0, 12))
+                        var Price_Movement_24_1 = self.weightedAverage(response['data'][0]['y'].slice(0, 24), response['hours'][0].slice(0, 24))
+                        var headers = ['Summary Analysis:', "", "Energy Price"];
+                        var labels = [];
+                        var data = [
+                            ['Prompt Month Price', "", (Prompt_Month_curve1).toFixed(2)],
+                            ['12 Month Price',
+                            "",
+                            (Price_Movement_12_1).toFixed(2)],
+                            ['24 Month Price',
+                            "",
+                            (Price_Movement_24_1).toFixed(2)]
+                        ];
+                        self.convertDivToTable('comparisontable', headers, labels,  data)
+                    }
+                else if (response["data"].length==2)
+                    {
+                        document.getElementById('barchart').style.display = 'block';
+                        var Prompt_Month_curve1 = response['data'][0]['y'][0]
+                        var Prompt_Month_curve2 = response['data'][1]['y'][0]
+                        var Price_Movement_12_1 = self.weightedAverage(response['data'][0]['y'].slice(0, 12), response['hours'][0].slice(0, 12))
+                        var Price_Movement_12_2 = self.weightedAverage(response['data'][1]['y'].slice(0, 12), response['hours'][1].slice(0, 12))
+                        var Price_Movement_24_1 = self.weightedAverage(response['data'][0]['y'].slice(0, 24), response['hours'][0].slice(0, 24))
+                        var Price_Movement_24_2 = self.weightedAverage(response['data'][1]['y'].slice(0, 24), response['hours'][1].slice(0, 24))
+                        var headers = ['Summary Analysis:', "", "Volatility ($/MWh)", "Volatility (%)"];
+                        var labels = ['Curve Title:', "", response['data'][1]['name'].split(":")[0]+" vs "+response['data'][0]['name'].split(":")[0]];
+                        var data = [
+                            ['Prompt Month Price Movement', "", (Prompt_Month_curve2-Prompt_Month_curve1).toFixed(2), (((Prompt_Month_curve2-Prompt_Month_curve1)/Prompt_Month_curve1)*100).toFixed(2)],
+                            ['12 Month Price Movement',
+                            "",
+                            (Price_Movement_12_2 - Price_Movement_12_1).toFixed(2), (((Price_Movement_12_2 - Price_Movement_12_1)/Price_Movement_12_1)*100).toFixed(2) ],
+                            ['24 Month Price Movement',
+                            "",
+                            (Price_Movement_24_2 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_2 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2) ]
+                        ];
+                        var difference_graph = JSON.parse(JSON.stringify(response["data"][1]));
+                        var differenceValues = difference_graph.y.map((value, index) => value - response["data"][0].y[index]);
+                        difference_graph['y'] = differenceValues
+                        difference_graph['type']= 'bar'
+                        difference_graph = [difference_graph]
+                        Plotly.newPlot('barchart', difference_graph, layout2, 
+                            {
+                                responsive: true
+                            }
+                        );
+                        self.convertDivToTable('comparisontable', headers, labels,  data);
+                    }
+                else
+                    {
+                        document.getElementById('barchart').style.display = 'block';
+                        var Prompt_Month_curve1 = response['data'][0]['y'][0]
+                        var Prompt_Month_curve2 = response['data'][1]['y'][0]
+                        var Prompt_Month_curve3 = response['data'][2]['y'][0]
+                        var Price_Movement_12_1 = self.weightedAverage(response['data'][0]['y'].slice(0, 12), response['hours'][0].slice(0, 12))
+                        var Price_Movement_12_2 = self.weightedAverage(response['data'][1]['y'].slice(0, 12), response['hours'][1].slice(0, 12))
+                        var Price_Movement_12_3 = self.weightedAverage(response['data'][2]['y'].slice(0, 12), response['hours'][2].slice(0, 12))
+                        var Price_Movement_24_1 = self.weightedAverage(response['data'][0]['y'].slice(0, 24), response['hours'][0].slice(0, 24))
+                        var Price_Movement_24_2 = self.weightedAverage(response['data'][1]['y'].slice(0, 24), response['hours'][1].slice(0, 24))
+                        var Price_Movement_24_3 = self.weightedAverage(response['data'][2]['y'].slice(0, 24), response['hours'][2].slice(0, 24))
+                        var headers = ['Summary Analysis:', "", "Volatility ($/MWh)", "Volatility (%)", "", "Volatility ($/MWh)", "Volatility (%)"];
+                        var labels = ['Curve Title:', "", response['data'][1]['name'].split(":")[0]+" vs "+response['data'][0]['name'].split(":")[0], "", response['data'][2]['name'].split(":")[0]+" vs "+response['data'][0]['name'].split(":")[0]];
+                        var data = [
+                            ['Prompt Month Price Movement', 
+                            "", 
+                            (Prompt_Month_curve2-Prompt_Month_curve1).toFixed(2), (((Prompt_Month_curve2-Prompt_Month_curve1)/Prompt_Month_curve1)*100).toFixed(2),
+                            "", 
+                            (Prompt_Month_curve3-Prompt_Month_curve1).toFixed(2), (((Prompt_Month_curve3-Prompt_Month_curve1)/Prompt_Month_curve1)*100).toFixed(2)],
+                            ['12 Month Price Movement',
+                            "",
+                            (Price_Movement_12_2 - Price_Movement_12_1).toFixed(2), (((Price_Movement_12_2 - Price_Movement_12_1)/Price_Movement_12_1)*100).toFixed(2),
+                            "",
+                            (Price_Movement_12_3 - Price_Movement_12_1).toFixed(2), (((Price_Movement_12_3 - Price_Movement_12_1)/Price_Movement_12_1)*100).toFixed(2) ],
+                            ['24 Month Price Movement',
+                            "",
+                            (Price_Movement_24_2 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_2 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2),
+                            "",
+                            (Price_Movement_24_3 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_3 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2) ]
+                        ];
+                        var difference_graph = JSON.parse(JSON.stringify(response["data"][1]));
+                        var differenceValues = difference_graph.y.map((value, index) => value - response["data"][0].y[index]);
+                        difference_graph['y'] = differenceValues
+                        difference_graph['type']= 'bar'
+                        var difference_graph2 = JSON.parse(JSON.stringify(response["data"][2]));
+                        var differenceValues2 = difference_graph2.y.map((value, index) => value - response["data"][0].y[index]);
+                        difference_graph2['y'] = differenceValues2
+                        difference_graph2['type']= 'bar'
+                        difference_graph = [difference_graph, difference_graph2]
+                        Plotly.newPlot('barchart', difference_graph, layout2, 
+                            {
+                                responsive: true
+                            }
+                        );
+                        self.convertDivToTable('comparisontable', headers, labels,  data);
+                    }
+                
                 // Plotly.newPlot('chart', response['data'], response['layout'], {responsive: true});
             },
             error: function (xhr, status, error) {
@@ -331,51 +415,79 @@ truelight.graphview.view = {
                 self.cache.extraFilters = filters.slice(1);
         }
     },
-    convertDivToTable:(divId, response)=> {
+    convertDivToTable:(divId, headers, labels,  data)=> {
         let self = truelight.graphview.view;
         // Get the div by its ID
         const div = document.getElementById(divId);
 
         // Create a table element
         const table = document.createElement('table');
-        table.border = 1; // Optional: add a border to the table for better visibility
+        // table.border = 1; // Optional: add a border to the table for better visibility
 
         // Create table headers (optional)
         const headerRow = document.createElement('tr');
-        const headers = ['Curve Title', response['data'][0]['name'].split(' ')[0], response['data'][1]['name'].split(' ')[0], 'Market Price VS Mark Price']; // Adjust headers as needed
-        headers.forEach(headerText => {
+        headers.forEach(function(headerText, index){
             const th = document.createElement('th');
             th.textContent = headerText;
-            th.style.border = '1px solid black';
-            th.style.padding = '8px';
-            th.style.textAlign = 'left';
+            // if (index == 2)
+            // {th.colSpan = 2;}
+            // th.style.border = '1px solid black';
+            if (headerText=="")
+            {th.style.padding = '24px';}
+            else
+            {th.style.padding = '4px';}
+            if (index==0)
+            {th.style.textAlign = 'left';}
+            else
+            {th.style.textAlign = 'center';}
+            th.style.paddingBottom = '16px'
             headerRow.appendChild(th);
         });
         table.appendChild(headerRow);
-
-        // Create table rows and cells (sample data)
-        const data = [
-            ['Prompt Month Price Movement', response['data'][0]['y'][0], response['data'][1]['y'][0], (response['data'][1]['y'][0]-response['data'][0]['y'][0]).toFixed(2)],
-            ['12 Month Price Movement', 
-            self.weightedAverage( response['data'][0]['y'].slice(0, 12), response['hours'][0].slice(0, 12) ).toFixed(2), 
-            self.weightedAverage(response['data'][1]['y'].slice(0, 12) , response['hours'][1].slice(0, 12)).toFixed(2),
-            (self.weightedAverage( response['data'][0]['y'].slice(0, 12), response['hours'][0].slice(0, 12) ) - self.weightedAverage(response['data'][1]['y'].slice(0, 12) , response['hours'][1].slice(0, 12))).toFixed(2) ],
-            ['24 Month Price Movement', 
-            self.weightedAverage( response['data'][0]['y'].slice(0, 24), response['hours'][0].slice(0, 24) ).toFixed(2), 
-            self.weightedAverage(response['data'][1]['y'].slice(0, 24) , response['hours'][1].slice(0, 24)).toFixed(2),
-            (self.weightedAverage( response['data'][0]['y'].slice(0, 24), response['hours'][0].slice(0, 24) ) - self.weightedAverage(response['data'][1]['y'].slice(0, 24) , response['hours'][1].slice(0, 24))).toFixed(2) ]
-        ];
-
-        data.forEach(rowData => {
+        if (labels.length>0)
+        {const labelRow = document.createElement('tr');
+        // const labels = ['Curve Title:', "", response['data'][1]['name'].split(":")[0]+" vs "+response['data'][0]['name'].split(":")[0], "", "Volatility ($/MWh)", "Volatility (%)"]; // Adjust headers as needed
+        labels.forEach(function(headerText, index){
+            const labelth = document.createElement('td');
+            labelth.textContent = headerText;
+            
+            if (index!=0)
+            {labelth.style.fontWeight = 'bold';
+            labelth.style.textAlign = 'center';}
+            else
+            {labelth.style.fontWeight = 'normal';
+            labelth.style.textAlign = 'left';}
+            
+            if (headerText=="")
+            {labelth.style.paddingLeft = '12px';labelth.style.paddingRight = '12px';}
+            else
+            {labelth.style.padding = '4px';}
+            
+            if (index == 2 || index == 4)
+            {labelth.colSpan = 2;}
+            
+            labelRow.appendChild(labelth);
+        });
+        table.appendChild(labelRow);}
+        data.forEach(function(rowData, indexrow){
             const row = document.createElement('tr');
-            rowData.forEach(cellData => {
+            rowData.forEach(function(cellData, index){
                 const cell = document.createElement('td');
                 cell.textContent = cellData;
-                cell.style.border = '1px solid black';
-                cell.style.padding = '8px';
-                cell.style.textAlign = 'left';
+                // cell.style.border = '1px solid black';
+                if (cellData=="")
+                {cell.style.paddingLeft = '12px';cell.style.paddingRight = '12px';}
+                else
+                {cell.style.padding = '4px';}
+                if (index==0)
+                {cell.style.textAlign = 'left';}
+                else
+                {cell.style.textAlign = 'center';}
+                if (indexrow==1)
+                {cell.style.paddingTop = '36px'}
                 row.appendChild(cell);
             });
+            row.style.borderTop = '2px solid #d3d3d3';
             table.appendChild(row);
         });
 
