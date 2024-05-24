@@ -76,7 +76,8 @@ class GraphView_Util:
                     when e."strip" = '5x16' then e."data" * r."5x16"
                     else e."data" * r."7x8"
                     end)/r."7x24")::numeric,2) as "data" ,
-                    control_area, state, load_zone, capacity_zone, utility, '7x24' "strip", cost_group, cost_component, sub_cost_component, r."7x24" as "7x24"
+                    control_area, state, load_zone, capacity_zone, utility, '7x24' "strip", cost_group, cost_component, sub_cost_component, r."7x24" as "7x24",
+                    (select s."name" from trueprice.seasons s join trueprice.curve_type_seasons cts on cts.season_id = s.id join trueprice.curve_type ct on ct.id = cts.curve_type_id where ct."name" = '{tableName.split('_')[0].upper()}' and cts."month" = EXTRACT(MONTH FROM e."month") limit 1) as season
                     from trueprice.{tableName} e
                     join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{tableName.split('_')[0].upper()}'
                     where 

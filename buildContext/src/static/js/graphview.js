@@ -7,6 +7,91 @@ truelight.graphview.view = {
         token: null,
         graphId:null
     },
+    layoutline: {
+        "xaxis": {
+            "tickfont": {
+                "size": 10,
+                "color": "grey"
+            },
+            "showline": false,
+            "mirror": true,
+            "ticks": 'outside', // Ensure the ticks are outside the plot
+            "ticklen": 5, // Length of the ticks
+            showgrid: false
+        },
+        "yaxis": {
+            "tickprefix": "$",
+            "tickfont": {
+                "size": 10,
+                "color": "grey"
+            },
+            "showline": false,
+            "linewidth": 2,
+            "linecolor": 'black',
+            "mirror": true,
+            "ticks": 'outside', // Ensure the ticks are outside the plot
+            "ticklen": 5, // Length of the ticks
+            showgrid: false
+        },
+        "legend": {
+            "orientation": "h",
+            "x": 0.5,
+            "xanchor": "center",
+            "y": -0.2, // You may need to adjust this to place the legend below the plot
+            "yanchor": "top" // Anchors the legend at the top of its bounding box
+        },
+        "hovermode": "x unified",
+        "plot_bgcolor": "white",
+        "margin": {
+            "l": 50,
+            "r": 50,
+            "t": 20,
+            "b": 20
+        }
+    },
+    layoutbar : {
+        "xaxis": {
+            "tickfont": {
+                "size": 10,
+                "color": "grey"
+            },
+            "showline": false,
+            "mirror": true,
+            "ticks": 'outside', // Ensure the ticks are outside the plot
+            "ticklen": 5, // Length of the ticks
+            showgrid: false
+        },
+        "yaxis": {
+            "tickprefix": "$",
+            "tickfont": {
+                "size": 10,
+                "color": "grey"
+            },
+            "showline": false,
+            "linewidth": 2,
+            "linecolor": 'black',
+            "mirror": true,
+            "ticks": 'outside', // Ensure the ticks are outside the plot
+            "ticklen": 5, // Length of the ticks
+            showgrid: false
+        },
+        "legend": {
+            "orientation": "h",
+            "x": 0.5,
+            "xanchor": "center",
+            "y": -0.2, // You may need to adjust this to place the legend below the plot
+            "yanchor": "top" // Anchors the legend at the top of its bounding box
+        },
+        "hovermode": "x unified",
+        "barmode": 'group',
+        "plot_bgcolor": "white",
+        "margin": {
+            "l": 50,
+            "r": 50,
+            "t": 20,
+            "b": 20
+        }
+    },
     initHandlers: () => {
         let self = truelight.graphview.view;
         let graphview = truelight.graphview;
@@ -71,112 +156,47 @@ truelight.graphview.view = {
             data: JSON.stringify(payload),
             success: function (response) {
                 truelight.loader.hide();
-                var layout = {
-                    "xaxis": {
-                        "tickfont": {
-                            "size": 10,
-                            "color": "grey"
-                        },
-                        "showline": false,
-                        "mirror": true,
-                        "ticks": 'outside', // Ensure the ticks are outside the plot
-                        "ticklen": 5, // Length of the ticks
-                        showgrid: false
-                    },
-                    "yaxis": {
-                        "tickprefix": "$",
-                        "tickfont": {
-                            "size": 10,
-                            "color": "grey"
-                        },
-                        "showline": false,
-                        "linewidth": 2,
-                        "linecolor": 'black',
-                        "mirror": true,
-                        "ticks": 'outside', // Ensure the ticks are outside the plot
-                        "ticklen": 5, // Length of the ticks
-                        showgrid: false
-                    },
-                    "legend": {
-                        "orientation": "h",
-                        "x": 0.5,
-                        "xanchor": "center",
-                        "y": -0.2, // You may need to adjust this to place the legend below the plot
-                        "yanchor": "top" // Anchors the legend at the top of its bounding box
-                    },
-                    "hovermode": "x unified",
-                    "plot_bgcolor": "white",
-                    "margin": {
-                        "l": 50,
-                        "r": 50,
-                        "t": 20,
-                        "b": 20
-                    }
-                };
-                var layout2 = {
-                    "xaxis": {
-                        "tickfont": {
-                            "size": 10,
-                            "color": "grey"
-                        },
-                        "showline": false,
-                        "mirror": true,
-                        "ticks": 'outside', // Ensure the ticks are outside the plot
-                        "ticklen": 5, // Length of the ticks
-                        showgrid: false
-                    },
-                    "yaxis": {
-                        "tickprefix": "$",
-                        "tickfont": {
-                            "size": 10,
-                            "color": "grey"
-                        },
-                        "showline": false,
-                        "linewidth": 2,
-                        "linecolor": 'black',
-                        "mirror": true,
-                        "ticks": 'outside', // Ensure the ticks are outside the plot
-                        "ticklen": 5, // Length of the ticks
-                        showgrid: false
-                    },
-                    "legend": {
-                        "orientation": "h",
-                        "x": 0.5,
-                        "xanchor": "center",
-                        "y": -0.2, // You may need to adjust this to place the legend below the plot
-                        "yanchor": "top" // Anchors the legend at the top of its bounding box
-                    },
-                    "hovermode": "x unified",
-                    "barmode": 'group',
-                    "plot_bgcolor": "white",
-                    "margin": {
-                        "l": 50,
-                        "r": 50,
-                        "t": 20,
-                        "b": 20
-                    }
-                };
-                Plotly.newPlot('linechart', response["data"], layout,
+                const modifiedresponse = response['data'].map(self.plotlyobjectformation);
+                
+                let commonX = response['data'][0].x.filter(value => 
+                    response['data'].every(obj => obj.x.includes(value))
+                );
+                
+                // Step 2: Create new objects with the common x values and their respective y and hours values
+                let commondatesfiltered = response['data'].map(obj => {
+                    let commonY = [];
+                    let commonHours = [];
+                    let commonseason = [];
+                    
+                    commonX.forEach(value => {
+                        let index = obj.x.indexOf(value);
+                        commonY.push(obj.y[index]);
+                        commonHours.push(obj.hours[index]);
+                        commonseason.push(obj.season[index]);
+                    });
+                    
+                    return {
+                        x: commonX,
+                        y: commonY,
+                        hours: commonHours,
+                        season: commonseason,
+                        name: obj.name
+                    };
+                });
+
+                Plotly.newPlot('linechart', modifiedresponse, self.layoutline,
                     {
                         responsive: true,
                         // staticPlot: true,
                         // displayModeBar: false
                     }
                 );
-                var testdata = [
-                    {
-                      x: ['giraffes', 'orangutans', 'monkeys'],
-                      y: [20, 14, 23],
-                      type: 'bar'
-                    }
-                  ];
-                // response["data"][0]['type']= 'bar'
-                if (response["data"].length==1) 
+                if (commondatesfiltered.length==1) 
                     {
                         document.getElementById('barchart').style.display = 'none';
-                        var Prompt_Month_curve1 = response['data'][0]['y'][0]
-                        var Price_Movement_12_1 = self.weightedAverage(response['data'][0]['y'].slice(0, 12), response['hours'][0].slice(0, 12))
-                        var Price_Movement_24_1 = self.weightedAverage(response['data'][0]['y'].slice(0, 24), response['hours'][0].slice(0, 24))
+                        var Prompt_Month_curve1 = commondatesfiltered[0]['y'][0]
+                        var Price_Movement_12_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12))
+                        var Price_Movement_24_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 24), commondatesfiltered[0]['hours'].slice(0, 24))
                         var headers = ['Summary Analysis:', "", "Energy Price"];
                         var labels = [];
                         var data = [
@@ -190,17 +210,17 @@ truelight.graphview.view = {
                         ];
                         self.convertDivToTable('comparisontable', headers, labels,  data)
                     }
-                else if (response["data"].length==2)
+                else if (commondatesfiltered.length==2)
                     {
                         document.getElementById('barchart').style.display = 'block';
-                        var Prompt_Month_curve1 = response['data'][0]['y'][0]
-                        var Prompt_Month_curve2 = response['data'][1]['y'][0]
-                        var Price_Movement_12_1 = self.weightedAverage(response['data'][0]['y'].slice(0, 12), response['hours'][0].slice(0, 12))
-                        var Price_Movement_12_2 = self.weightedAverage(response['data'][1]['y'].slice(0, 12), response['hours'][1].slice(0, 12))
-                        var Price_Movement_24_1 = self.weightedAverage(response['data'][0]['y'].slice(0, 24), response['hours'][0].slice(0, 24))
-                        var Price_Movement_24_2 = self.weightedAverage(response['data'][1]['y'].slice(0, 24), response['hours'][1].slice(0, 24))
+                        var Prompt_Month_curve1 = commondatesfiltered[0]['y'][0]
+                        var Prompt_Month_curve2 = commondatesfiltered[1]['y'][0]
+                        var Price_Movement_12_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12))
+                        var Price_Movement_12_2 = self.weightedAverage(commondatesfiltered[1]['y'].slice(0, 12), commondatesfiltered[1]['hours'].slice(0, 12))
+                        var Price_Movement_24_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 24), commondatesfiltered[0]['hours'].slice(0, 24))
+                        var Price_Movement_24_2 = self.weightedAverage(commondatesfiltered[1]['y'].slice(0, 24), commondatesfiltered[1]['hours'].slice(0, 24))
                         var headers = ['Summary Analysis:', "", "Volatility ($/MWh)", "Volatility (%)"];
-                        var labels = ['Curve Title:', "", response['data'][1]['name'].split(":")[0]+" vs "+response['data'][0]['name'].split(":")[0]];
+                        var labels = ['Curve Title:', "", commondatesfiltered[1]['name'].split(":")[0]+" vs "+commondatesfiltered[0]['name'].split(":")[0]];
                         var data = [
                             ['Prompt Month Price Movement', "", (Prompt_Month_curve2-Prompt_Month_curve1).toFixed(2), (((Prompt_Month_curve2-Prompt_Month_curve1)/Prompt_Month_curve1)*100).toFixed(2)],
                             ['12 Month Price Movement',
@@ -210,12 +230,13 @@ truelight.graphview.view = {
                             "",
                             (Price_Movement_24_2 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_2 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2) ]
                         ];
-                        var difference_graph = JSON.parse(JSON.stringify(response["data"][1]));
-                        var differenceValues = difference_graph.y.map((value, index) => value - response["data"][0].y[index]);
+                        var difference_graph = JSON.parse(JSON.stringify(commondatesfiltered[1]));
+                        var differenceValues = difference_graph.y.map((value, index) => value - commondatesfiltered[0].y[index]);
                         difference_graph['y'] = differenceValues
                         difference_graph['type']= 'bar'
                         difference_graph = [difference_graph]
-                        Plotly.newPlot('barchart', difference_graph, layout2, 
+                        // difference_graph = difference_graph.map(self.plotlyobjectformation)
+                        Plotly.newPlot('barchart', difference_graph, self.layoutbar, 
                             {
                                 responsive: true
                             }
@@ -225,17 +246,17 @@ truelight.graphview.view = {
                 else
                     {
                         document.getElementById('barchart').style.display = 'block';
-                        var Prompt_Month_curve1 = response['data'][0]['y'][0]
-                        var Prompt_Month_curve2 = response['data'][1]['y'][0]
-                        var Prompt_Month_curve3 = response['data'][2]['y'][0]
-                        var Price_Movement_12_1 = self.weightedAverage(response['data'][0]['y'].slice(0, 12), response['hours'][0].slice(0, 12))
-                        var Price_Movement_12_2 = self.weightedAverage(response['data'][1]['y'].slice(0, 12), response['hours'][1].slice(0, 12))
-                        var Price_Movement_12_3 = self.weightedAverage(response['data'][2]['y'].slice(0, 12), response['hours'][2].slice(0, 12))
-                        var Price_Movement_24_1 = self.weightedAverage(response['data'][0]['y'].slice(0, 24), response['hours'][0].slice(0, 24))
-                        var Price_Movement_24_2 = self.weightedAverage(response['data'][1]['y'].slice(0, 24), response['hours'][1].slice(0, 24))
-                        var Price_Movement_24_3 = self.weightedAverage(response['data'][2]['y'].slice(0, 24), response['hours'][2].slice(0, 24))
+                        var Prompt_Month_curve1 = commondatesfiltered[0]['y'][0]
+                        var Prompt_Month_curve2 = commondatesfiltered[1]['y'][0]
+                        var Prompt_Month_curve3 = commondatesfiltered[2]['y'][0]
+                        var Price_Movement_12_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12))
+                        var Price_Movement_12_2 = self.weightedAverage(commondatesfiltered[1]['y'].slice(0, 12), commondatesfiltered[1]['hours'].slice(0, 12))
+                        var Price_Movement_12_3 = self.weightedAverage(commondatesfiltered[2]['y'].slice(0, 12), commondatesfiltered[2]['hours'].slice(0, 12))
+                        var Price_Movement_24_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 24), commondatesfiltered[0]['hours'].slice(0, 24))
+                        var Price_Movement_24_2 = self.weightedAverage(commondatesfiltered[1]['y'].slice(0, 24), commondatesfiltered[1]['hours'].slice(0, 24))
+                        var Price_Movement_24_3 = self.weightedAverage(commondatesfiltered[2]['y'].slice(0, 24), commondatesfiltered[2]['hours'].slice(0, 24))
                         var headers = ['Summary Analysis:', "", "Volatility ($/MWh)", "Volatility (%)", "", "Volatility ($/MWh)", "Volatility (%)"];
-                        var labels = ['Curve Title:', "", response['data'][1]['name'].split(":")[0]+" vs "+response['data'][0]['name'].split(":")[0], "", response['data'][2]['name'].split(":")[0]+" vs "+response['data'][0]['name'].split(":")[0]];
+                        var labels = ['Curve Title:', "", commondatesfiltered[1]['name'].split(":")[0]+" vs "+commondatesfiltered[0]['name'].split(":")[0], "", commondatesfiltered[2]['name'].split(":")[0]+" vs "+response['data'][0]['name'].split(":")[0]];
                         var data = [
                             ['Prompt Month Price Movement', 
                             "", 
@@ -253,16 +274,16 @@ truelight.graphview.view = {
                             "",
                             (Price_Movement_24_3 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_3 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2) ]
                         ];
-                        var difference_graph = JSON.parse(JSON.stringify(response["data"][1]));
-                        var differenceValues = difference_graph.y.map((value, index) => value - response["data"][0].y[index]);
+                        var difference_graph = JSON.parse(JSON.stringify(commondatesfiltered[1]));
+                        var differenceValues = difference_graph.y.map((value, index) => value - commondatesfiltered[0].y[index]);
                         difference_graph['y'] = differenceValues
                         difference_graph['type']= 'bar'
-                        var difference_graph2 = JSON.parse(JSON.stringify(response["data"][2]));
-                        var differenceValues2 = difference_graph2.y.map((value, index) => value - response["data"][0].y[index]);
+                        var difference_graph2 = JSON.parse(JSON.stringify(commondatesfiltered[2]));
+                        var differenceValues2 = difference_graph2.y.map((value, index) => value - commondatesfiltered[0].y[index]);
                         difference_graph2['y'] = differenceValues2
                         difference_graph2['type']= 'bar'
                         difference_graph = [difference_graph, difference_graph2]
-                        Plotly.newPlot('barchart', difference_graph, layout2, 
+                        Plotly.newPlot('barchart', difference_graph, self.layoutbar, 
                             {
                                 responsive: true
                             }
@@ -504,6 +525,74 @@ truelight.graphview.view = {
     weightedAverage:(values, weights)=> {
         let self = truelight.graphview.view;
         return self.sumProduct(values, weights) / self.sum(weights);
+    },
+    weightedAverageseason:(values, weights, season_value)=> {
+        let self = truelight.graphview.view;
+        return self.sumProduct(values, weights) / self.sum(weights);
+    },
+    generateRandomColor:()=> {
+        // Choose which primary color to emphasize
+        var primaryColors = ['r', 'g', 'b'];
+        var primary = primaryColors[Math.floor(Math.random() * primaryColors.length)];
+    
+        let r, g, b;
+    
+        // Depending on the choice, make one color component dominant
+        if (primary === 'r') {
+            r = Math.floor(Math.random() * 128) + 128; // Random value between 128 and 255
+            g = Math.floor(Math.random() * 128);       // Random value between 0 and 127
+            b = Math.floor(Math.random() * 128);       // Random value between 0 and 127
+        } else if (primary === 'g') {
+            r = Math.floor(Math.random() * 128);       // Random value between 0 and 127
+            g = Math.floor(Math.random() * 128) + 128; // Random value between 128 and 255
+            b = Math.floor(Math.random() * 128);       // Random value between 0 and 127
+        } else { // primary === 'b'
+            r = Math.floor(Math.random() * 128);       // Random value between 0 and 127
+            g = Math.floor(Math.random() * 128);       // Random value between 0 and 127
+            b = Math.floor(Math.random() * 128) + 128; // Random value between 128 and 255
+        }
+    
+        // Combine the components into a single string and return it
+        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    },
+    plotlyobjectformation:(obj, index)=> {
+        let self = truelight.graphview.view;
+        if (index==0)
+            {
+                var color = 'rgb(0,90,154)'
+                var markerColor = 'rgb(240,192,85)'
+            }
+        else if (index==1)
+            {
+                var color = 'rgb(240,192,85)'
+                var markerColor = 'rgb(0,90,154)'
+        }
+        else 
+            {
+                var color = self.generateRandomColor()
+                var markerColor = self.generateRandomColor()
+            }
+        // Apply your transformation logic here
+        return {
+            x: [...obj['x']],
+            y: [...obj['y']],
+            mode: "markers+lines",
+            name: obj['name'],
+            showlegend: true,
+            line: {
+                shape: 'spline',
+                color: color,
+                width: 4
+            },
+            marker: {
+                size: 8,
+                color: markerColor,
+                line: {
+                    color: markerColor,
+                    width: 2
+                }
+            }
+        };
     }
 };
 

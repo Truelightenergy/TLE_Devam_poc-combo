@@ -142,7 +142,6 @@ class Util:
         # pio.templates.default = "plotly"
         # fig = go.Figure()
         fig = []
-        hours = []
         for i, params in enumerate(parameters_array):
             if i>0:
                 try:
@@ -175,18 +174,6 @@ class Util:
                 rules = self.filter.filter_data(params['control_table'], email)
                 df, status = self.dataframe_filtering(df, rules, params['control_table'])
             if (session["level"]== 'admin')or(status !='error'):
-
-                if i==0 :
-                    color = 'rgb(0,90,154)'
-                    markerColor = 'rgb(240,192,85)'
-                elif i==1:
-                    color = 'rgb(240,192,85)'
-                    markerColor = 'rgb(0,90,154)'
-                else: 
-                    color = self.generate_random_color()
-                    markerColor = self.generate_random_color()
-                                
-
                 update = 'ID'
                 if params['cob']== True or params['cob']=='true':
                     update = 'COB'
@@ -195,24 +182,13 @@ class Util:
                 fig.append(dict(
                     x=list(df["month"].astype(str)), 
                     y=list(df["data"]), 
-                    mode="markers+lines",
-                    name=label,  # You can pass a label for each line
-                    showlegend=True,
-                    line=dict(
-                        shape='spline',  
-                        color=color,  
-                        width=4  
-                    ),
-                    marker=dict(
-                        size=8,  
-                        color=markerColor,  
-                        line=dict(
-                            color=markerColor,
-                            width=2  
-                        )
-                    )))
-                hours.append(list(df["7x24"]))
-        graphJSON = json.dumps({'data':fig, 'hours': hours})
+                    hours = list(df["7x24"]),
+                    season = list(df["season"]),
+                    name=label,
+                    ))
+        graphJSON = json.dumps({
+                                'data':fig, 
+                                })
         return graphJSON
 
     def validate_access(self, rules, control_table, load_zone):
