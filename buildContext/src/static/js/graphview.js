@@ -197,6 +197,9 @@ truelight.graphview.view = {
                         var Prompt_Month_curve1 = commondatesfiltered[0]['y'][0]
                         var Price_Movement_12_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12))
                         var Price_Movement_24_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 24), commondatesfiltered[0]['hours'].slice(0, 24))
+                        var Price_Movement_10_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 10), commondatesfiltered[0]['hours'].slice(0, 10))
+                        var Price_Movement_winter_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), 'winter')
+                        var Price_Movement_summer_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), 'summer')
                         var headers = ['Summary Analysis:', "", "Energy Price"];
                         var labels = [];
                         var data = [
@@ -206,7 +209,16 @@ truelight.graphview.view = {
                             (Price_Movement_12_1).toFixed(2)],
                             ['24 Month Price',
                             "",
-                            (Price_Movement_24_1).toFixed(2)]
+                            (Price_Movement_24_1).toFixed(2)],
+                            ['Cal Strip Price',
+                            "",
+                            (Price_Movement_10_1).toFixed(2)],
+                            ['Winter Strip Price Movement',
+                            "",
+                            (Price_Movement_winter_1).toFixed(2)],
+                            ['Summer Month Price',
+                            "",
+                            (Price_Movement_summer_1).toFixed(2)],
                         ];
                         self.convertDivToTable('comparisontable', headers, labels,  data)
                     }
@@ -219,6 +231,12 @@ truelight.graphview.view = {
                         var Price_Movement_12_2 = self.weightedAverage(commondatesfiltered[1]['y'].slice(0, 12), commondatesfiltered[1]['hours'].slice(0, 12))
                         var Price_Movement_24_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 24), commondatesfiltered[0]['hours'].slice(0, 24))
                         var Price_Movement_24_2 = self.weightedAverage(commondatesfiltered[1]['y'].slice(0, 24), commondatesfiltered[1]['hours'].slice(0, 24))
+                        var Price_Movement_10_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 10), commondatesfiltered[0]['hours'].slice(0, 10))
+                        var Price_Movement_10_2 = self.weightedAverage(commondatesfiltered[1]['y'].slice(0, 10), commondatesfiltered[1]['hours'].slice(0, 10))
+                        var Price_Movement_winter_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'winter')
+                        var Price_Movement_winter_2 = self.weightedAverageseason(commondatesfiltered[1]['y'].slice(0, 12), commondatesfiltered[1]['hours'].slice(0, 12), commondatesfiltered[1]['season'].slice(0, 12), 'winter')
+                        var Price_Movement_summer_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'summer')
+                        var Price_Movement_summer_2 = self.weightedAverageseason(commondatesfiltered[1]['y'].slice(0, 12), commondatesfiltered[1]['hours'].slice(0, 12), commondatesfiltered[1]['season'].slice(0, 12), 'summer')
                         var headers = ['Summary Analysis:', "", "Volatility ($/MWh)", "Volatility (%)"];
                         var labels = ['Curve Title:', "", commondatesfiltered[1]['name'].split(":")[0]+" vs "+commondatesfiltered[0]['name'].split(":")[0]];
                         var data = [
@@ -228,7 +246,16 @@ truelight.graphview.view = {
                             (Price_Movement_12_2 - Price_Movement_12_1).toFixed(2), (((Price_Movement_12_2 - Price_Movement_12_1)/Price_Movement_12_1)*100).toFixed(2) ],
                             ['24 Month Price Movement',
                             "",
-                            (Price_Movement_24_2 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_2 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2) ]
+                            (Price_Movement_24_2 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_2 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2) ],
+                            ['Cal Strip Price',
+                            "",
+                            (Price_Movement_10_2 - Price_Movement_10_1).toFixed(2), (((Price_Movement_10_2 - Price_Movement_10_1)/Price_Movement_10_1)*100).toFixed(2) ],
+                            ['Winter Strip Price Movement',
+                            "",
+                            (Price_Movement_winter_2 - Price_Movement_winter_1).toFixed(2), (((Price_Movement_winter_2 - Price_Movement_winter_1)/Price_Movement_winter_1)*100).toFixed(2) ],
+                            ['Summer Month Price',
+                            "",
+                            (Price_Movement_summer_2 - Price_Movement_summer_1).toFixed(2), (((Price_Movement_summer_2 - Price_Movement_summer_1)/Price_Movement_summer_1)*100).toFixed(2) ],
                         ];
                         var difference_graph = JSON.parse(JSON.stringify(commondatesfiltered[1]));
                         var differenceValues = difference_graph.y.map((value, index) => value - commondatesfiltered[0].y[index]);
@@ -255,6 +282,15 @@ truelight.graphview.view = {
                         var Price_Movement_24_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 24), commondatesfiltered[0]['hours'].slice(0, 24))
                         var Price_Movement_24_2 = self.weightedAverage(commondatesfiltered[1]['y'].slice(0, 24), commondatesfiltered[1]['hours'].slice(0, 24))
                         var Price_Movement_24_3 = self.weightedAverage(commondatesfiltered[2]['y'].slice(0, 24), commondatesfiltered[2]['hours'].slice(0, 24))
+                        var Price_Movement_10_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 10), commondatesfiltered[0]['hours'].slice(0, 10))
+                        var Price_Movement_10_2 = self.weightedAverage(commondatesfiltered[1]['y'].slice(0, 10), commondatesfiltered[1]['hours'].slice(0, 10))
+                        var Price_Movement_10_3 = self.weightedAverage(commondatesfiltered[2]['y'].slice(0, 10), commondatesfiltered[2]['hours'].slice(0, 10))
+                        var Price_Movement_winter_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'winter')
+                        var Price_Movement_winter_2 = self.weightedAverageseason(commondatesfiltered[1]['y'].slice(0, 12), commondatesfiltered[1]['hours'].slice(0, 12), commondatesfiltered[1]['season'].slice(0, 12), 'winter')
+                        var Price_Movement_winter_3 = self.weightedAverageseason(commondatesfiltered[2]['y'].slice(0, 12), commondatesfiltered[2]['hours'].slice(0, 12), commondatesfiltered[2]['season'].slice(0, 12), 'winter')
+                        var Price_Movement_summer_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'summer')
+                        var Price_Movement_summer_2 = self.weightedAverageseason(commondatesfiltered[1]['y'].slice(0, 12), commondatesfiltered[1]['hours'].slice(0, 12), commondatesfiltered[1]['season'].slice(0, 12), 'summer')
+                        var Price_Movement_summer_3 = self.weightedAverageseason(commondatesfiltered[2]['y'].slice(0, 12), commondatesfiltered[2]['hours'].slice(0, 12), commondatesfiltered[2]['season'].slice(0, 12), 'summer')
                         var headers = ['Summary Analysis:', "", "Volatility ($/MWh)", "Volatility (%)", "", "Volatility ($/MWh)", "Volatility (%)"];
                         var labels = ['Curve Title:', "", commondatesfiltered[1]['name'].split(":")[0]+" vs "+commondatesfiltered[0]['name'].split(":")[0], "", commondatesfiltered[2]['name'].split(":")[0]+" vs "+response['data'][0]['name'].split(":")[0]];
                         var data = [
@@ -272,7 +308,22 @@ truelight.graphview.view = {
                             "",
                             (Price_Movement_24_2 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_2 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2),
                             "",
-                            (Price_Movement_24_3 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_3 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2) ]
+                            (Price_Movement_24_3 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_3 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2) ],
+                            ['Cal Strip Price',
+                            "",
+                            (Price_Movement_10_2 - Price_Movement_10_1).toFixed(2), (((Price_Movement_10_2 - Price_Movement_10_1)/Price_Movement_10_1)*100).toFixed(2),
+                            "",
+                            (Price_Movement_10_3 - Price_Movement_10_1).toFixed(2), (((Price_Movement_10_3 - Price_Movement_10_1)/Price_Movement_10_1)*100).toFixed(2) ],
+                            ['Winter Strip Price Movement',
+                            "",
+                            (Price_Movement_winter_2 - Price_Movement_winter_1).toFixed(2), (((Price_Movement_winter_2 - Price_Movement_winter_1)/Price_Movement_winter_1)*100).toFixed(2),
+                            "",
+                            (Price_Movement_winter_3 - Price_Movement_winter_1).toFixed(2), (((Price_Movement_winter_3 - Price_Movement_winter_1)/Price_Movement_winter_1)*100).toFixed(2) ],
+                            ['Summer Month Price',
+                            "",
+                            (Price_Movement_summer_2 - Price_Movement_summer_1).toFixed(2), (((Price_Movement_summer_2 - Price_Movement_summer_1)/Price_Movement_summer_1)*100).toFixed(2),
+                            "",
+                            (Price_Movement_summer_3 - Price_Movement_summer_1).toFixed(2), (((Price_Movement_summer_3 - Price_Movement_summer_1)/Price_Movement_summer_1)*100).toFixed(2) ],
                         ];
                         var difference_graph = JSON.parse(JSON.stringify(commondatesfiltered[1]));
                         var differenceValues = difference_graph.y.map((value, index) => value - commondatesfiltered[0].y[index]);
@@ -526,9 +577,19 @@ truelight.graphview.view = {
         let self = truelight.graphview.view;
         return self.sumProduct(values, weights) / self.sum(weights);
     },
-    weightedAverageseason:(values, weights, season_value)=> {
+    weightedAverageseason:(values, weights, seasons, season_value)=> {
         let self = truelight.graphview.view;
-        return self.sumProduct(values, weights) / self.sum(weights);
+        let newvalues = [];
+        let newweights = [];
+
+        seasons.forEach((value, index) => {
+        if (value.toLowerCase() === season_value) {
+            newvalues.push(values[index]);
+            newweights.push(weights[index]);
+        }
+        });
+
+        return self.sumProduct(newvalues, newweights) / self.sum(newweights);
     },
     generateRandomColor:()=> {
         // Choose which primary color to emphasize
