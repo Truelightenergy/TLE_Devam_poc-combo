@@ -96,7 +96,7 @@ function load_heatmap() {
         stateMeanHeadroom[state] = { mean: state_mean };
 
     });
-   
+
     var svg = d3.select("#heapmap_graph");
     svg.on("mouseleave", function () {
         // Hide the tooltip
@@ -304,13 +304,76 @@ function load_graph_view() {
         }
     };
 
-    Plotly.newPlot('graphview', graphview_data['data'], layout,
+    Plotly.newPlot('graphview', graphview_data['data'].map(plotlyobjectformation), layout,
         {
             responsive: true,
             staticPlot: true,
             displayModeBar: false
         }
     );
+}
+
+function generateRandomColor() {
+    // Choose which primary color to emphasize
+    var primaryColors = ['r', 'g', 'b'];
+    var primary = primaryColors[Math.floor(Math.random() * primaryColors.length)];
+
+    let r, g, b;
+
+    // Depending on the choice, make one color component dominant
+    if (primary === 'r') {
+        r = Math.floor(Math.random() * 128) + 128; // Random value between 128 and 255
+        g = Math.floor(Math.random() * 128);       // Random value between 0 and 127
+        b = Math.floor(Math.random() * 128);       // Random value between 0 and 127
+    } else if (primary === 'g') {
+        r = Math.floor(Math.random() * 128);       // Random value between 0 and 127
+        g = Math.floor(Math.random() * 128) + 128; // Random value between 128 and 255
+        b = Math.floor(Math.random() * 128);       // Random value between 0 and 127
+    } else { // primary === 'b'
+        r = Math.floor(Math.random() * 128);       // Random value between 0 and 127
+        g = Math.floor(Math.random() * 128);       // Random value between 0 and 127
+        b = Math.floor(Math.random() * 128) + 128; // Random value between 128 and 255
+    }
+
+    // Combine the components into a single string and return it
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
+
+function plotlyobjectformation(obj, index) {    
+    if (index == 0) {
+        var color = 'rgb(0,90,154)'
+        var markerColor = 'rgb(240,192,85)'
+    }
+    else if (index == 1) {
+        var color = 'rgb(240,192,85)'
+        var markerColor = 'rgb(0,90,154)'
+    }
+    else {
+        var color = generateRandomColor()
+        var markerColor = generateRandomColor()
+    }
+    // Apply your transformation logic here
+    return {
+        x: [...obj['x']],
+        y: [...obj['y']],
+        mode: "markers+lines",
+        name: obj['name'],
+        showlegend: true,
+        line: {
+            shape: 'spline',
+            color: color,
+            width: 4
+        },
+        marker: {
+            size: 8,
+            color: markerColor,
+            line: {
+                color: markerColor,
+                width: 2
+            }
+        }
+    };
 }
 
 function load_data() {
