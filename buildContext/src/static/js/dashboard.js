@@ -412,7 +412,6 @@ function load_data() {
 function listners() {
 
     $('#graphview').on('click', function (event) {
-        debugger
         localStorage.setItem('dashboard_flow', true);
         localStorage.setItem('dashboard_filters', JSON.stringify(payload[0]));
         localStorage.setItem('dashboard_extra_filters', JSON.stringify(payload[1]));
