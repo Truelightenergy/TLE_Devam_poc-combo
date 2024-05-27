@@ -1165,6 +1165,10 @@ services:
           group by "ISO", to_char("CalDate", 'YYYY-MM')
           order by to_char("CalDate", 'YYYY-MM'), "ISO";
         
+        ALTER TABLE trueprice.price_changes_notifications ADD created_on timestamptz DEFAULT CURRENT_TIMESTAMP NULL;
+        update trueprice.price_changes_notifications set created_on  = '2023-12-12 05:00:00.000 +0000';
+        ALTER TABLE trueprice.price_changes_notifications ADD change_with_bounds bool DEFAULT false NULL;
+
         EOSQL
   # adminer: # for postgres, php admin interface
   #   image: adminer
