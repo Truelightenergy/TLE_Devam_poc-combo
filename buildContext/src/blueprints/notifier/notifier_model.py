@@ -84,7 +84,7 @@ class NotifierUtil:
                         JOIN trueprice.price_changes_notifications as pcg ON pcg.event_id= ne.event_id AND pcg.status='waiting' AND pcg.retries<5
                         JOIN trueprice.notifications AS ntf ON ntf.event_id = ne.event_id AND ntf.template_id = et.template_id
                         JOIN trueprice.schedule_patterns as sch ON ntf.notification_id = sch.notification_id AND sch.next_notification_time <= '{datetime.datetime.now()}'
-                        where pcg.curvestart::date = (date_trunc('month', CURRENT_DATE) + interval '1 month')::date     and pcg.notification_date::DATE = CURRENT_DATE AND pcg.status='waiting' AND pcg.retries<5;
+                        where pcg.curvestart::date = (date_trunc('month', CURRENT_DATE) + interval '1 month')::date and pcg.change_within_bounds = false and pcg.notification_date::DATE = CURRENT_DATE AND pcg.status='waiting' AND pcg.retries<5;
                         """
             results = self.engine.execute(query).fetchall()
             for row in results:
@@ -178,10 +178,10 @@ class NotifierUtil:
         setup the queue for notifications to be sent
         """
         try:
-            base_query = "INSERT INTO trueprice.price_changes_notifications (price_shift_value, price_shift_prct, price_shift, location, curvestart, event_id) VALUES"
+            base_query = "INSERT INTO trueprice.price_changes_notifications (price_shift_value, price_shift_prct, price_shift, location, curvestart,change_within_bounds,event_id) VALUES"
             values = []
             for query_strings in data_items:
-                value_set = f"('{query_strings['data_shift']}', '{query_strings['data_shift_prct']}', '{query_strings['volume']}', '{query_strings['location']}', '{query_strings['date']}', (select event_id from trueprice.notification_events where event_name ='PRICE_CHANGE'))"
+                value_set = f"('{query_strings['data_shift']}', '{query_strings['data_shift_prct']}', '{query_strings['volume']}', '{query_strings['location']}', '{query_strings['date']}',{'TRUE' if query_strings['data_shift'] < 2 else 'FALSE'}, (select event_id from trueprice.notification_events where event_name ='PRICE_CHANGE'))"
                 values.append(value_set)
             
             query = base_query + ", ".join(values)
@@ -241,7 +241,7 @@ class NotifierUtil:
                         where  
                         	curvestart::date = (date_trunc('month', CURRENT_DATE) + interval '1 month')::date 
                         and 
-                        		notification_date::DATE = CURRENT_DATE
+                        		(created_on::DATE = CURRENT_DATE::DATE or change_within_bounds = true)
                         ORDER BY price_shift_prct desc, notification_date desc
                     ) AS bottom_9
                     ORDER BY location DESC;
