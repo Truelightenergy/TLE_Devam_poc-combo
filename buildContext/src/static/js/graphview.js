@@ -198,27 +198,27 @@ truelight.graphview.view = {
                         var Price_Movement_12_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12))
                         var Price_Movement_24_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 24), commondatesfiltered[0]['hours'].slice(0, 24))
                         var Price_Movement_10_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 10), commondatesfiltered[0]['hours'].slice(0, 10))
-                        var Price_Movement_winter_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), 'winter')
-                        var Price_Movement_summer_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), 'summer')
+                        var Price_Movement_winter_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'winter')
+                        var Price_Movement_summer_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'summer')
                         var headers = ['Summary Analysis:', "", "Energy Price"];
                         var labels = [];
                         var data = [
-                            ['Prompt Month Price', "", (Prompt_Month_curve1).toFixed(2)],
+                            ['Prompt Month Price', "", "$"+(Prompt_Month_curve1).toFixed(2)],
                             ['12 Month Price',
                             "",
-                            (Price_Movement_12_1).toFixed(2)],
+                            "$"+(Price_Movement_12_1).toFixed(2)],
                             ['24 Month Price',
                             "",
-                            (Price_Movement_24_1).toFixed(2)],
+                            "$"+(Price_Movement_24_1).toFixed(2)],
                             ['Cal Strip Price',
                             "",
-                            (Price_Movement_10_1).toFixed(2)],
+                            "$"+(Price_Movement_10_1).toFixed(2)],
                             ['Winter Strip Price Movement',
                             "",
-                            (Price_Movement_winter_1).toFixed(2)],
+                            "$"+(Price_Movement_winter_1).toFixed(2)],
                             ['Summer Month Price',
                             "",
-                            (Price_Movement_summer_1).toFixed(2)],
+                            "$"+(Price_Movement_summer_1).toFixed(2)],
                         ];
                         self.convertDivToTable('comparisontable', headers, labels,  data)
                     }
@@ -240,27 +240,32 @@ truelight.graphview.view = {
                         var headers = ['Summary Analysis:', "", "Volatility ($/MWh)", "Volatility (%)"];
                         var labels = ['Curve Title:', "", commondatesfiltered[1]['name'].split(":")[0]+" vs "+commondatesfiltered[0]['name'].split(":")[0]];
                         var data = [
-                            ['Prompt Month Price Movement', "", (Prompt_Month_curve2-Prompt_Month_curve1).toFixed(2), (((Prompt_Month_curve2-Prompt_Month_curve1)/Prompt_Month_curve1)*100).toFixed(2)],
+                            ['Prompt Month Price Movement', "", "$"+(Prompt_Month_curve2-Prompt_Month_curve1).toFixed(2), (((Prompt_Month_curve2-Prompt_Month_curve1)/Prompt_Month_curve1)*100).toFixed(2)+"%" ],
                             ['12 Month Price Movement',
                             "",
-                            (Price_Movement_12_2 - Price_Movement_12_1).toFixed(2), (((Price_Movement_12_2 - Price_Movement_12_1)/Price_Movement_12_1)*100).toFixed(2) ],
+                            "$"+(Price_Movement_12_2 - Price_Movement_12_1).toFixed(2), (((Price_Movement_12_2 - Price_Movement_12_1)/Price_Movement_12_1)*100).toFixed(2)+"%" ],
                             ['24 Month Price Movement',
                             "",
-                            (Price_Movement_24_2 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_2 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2) ],
+                            "$"+(Price_Movement_24_2 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_2 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2)+"%" ],
                             ['Cal Strip Price',
                             "",
-                            (Price_Movement_10_2 - Price_Movement_10_1).toFixed(2), (((Price_Movement_10_2 - Price_Movement_10_1)/Price_Movement_10_1)*100).toFixed(2) ],
+                            "$"+(Price_Movement_10_2 - Price_Movement_10_1).toFixed(2), (((Price_Movement_10_2 - Price_Movement_10_1)/Price_Movement_10_1)*100).toFixed(2)+"%" ],
                             ['Winter Strip Price Movement',
                             "",
-                            (Price_Movement_winter_2 - Price_Movement_winter_1).toFixed(2), (((Price_Movement_winter_2 - Price_Movement_winter_1)/Price_Movement_winter_1)*100).toFixed(2) ],
+                            "$"+(Price_Movement_winter_2 - Price_Movement_winter_1).toFixed(2), (((Price_Movement_winter_2 - Price_Movement_winter_1)/Price_Movement_winter_1)*100).toFixed(2)+"%" ],
                             ['Summer Month Price',
                             "",
-                            (Price_Movement_summer_2 - Price_Movement_summer_1).toFixed(2), (((Price_Movement_summer_2 - Price_Movement_summer_1)/Price_Movement_summer_1)*100).toFixed(2) ],
+                            "$"+(Price_Movement_summer_2 - Price_Movement_summer_1).toFixed(2), (((Price_Movement_summer_2 - Price_Movement_summer_1)/Price_Movement_summer_1)*100).toFixed(2)+"%" ],
                         ];
                         var difference_graph = JSON.parse(JSON.stringify(commondatesfiltered[1]));
                         var differenceValues = difference_graph.y.map((value, index) => value - commondatesfiltered[0].y[index]);
                         difference_graph['y'] = differenceValues
                         difference_graph['type']= 'bar'
+                        difference_graph['marker'] = modifiedresponse[1].marker
+                        difference_graph['marker'].color = modifiedresponse[1].line.color
+                        difference_graph['marker'].line.color = modifiedresponse[1].line.color
+                        difference_graph.name = "Price Movement ("+ commondatesfiltered[1]['name'].split(":")[0]+" vs "+commondatesfiltered[0]['name'].split(":")[0] + ")"
+                        difference_graph.showlegend = true
                         difference_graph = [difference_graph]
                         // difference_graph = difference_graph.map(self.plotlyobjectformation)
                         Plotly.newPlot('barchart', difference_graph, self.layoutbar, 
@@ -292,47 +297,57 @@ truelight.graphview.view = {
                         var Price_Movement_summer_2 = self.weightedAverageseason(commondatesfiltered[1]['y'].slice(0, 12), commondatesfiltered[1]['hours'].slice(0, 12), commondatesfiltered[1]['season'].slice(0, 12), 'summer')
                         var Price_Movement_summer_3 = self.weightedAverageseason(commondatesfiltered[2]['y'].slice(0, 12), commondatesfiltered[2]['hours'].slice(0, 12), commondatesfiltered[2]['season'].slice(0, 12), 'summer')
                         var headers = ['Summary Analysis:', "", "Volatility ($/MWh)", "Volatility (%)", "", "Volatility ($/MWh)", "Volatility (%)"];
-                        var labels = ['Curve Title:', "", commondatesfiltered[1]['name'].split(":")[0]+" vs "+commondatesfiltered[0]['name'].split(":")[0], "", commondatesfiltered[2]['name'].split(":")[0]+" vs "+response['data'][0]['name'].split(":")[0]];
+                        var labels = ['Curve Title:', "", commondatesfiltered[1]['name'].split(":")[0]+" vs "+commondatesfiltered[0]['name'].split(":")[0], "", commondatesfiltered[2]['name'].split(":")[0]+" vs "+commondatesfiltered[0]['name'].split(":")[0]];
                         var data = [
                             ['Prompt Month Price Movement', 
                             "", 
-                            (Prompt_Month_curve2-Prompt_Month_curve1).toFixed(2), (((Prompt_Month_curve2-Prompt_Month_curve1)/Prompt_Month_curve1)*100).toFixed(2),
+                            "$"+(Prompt_Month_curve2-Prompt_Month_curve1).toFixed(2), (((Prompt_Month_curve2-Prompt_Month_curve1)/Prompt_Month_curve1)*100).toFixed(2)+"%",
                             "", 
-                            (Prompt_Month_curve3-Prompt_Month_curve1).toFixed(2), (((Prompt_Month_curve3-Prompt_Month_curve1)/Prompt_Month_curve1)*100).toFixed(2)],
+                            "$"+(Prompt_Month_curve3-Prompt_Month_curve1).toFixed(2), (((Prompt_Month_curve3-Prompt_Month_curve1)/Prompt_Month_curve1)*100).toFixed(2)+"%"],
                             ['12 Month Price Movement',
                             "",
-                            (Price_Movement_12_2 - Price_Movement_12_1).toFixed(2), (((Price_Movement_12_2 - Price_Movement_12_1)/Price_Movement_12_1)*100).toFixed(2),
+                            "$"+(Price_Movement_12_2 - Price_Movement_12_1).toFixed(2), (((Price_Movement_12_2 - Price_Movement_12_1)/Price_Movement_12_1)*100).toFixed(2)+"%",
                             "",
-                            (Price_Movement_12_3 - Price_Movement_12_1).toFixed(2), (((Price_Movement_12_3 - Price_Movement_12_1)/Price_Movement_12_1)*100).toFixed(2) ],
+                            "$"+(Price_Movement_12_3 - Price_Movement_12_1).toFixed(2), (((Price_Movement_12_3 - Price_Movement_12_1)/Price_Movement_12_1)*100).toFixed(2)+"%" ],
                             ['24 Month Price Movement',
                             "",
-                            (Price_Movement_24_2 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_2 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2),
+                            "$"+(Price_Movement_24_2 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_2 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2)+"%",
                             "",
-                            (Price_Movement_24_3 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_3 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2) ],
+                            "$"+(Price_Movement_24_3 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_3 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2)+"%" ],
                             ['Cal Strip Price',
                             "",
-                            (Price_Movement_10_2 - Price_Movement_10_1).toFixed(2), (((Price_Movement_10_2 - Price_Movement_10_1)/Price_Movement_10_1)*100).toFixed(2),
+                            "$"+(Price_Movement_10_2 - Price_Movement_10_1).toFixed(2), (((Price_Movement_10_2 - Price_Movement_10_1)/Price_Movement_10_1)*100).toFixed(2)+"%",
                             "",
-                            (Price_Movement_10_3 - Price_Movement_10_1).toFixed(2), (((Price_Movement_10_3 - Price_Movement_10_1)/Price_Movement_10_1)*100).toFixed(2) ],
+                            "$"+(Price_Movement_10_3 - Price_Movement_10_1).toFixed(2), (((Price_Movement_10_3 - Price_Movement_10_1)/Price_Movement_10_1)*100).toFixed(2)+"%" ],
                             ['Winter Strip Price Movement',
                             "",
-                            (Price_Movement_winter_2 - Price_Movement_winter_1).toFixed(2), (((Price_Movement_winter_2 - Price_Movement_winter_1)/Price_Movement_winter_1)*100).toFixed(2),
+                            "$"+(Price_Movement_winter_2 - Price_Movement_winter_1).toFixed(2), (((Price_Movement_winter_2 - Price_Movement_winter_1)/Price_Movement_winter_1)*100).toFixed(2)+"%",
                             "",
-                            (Price_Movement_winter_3 - Price_Movement_winter_1).toFixed(2), (((Price_Movement_winter_3 - Price_Movement_winter_1)/Price_Movement_winter_1)*100).toFixed(2) ],
+                            "$"+(Price_Movement_winter_3 - Price_Movement_winter_1).toFixed(2), (((Price_Movement_winter_3 - Price_Movement_winter_1)/Price_Movement_winter_1)*100).toFixed(2)+"%" ],
                             ['Summer Month Price',
                             "",
-                            (Price_Movement_summer_2 - Price_Movement_summer_1).toFixed(2), (((Price_Movement_summer_2 - Price_Movement_summer_1)/Price_Movement_summer_1)*100).toFixed(2),
+                            "$"+(Price_Movement_summer_2 - Price_Movement_summer_1).toFixed(2), (((Price_Movement_summer_2 - Price_Movement_summer_1)/Price_Movement_summer_1)*100).toFixed(2)+"%",
                             "",
-                            (Price_Movement_summer_3 - Price_Movement_summer_1).toFixed(2), (((Price_Movement_summer_3 - Price_Movement_summer_1)/Price_Movement_summer_1)*100).toFixed(2) ],
+                            "$"+(Price_Movement_summer_3 - Price_Movement_summer_1).toFixed(2), (((Price_Movement_summer_3 - Price_Movement_summer_1)/Price_Movement_summer_1)*100).toFixed(2)+"%" ],
                         ];
                         var difference_graph = JSON.parse(JSON.stringify(commondatesfiltered[1]));
                         var differenceValues = difference_graph.y.map((value, index) => value - commondatesfiltered[0].y[index]);
                         difference_graph['y'] = differenceValues
                         difference_graph['type']= 'bar'
+                        difference_graph['marker'] = modifiedresponse[1].marker
+                        difference_graph['marker'].color = modifiedresponse[1].line.color
+                        difference_graph['marker'].line.color = modifiedresponse[1].line.color
+                        difference_graph.name = "Price Movement ("+ commondatesfiltered[1]['name'].split(":")[0]+" vs "+commondatesfiltered[0]['name'].split(":")[0] + ")"
+                        difference_graph.showlegend = true
                         var difference_graph2 = JSON.parse(JSON.stringify(commondatesfiltered[2]));
                         var differenceValues2 = difference_graph2.y.map((value, index) => value - commondatesfiltered[0].y[index]);
                         difference_graph2['y'] = differenceValues2
                         difference_graph2['type']= 'bar'
+                        difference_graph2['marker'] = modifiedresponse[2].marker
+                        difference_graph2['marker'].color = modifiedresponse[2].line.color
+                        difference_graph2['marker'].line.color = modifiedresponse[2].line.color
+                        difference_graph2.name = "Price Movement ("+ commondatesfiltered[2]['name'].split(":")[0]+" vs "+commondatesfiltered[0]['name'].split(":")[0] + ")"
+                        difference_graph2.showlegend = true
                         difference_graph = [difference_graph, difference_graph2]
                         Plotly.newPlot('barchart', difference_graph, self.layoutbar, 
                             {
@@ -555,7 +570,7 @@ truelight.graphview.view = {
                 {cell.style.textAlign = 'left';}
                 else
                 {cell.style.textAlign = 'center';}
-                if (indexrow==1)
+                if (indexrow==1 || indexrow==4)
                 {cell.style.paddingTop = '36px'}
                 row.appendChild(cell);
             });
