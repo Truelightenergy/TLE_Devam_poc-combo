@@ -134,9 +134,9 @@ truelight.graphview.view = {
         let self = truelight.graphview.view;
         let filters = localStorage.getItem('dashboard_filters');
         let extraFilters = localStorage.getItem('dashboard_extra_filters');
-        if (filters && typeof filters !== 'string')
-            self.cache.defaultFilters = JSON.parse(filters);
-        if (extraFilters && typeof extraFilters !== 'string')
+        if (filters)
+            self.cache.defaultFilters = typeof filters === 'string' ? JSON.parse(filters): filters;
+        if (extraFilters)
             self.cache.extraFilters = [JSON.parse(extraFilters)];
     },
     populateGraph: (data) => {
