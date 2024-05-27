@@ -101,7 +101,7 @@ class NotifierUtil:
         fetch the notification events which are pending 
         """
         #currently we only send notifications for price change for 9 key nodal points from energy curve
-        query = """select * from trueprice.price_change_trigger where status = 'waiting' and filename  like '%%_energy';"""
+        query = """select * from trueprice.price_change_trigger where status = 'waiting' and filename  like '%%_energy' and curvestart ::DATE = current_date::DATE;"""
         data = []
         try:
             results = self.engine.execute(query).fetchall()
