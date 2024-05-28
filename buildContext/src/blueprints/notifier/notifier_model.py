@@ -241,7 +241,7 @@ class NotifierUtil:
                         where  
                         	curvestart::date = (date_trunc('month', CURRENT_DATE) + interval '1 month')::date 
                         and 
-                        		(created_on::DATE = CURRENT_DATE::DATE or change_within_bounds = true)
+                        		(created_on::DATE = CURRENT_DATE::DATE)
                         ORDER BY price_shift_prct desc, notification_date desc
                     ) AS bottom_9
                     ORDER BY location DESC;
