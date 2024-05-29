@@ -134,9 +134,9 @@ truelight.graphview.view = {
         let self = truelight.graphview.view;
         let filters = localStorage.getItem('dashboard_filters');
         let extraFilters = localStorage.getItem('dashboard_extra_filters');
-        if (filters)
-            self.cache.defaultFilters = typeof filters === 'string' ? JSON.parse(filters): filters;
-        if (extraFilters)
+        if (filters && filters != 'undefined')
+            self.cache.defaultFilters = JSON.parse(filters);
+        if (extraFilters && extraFilters != 'undefined')
             self.cache.extraFilters = [JSON.parse(extraFilters)];
     },
     populateGraph: (data) => {
@@ -213,10 +213,10 @@ truelight.graphview.view = {
                             ['Cal Strip Price',
                             "",
                             "$"+(Price_Movement_10_1).toFixed(2)],
-                            ['Winter Strip Price Movement',
+                            ['Winter Strip Price',
                             "",
                             "$"+(Price_Movement_winter_1).toFixed(2)],
-                            ['Summer Month Price',
+                            ['Summer Strip Price',
                             "",
                             "$"+(Price_Movement_summer_1).toFixed(2)],
                         ];
@@ -247,13 +247,13 @@ truelight.graphview.view = {
                             ['24 Month Price Movement',
                             "",
                             "$"+(Price_Movement_24_2 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_2 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2)+"%" ],
-                            ['Cal Strip Price',
+                            ['Cal Strip Price Movement',
                             "",
                             "$"+(Price_Movement_10_2 - Price_Movement_10_1).toFixed(2), (((Price_Movement_10_2 - Price_Movement_10_1)/Price_Movement_10_1)*100).toFixed(2)+"%" ],
                             ['Winter Strip Price Movement',
                             "",
                             "$"+(Price_Movement_winter_2 - Price_Movement_winter_1).toFixed(2), (((Price_Movement_winter_2 - Price_Movement_winter_1)/Price_Movement_winter_1)*100).toFixed(2)+"%" ],
-                            ['Summer Month Price',
+                            ['Summer Strip Price Movement',
                             "",
                             "$"+(Price_Movement_summer_2 - Price_Movement_summer_1).toFixed(2), (((Price_Movement_summer_2 - Price_Movement_summer_1)/Price_Movement_summer_1)*100).toFixed(2)+"%" ],
                         ];
@@ -314,7 +314,7 @@ truelight.graphview.view = {
                             "$"+(Price_Movement_24_2 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_2 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2)+"%",
                             "",
                             "$"+(Price_Movement_24_3 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_3 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2)+"%" ],
-                            ['Cal Strip Price',
+                            ['Cal Strip Price Movement',
                             "",
                             "$"+(Price_Movement_10_2 - Price_Movement_10_1).toFixed(2), (((Price_Movement_10_2 - Price_Movement_10_1)/Price_Movement_10_1)*100).toFixed(2)+"%",
                             "",
@@ -324,7 +324,7 @@ truelight.graphview.view = {
                             "$"+(Price_Movement_winter_2 - Price_Movement_winter_1).toFixed(2), (((Price_Movement_winter_2 - Price_Movement_winter_1)/Price_Movement_winter_1)*100).toFixed(2)+"%",
                             "",
                             "$"+(Price_Movement_winter_3 - Price_Movement_winter_1).toFixed(2), (((Price_Movement_winter_3 - Price_Movement_winter_1)/Price_Movement_winter_1)*100).toFixed(2)+"%" ],
-                            ['Summer Month Price',
+                            ['Summer Strip Price Movement',
                             "",
                             "$"+(Price_Movement_summer_2 - Price_Movement_summer_1).toFixed(2), (((Price_Movement_summer_2 - Price_Movement_summer_1)/Price_Movement_summer_1)*100).toFixed(2)+"%",
                             "",
@@ -519,17 +519,25 @@ truelight.graphview.view = {
             // if (index == 2)
             // {th.colSpan = 2;}
             // th.style.border = '1px solid black';
-            if (headerText=="")
-            {th.style.padding = '24px';}
-            else
-            {th.style.padding = '4px';}
+            // if (headerText=="")
+            // {th.style.padding = '4px';}
+            // else
+            // {
+                th.style.padding = '4px';
+
+            // }
             if (index==0)
             {th.style.textAlign = 'left';}
             else
             {th.style.textAlign = 'center';}
-            th.style.paddingBottom = '16px'
+            th.style.paddingBottom = '12px'
+            th.style.paddingTop = '12px'
+            th.style.font = '18px';
+            th.style.color = '#0C4660'
             headerRow.appendChild(th);
         });
+        // headerRow.style.border = '1px solid #d3d3d3';
+        headerRow.className = 'table cHeader'
         table.appendChild(headerRow);
         if (labels.length>0)
         {const labelRow = document.createElement('tr');
@@ -545,16 +553,23 @@ truelight.graphview.view = {
             {labelth.style.fontWeight = 'normal';
             labelth.style.textAlign = 'left';}
             
-            if (headerText=="")
-            {labelth.style.paddingLeft = '12px';labelth.style.paddingRight = '12px';}
-            else
-            {labelth.style.padding = '4px';}
+            // if (headerText=="")
+            // {labelth.style.paddingLeft = '4px';labelth.style.paddingRight = '4px';}
+            // else
+            // {
+                labelth.style.padding = '4px';
+            // }
             
             if (index == 2 || index == 4)
             {labelth.colSpan = 2;}
-            
+            labelth.style.paddingBottom = '12px';
+            labelth.style.paddingTop = '12px';
+            labelth.style.font = '18px';
+            labelth.style.color = '#0C4660'
             labelRow.appendChild(labelth);
         });
+
+        // labelRow.style.border = '1px solid #d3d3d3';
         table.appendChild(labelRow);}
         data.forEach(function(rowData, indexrow){
             const row = document.createElement('tr');
@@ -563,23 +578,33 @@ truelight.graphview.view = {
                 cell.textContent = cellData;
                 // cell.style.border = '1px solid black';
                 if (cellData=="")
-                {cell.style.paddingLeft = '12px';cell.style.paddingRight = '12px';}
+                {cell.style.paddingLeft = '4px';cell.style.paddingRight = '4px';}
                 else
                 {cell.style.padding = '4px';}
                 if (index==0)
                 {cell.style.textAlign = 'left';}
                 else
                 {cell.style.textAlign = 'center';}
-                if (indexrow==1 || indexrow==4)
-                {cell.style.paddingTop = '36px'}
+                // if (indexrow==1 || indexrow==4)
+                // {cell.style.paddingTop = '36px'}
+                cell.style.paddingBottom = '12px';
+                cell.style.paddingTop = '12px';
+                cell.style.font = '18px';
                 row.appendChild(cell);
             });
-            row.style.borderTop = '2px solid #d3d3d3';
+            row.style.borderTop = '0.5px solid #d3d3d3';
             table.appendChild(row);
         });
 
         // Clear the div's content and append the table
         div.innerHTML = '';
+        div.style.paddingTop = '30px'
+        div.style.display= 'flex';
+        div.style.justifyContent = 'center'; /* Horizontal centering */
+        div.style.alignItems = 'center';
+        table.style.width = '90%';
+        table.style.tableLayout = 'fixed';
+        table.style.whiteSpace = 'nowrap';
         div.appendChild(table);
     },
     sumProduct:(array1, array2)=> {
