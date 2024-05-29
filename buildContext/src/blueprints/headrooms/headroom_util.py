@@ -60,7 +60,7 @@ class Util:
         """
         if (dataframe is not None) and len(dataframe) != 0 :
             dataframe =  dataframe[['state', 'utility', 'load_zone', 'utility_price', 'retail_price', 'headroom', 
-                                    'headroom_prct', 'customer_type']]
+                                    'headroom_prct', 'customer_type', 'term']]
         else:
             dataframe = pd.DataFrame()
         return dataframe

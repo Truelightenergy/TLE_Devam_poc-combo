@@ -260,10 +260,12 @@ class HeadroomModel:
                             "customer_type": row['cost_component'],
                             "control_area": row['control_area'], "capacity_zone": row['capacity_zone'],
                             "utility": row['utility'], "strip": row['strip'], "cost_group": row['cost_group'],
-                            "cost_component": row['cost_component'] 
+                            "cost_component": row['cost_component'], "term": int(row['term'])
 
 
                             })
+            # Added only for debugging
+            # print(df.sort_values(by=['headroom'], ascending=False).head(10).to_string())
             return data
         except:
             return data
