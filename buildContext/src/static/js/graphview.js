@@ -5,7 +5,37 @@ truelight.graphview.view = {
         defaultFilters: {},
         extraFilters: [],
         token: null,
-        graphId:null
+        graphId: null,
+        summaryDataTableColumnTitleMapping: {
+            promptMonthCurve: 'Prompt Month Price',
+            priceMovement12Month: '12 Month Price',
+            priceMovement24Month: '24 Month Price',
+            priceMovement10Month: 'Cal Strip Price',
+            priceMovementWinter: 'Winter Strip Price',
+            priceMovementSummer: 'Summer Strip Price'
+
+        },
+        templates: {
+            summaryAnalysisColumnTemplate: '<th style="padding: 12px 4px; color: rgb(12, 70, 96);"></th>',
+            summaryAnanlysisTableTemplate: `<table style="table-layout: fixed; white-space: nowrap; margin: 0px auto;">
+                                                <thead>                                
+                                                    <tr class="table cHeader">
+                                                        <th style="padding: 12px 4px; text-align: left; color: rgb(12, 70, 96);">Summary Analysis</th>                                        
+                                                    </tr>
+                                                </thead>
+                                            </table>`,
+            summaryAnalysisSubRowTemplate: `<tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                                            <td style="padding: 12px 4px; color: rgb(12, 70, 96) !important;">Curve Title</td>
+                                        </tr>`,
+            summaryDataTableTemplate: `<table style="white-space: nowrap; margin: 0px auto;">
+                                            <thead></thead>
+                                            <tbody>                                                
+                                            </tbody>
+                                        </table>`,
+            summaryDataTableColumnTemplate: `<td style="padding: 12px 4px;"></td>`,
+            summaryDataTableRowTemplate: `<tr style="border-top: 0.5px solid rgb(211, 211, 211);"></tr>`
+
+        }
     },
     layoutline: {
         "xaxis": {
@@ -49,7 +79,7 @@ truelight.graphview.view = {
             "b": 20
         }
     },
-    layoutbar : {
+    layoutbar: {
         "xaxis": {
             "tickfont": {
                 "size": 10,
@@ -92,36 +122,50 @@ truelight.graphview.view = {
             "b": 20
         }
     },
+    _selectors: {
+        summaryAnalysisHeader: '#comparisontable',
+        summaryAnalysisData: '#comparisontablebody'
+    },
+    _controls: {
+        summaryAnalysisHeader: null,
+        summaryAnalysisData: null
+    },
+    initControls: () => {
+        let self = truelight.graphview.view;
+        self._controls.summaryAnalysisHeader = $(self._selectors.summaryAnalysisHeader);
+        self._controls.summaryAnalysisData = $(self._selectors.summaryAnalysisData);
+    },
     initHandlers: () => {
         let self = truelight.graphview.view;
         let graphview = truelight.graphview;
         let controls = graphview.controls;
 
-        controls.btnDownload.click(function() {self.downloads();});
+        controls.btnDownload.click(function () { self.downloads(); });
         controls.btnDayOverDay.click(function () { self.getDayOverDay(); });
         controls.btnWeekOverWeek.click(function () { self.getWeekOverWeek(); });
         controls.btnMonthOverMonth.click(function () { self.getMonthOverMonth(); });
         controls.btnAddCustomGraphToggle.click(function () { self.btnAddCustomGraphToggleHandler(); });
         controls.btnAddGraph.click(function () { self.addGraphHandler(); });
-        controls.save_graph.click(function () { self.cache.graphId > 0 ? self.updateGraphHandler(): self.saveGraphHandler(); });
+        controls.save_graph.click(function () { self.cache.graphId > 0 ? self.updateGraphHandler() : self.saveGraphHandler(); });
     },
     onViewLoad: function (token) {
         let self = truelight.graphview.view;
         let graphview = truelight.graphview;
         graphview.cache.token = token;
+        self.initControls();
         graphview.onload();
         self.initHandlers();
 
-        if (localStorage.getItem('dashboard_flow')){
+        if (localStorage.getItem('dashboard_flow')) {
             self.dashboard_filters();
             localStorage.removeItem('dashboard_flow');
             localStorage.removeItem('dashboard_filters');
             localStorage.removeItem('dashboard_extra_filters');
         }
-        else{
+        else {
             self.initGraphViewFilters(JSON.parse(localStorage.getItem('graph_data')));
         }
-        
+
         self.populateGraph();
     },
     initGraphViewFilters: function (filters) {
@@ -138,6 +182,156 @@ truelight.graphview.view = {
             self.cache.defaultFilters = JSON.parse(filters);
         if (extraFilters && extraFilters != 'undefined')
             self.cache.extraFilters = [JSON.parse(extraFilters)];
+    },
+    calculateSummaryData: (data) => {
+        var self = truelight.graphview.view;
+        let commonX = data[0].x.filter(value =>
+            data.every(obj => obj.x.includes(value))
+        );
+
+        // Step 2: Create new objects with the common x values and their respective y and hours values
+        let commondatesfiltered = data.map(obj => {
+            let commonY = [];
+            let commonHours = [];
+            let commonseason = [];
+
+            commonX.forEach(value => {
+                let index = obj.x.indexOf(value);
+                commonY.push(obj.y[index]);
+                commonHours.push(obj.hours[index]);
+                commonseason.push(obj.season[index]);
+            });
+
+            return {
+                x: commonX,
+                y: commonY,
+                hours: commonHours,
+                season: commonseason,
+                name: obj.name
+            };
+        });
+
+        if (commondatesfiltered.length === 1) {
+            return [{
+                promptMonthCurve: commondatesfiltered[0]['y'][0],
+                priceMovement12Month: self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12)),
+                priceMovement24Month: self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 24), commondatesfiltered[0]['hours'].slice(0, 24)),
+                priceMovement10Month: self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 10), commondatesfiltered[0]['hours'].slice(0, 10)),
+                priceMovementWinter: self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'winter'),
+                priceMovementSummer: self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'summer')
+            }];
+        }
+        else {
+            var result = [];
+            for (var i = 1; i < commondatesfiltered.length; i++) {
+                var data = {};
+
+                var Prompt_Month_curve1 = commondatesfiltered[0]['y'][0]
+                var Prompt_Month_curve2 = commondatesfiltered[i]['y'][0]
+
+                data.promptMonthCurve = Prompt_Month_curve2 - Prompt_Month_curve1;
+                data.promptMonthCurvePercentage = (((Prompt_Month_curve2 - Prompt_Month_curve1) / Prompt_Month_curve1) * 100);
+
+                var Price_Movement_12_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12));
+                var Price_Movement_12_2 = self.weightedAverage(commondatesfiltered[i]['y'].slice(0, 12), commondatesfiltered[i]['hours'].slice(0, 12));
+                data.priceMovement12Month = Price_Movement_12_2 - Price_Movement_12_1;
+                data.priceMovement12MonthPercentage = (((Prompt_Month_curve2 - Prompt_Month_curve1) / Prompt_Month_curve1) * 100);
+
+                var Price_Movement_24_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 24), commondatesfiltered[0]['hours'].slice(0, 24))
+                var Price_Movement_24_2 = self.weightedAverage(commondatesfiltered[i]['y'].slice(0, 24), commondatesfiltered[i]['hours'].slice(0, 24))
+                data.priceMovement24Month = Price_Movement_24_2 - Price_Movement_24_1;
+                data.priceMovement24MonthPercentage = (((Price_Movement_24_2 - Price_Movement_24_1) / Price_Movement_24_1) * 100);
+
+                var Price_Movement_10_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 10), commondatesfiltered[0]['hours'].slice(0, 10))
+                var Price_Movement_10_2 = self.weightedAverage(commondatesfiltered[i]['y'].slice(0, 10), commondatesfiltered[i]['hours'].slice(0, 10))
+
+                data.priceMovement10Month = Price_Movement_10_2 - Price_Movement_10_1;
+                data.priceMovement10MonthPercentage = (((Price_Movement_10_2 - Price_Movement_10_1) / Price_Movement_10_1) * 100);
+
+
+                var Price_Movement_winter_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'winter')
+                var Price_Movement_winter_2 = self.weightedAverageseason(commondatesfiltered[i]['y'].slice(0, 12), commondatesfiltered[i]['hours'].slice(0, 12), commondatesfiltered[i]['season'].slice(0, 12), 'winter')
+
+                data.priceMovementWinter = Price_Movement_winter_2 - Price_Movement_winter_1;
+                data.priceMovementWinterPercentage = (((Price_Movement_winter_2 - Price_Movement_winter_1) / Price_Movement_winter_1) * 100);
+
+
+                var Price_Movement_summer_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'summer')
+                var Price_Movement_summer_2 = self.weightedAverageseason(commondatesfiltered[i]['y'].slice(0, 12), commondatesfiltered[i]['hours'].slice(0, 12), commondatesfiltered[i]['season'].slice(0, 12), 'summer')
+
+                data.priceMovementSummer = Price_Movement_summer_2 - Price_Movement_summer_1;
+                data.priceMovementSummerPercentage = (((Price_Movement_summer_2 - Price_Movement_summer_1) / Price_Movement_summer_1) * 100);
+
+                result.push(data);
+            }
+            return result;
+        }
+
+    },
+    renderBarChart: (data) => {
+        var self = truelight.graphview.view;
+        var difference_graph_list = [];
+
+        const modifiedresponse = data.map(self.plotlyobjectformation);
+        let commonX = data[0].x.filter(value =>
+            data.every(obj => obj.x.includes(value))
+        );
+
+        // Step 2: Create new objects with the common x values and their respective y and hours values
+        let commondatesfiltered = data.map(obj => {
+            let commonY = [];
+            let commonHours = [];
+            let commonseason = [];
+
+            commonX.forEach(value => {
+                let index = obj.x.indexOf(value);
+                commonY.push(obj.y[index]);
+                commonHours.push(obj.hours[index]);
+                commonseason.push(obj.season[index]);
+            });
+
+            return {
+                x: commonX,
+                y: commonY,
+                hours: commonHours,
+                season: commonseason,
+                name: obj.name
+            };
+        });
+
+
+        if(commondatesfiltered.length==1) {$("#barchart").hide(); return;}
+
+        $("#barchart").show();
+
+
+        for (var i = 1; i < commondatesfiltered.length; i++) {
+            // Deep copy the current index data
+            var difference_graph = JSON.parse(JSON.stringify(commondatesfiltered[i]));
+
+            // Calculate the difference values
+            var differenceValues = difference_graph.y.map((value, index) => value - commondatesfiltered[0].y[index]);
+            difference_graph['y'] = differenceValues;
+
+            // Set the graph type and marker properties
+            difference_graph['type'] = 'bar';
+            difference_graph['marker'] = modifiedresponse[i].marker;
+            difference_graph['marker'].color = modifiedresponse[i].line.color;
+            difference_graph['marker'].line.color = modifiedresponse[i].line.color;
+
+            // Set the name and showlegend properties
+            difference_graph.name = "Price Movement (" + commondatesfiltered[i]['name'].split(":")[0] + " vs " + commondatesfiltered[0]['name'].split(":")[0] + ")";
+            difference_graph.showlegend = true;
+
+            // Add the difference graph to the list
+            difference_graph_list.push(difference_graph);
+        }
+
+        Plotly.newPlot('barchart', difference_graph_list, self.layoutbar, 
+            {
+                responsive: true
+            }
+        );
     },
     populateGraph: (data) => {
         let self = truelight.graphview.view;
@@ -156,34 +350,8 @@ truelight.graphview.view = {
             data: JSON.stringify(payload),
             success: function (response) {
                 truelight.loader.hide();
+               
                 const modifiedresponse = response['data'].map(self.plotlyobjectformation);
-                
-                let commonX = response['data'][0].x.filter(value => 
-                    response['data'].every(obj => obj.x.includes(value))
-                );
-                
-                // Step 2: Create new objects with the common x values and their respective y and hours values
-                let commondatesfiltered = response['data'].map(obj => {
-                    let commonY = [];
-                    let commonHours = [];
-                    let commonseason = [];
-                    
-                    commonX.forEach(value => {
-                        let index = obj.x.indexOf(value);
-                        commonY.push(obj.y[index]);
-                        commonHours.push(obj.hours[index]);
-                        commonseason.push(obj.season[index]);
-                    });
-                    
-                    return {
-                        x: commonX,
-                        y: commonY,
-                        hours: commonHours,
-                        season: commonseason,
-                        name: obj.name
-                    };
-                });
-
                 Plotly.newPlot('linechart', modifiedresponse, self.layoutline,
                     {
                         responsive: true,
@@ -191,248 +359,9 @@ truelight.graphview.view = {
                         // displayModeBar: false
                     }
                 );
-                if (commondatesfiltered.length==1) 
-                    {
-                        document.getElementById('barchart').style.display = 'none';
-                        var tabledata = []
-                        var Prompt_Month_curve1 = commondatesfiltered[0]['y'][0]
-                        var Price_Movement_12_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12))
-                        var Price_Movement_24_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 24), commondatesfiltered[0]['hours'].slice(0, 24))
-                        var Price_Movement_10_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 10), commondatesfiltered[0]['hours'].slice(0, 10))
-                        var Price_Movement_winter_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'winter')
-                        var Price_Movement_summer_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'summer')
-                        var headers = ['Summary Analysis:', "", "Energy Price"];
-                        var labels = [];
-                        var data = [
-                            ['Prompt Month Price', "", "$"+(Prompt_Month_curve1).toFixed(2)],
-                            ['12 Month Price',
-                            "",
-                            "$"+(Price_Movement_12_1).toFixed(2)],
-                            ['24 Month Price',
-                            "",
-                            "$"+(Price_Movement_24_1).toFixed(2)],
-                            ['Cal Strip Price',
-                            "",
-                            "$"+(Price_Movement_10_1).toFixed(2)],
-                            ['Winter Strip Price',
-                            "",
-                            "$"+(Price_Movement_winter_1).toFixed(2)],
-                            ['Summer Strip Price',
-                            "",
-                            "$"+(Price_Movement_summer_1).toFixed(2)],
-                        ];
-                        tabledata.push({'labels':labels, 'labels2': [], 'labels3':[], 'data':data})
-                        self.convertDivToTable('comparisontable', 'comparisontablebody', headers, tabledata)
-                    }
-                // else if (commondatesfiltered.length==2)
-                //     {
-                //         document.getElementById('barchart').style.display = 'block';
-                //         var Prompt_Month_curve1 = commondatesfiltered[0]['y'][0]
-                //         var Prompt_Month_curve2 = commondatesfiltered[1]['y'][0]
-                //         var Price_Movement_12_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12))
-                //         var Price_Movement_12_2 = self.weightedAverage(commondatesfiltered[1]['y'].slice(0, 12), commondatesfiltered[1]['hours'].slice(0, 12))
-                //         var Price_Movement_24_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 24), commondatesfiltered[0]['hours'].slice(0, 24))
-                //         var Price_Movement_24_2 = self.weightedAverage(commondatesfiltered[1]['y'].slice(0, 24), commondatesfiltered[1]['hours'].slice(0, 24))
-                //         var Price_Movement_10_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 10), commondatesfiltered[0]['hours'].slice(0, 10))
-                //         var Price_Movement_10_2 = self.weightedAverage(commondatesfiltered[1]['y'].slice(0, 10), commondatesfiltered[1]['hours'].slice(0, 10))
-                //         var Price_Movement_winter_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'winter')
-                //         var Price_Movement_winter_2 = self.weightedAverageseason(commondatesfiltered[1]['y'].slice(0, 12), commondatesfiltered[1]['hours'].slice(0, 12), commondatesfiltered[1]['season'].slice(0, 12), 'winter')
-                //         var Price_Movement_summer_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'summer')
-                //         var Price_Movement_summer_2 = self.weightedAverageseason(commondatesfiltered[1]['y'].slice(0, 12), commondatesfiltered[1]['hours'].slice(0, 12), commondatesfiltered[1]['season'].slice(0, 12), 'summer')
-                //         var headers = ['Summary Analysis:', "", "Volatility ($/MWh)", "Volatility (%)"];
-                //         var labels = ['Curve Title:', "", commondatesfiltered[1]['name'].split(":")[0]+" vs "+commondatesfiltered[0]['name'].split(":")[0]];
-                //         var data = [
-                //             ['Prompt Month Price Movement', "", "$"+(Prompt_Month_curve2-Prompt_Month_curve1).toFixed(2), (((Prompt_Month_curve2-Prompt_Month_curve1)/Prompt_Month_curve1)*100).toFixed(2)+"%" ],
-                //             ['12 Month Price Movement',
-                //             "",
-                //             "$"+(Price_Movement_12_2 - Price_Movement_12_1).toFixed(2), (((Price_Movement_12_2 - Price_Movement_12_1)/Price_Movement_12_1)*100).toFixed(2)+"%" ],
-                //             ['24 Month Price Movement',
-                //             "",
-                //             "$"+(Price_Movement_24_2 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_2 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2)+"%" ],
-                //             ['Cal Strip Price Movement',
-                //             "",
-                //             "$"+(Price_Movement_10_2 - Price_Movement_10_1).toFixed(2), (((Price_Movement_10_2 - Price_Movement_10_1)/Price_Movement_10_1)*100).toFixed(2)+"%" ],
-                //             ['Winter Strip Price Movement',
-                //             "",
-                //             "$"+(Price_Movement_winter_2 - Price_Movement_winter_1).toFixed(2), (((Price_Movement_winter_2 - Price_Movement_winter_1)/Price_Movement_winter_1)*100).toFixed(2)+"%" ],
-                //             ['Summer Strip Price Movement',
-                //             "",
-                //             "$"+(Price_Movement_summer_2 - Price_Movement_summer_1).toFixed(2), (((Price_Movement_summer_2 - Price_Movement_summer_1)/Price_Movement_summer_1)*100).toFixed(2)+"%" ],
-                //         ];
-                //         var difference_graph = JSON.parse(JSON.stringify(commondatesfiltered[1]));
-                //         var differenceValues = difference_graph.y.map((value, index) => value - commondatesfiltered[0].y[index]);
-                //         difference_graph['y'] = differenceValues
-                //         difference_graph['type']= 'bar'
-                //         difference_graph['marker'] = modifiedresponse[1].marker
-                //         difference_graph['marker'].color = modifiedresponse[1].line.color
-                //         difference_graph['marker'].line.color = modifiedresponse[1].line.color
-                //         difference_graph.name = "Price Movement ("+ commondatesfiltered[1]['name'].split(":")[0]+" vs "+commondatesfiltered[0]['name'].split(":")[0] + ")"
-                //         difference_graph.showlegend = true
-                //         difference_graph = [difference_graph]
-                //         // difference_graph = difference_graph.map(self.plotlyobjectformation)
-                //         Plotly.newPlot('barchart', difference_graph, self.layoutbar, 
-                //             {
-                //                 responsive: true
-                //             }
-                //         );
-                //         self.convertDivToTable('comparisontable', headers, labels,  data);
-                //     }
-                else
-                    {
-                        document.getElementById('barchart').style.display = 'block';
-                        // // start of comment
-                        // var Prompt_Month_curve1 = commondatesfiltered[0]['y'][0]
-                        // var Prompt_Month_curve2 = commondatesfiltered[1]['y'][0]
-                        // var Prompt_Month_curve3 = commondatesfiltered[2]['y'][0]
-                        // var Price_Movement_12_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12))
-                        // var Price_Movement_12_2 = self.weightedAverage(commondatesfiltered[1]['y'].slice(0, 12), commondatesfiltered[1]['hours'].slice(0, 12))
-                        // var Price_Movement_12_3 = self.weightedAverage(commondatesfiltered[2]['y'].slice(0, 12), commondatesfiltered[2]['hours'].slice(0, 12))
-                        // var Price_Movement_24_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 24), commondatesfiltered[0]['hours'].slice(0, 24))
-                        // var Price_Movement_24_2 = self.weightedAverage(commondatesfiltered[1]['y'].slice(0, 24), commondatesfiltered[1]['hours'].slice(0, 24))
-                        // var Price_Movement_24_3 = self.weightedAverage(commondatesfiltered[2]['y'].slice(0, 24), commondatesfiltered[2]['hours'].slice(0, 24))
-                        // var Price_Movement_10_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 10), commondatesfiltered[0]['hours'].slice(0, 10))
-                        // var Price_Movement_10_2 = self.weightedAverage(commondatesfiltered[1]['y'].slice(0, 10), commondatesfiltered[1]['hours'].slice(0, 10))
-                        // var Price_Movement_10_3 = self.weightedAverage(commondatesfiltered[2]['y'].slice(0, 10), commondatesfiltered[2]['hours'].slice(0, 10))
-                        // var Price_Movement_winter_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'winter')
-                        // var Price_Movement_winter_2 = self.weightedAverageseason(commondatesfiltered[1]['y'].slice(0, 12), commondatesfiltered[1]['hours'].slice(0, 12), commondatesfiltered[1]['season'].slice(0, 12), 'winter')
-                        // var Price_Movement_winter_3 = self.weightedAverageseason(commondatesfiltered[2]['y'].slice(0, 12), commondatesfiltered[2]['hours'].slice(0, 12), commondatesfiltered[2]['season'].slice(0, 12), 'winter')
-                        // var Price_Movement_summer_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'summer')
-                        // var Price_Movement_summer_2 = self.weightedAverageseason(commondatesfiltered[1]['y'].slice(0, 12), commondatesfiltered[1]['hours'].slice(0, 12), commondatesfiltered[1]['season'].slice(0, 12), 'summer')
-                        // var Price_Movement_summer_3 = self.weightedAverageseason(commondatesfiltered[2]['y'].slice(0, 12), commondatesfiltered[2]['hours'].slice(0, 12), commondatesfiltered[2]['season'].slice(0, 12), 'summer')
-                        // var headers = ['Summary Analysis:', "", "Volatility ($/MWh)", "Volatility (%)", "", "Volatility ($/MWh)", "Volatility (%)"];
-                        // var labels = ['Curve Title:', "", commondatesfiltered[1]['name'].split(":")[0].split(" ")[0]+" vs "+commondatesfiltered[0]['name'].split(":")[0].split(" ")[0], "", commondatesfiltered[2]['name'].split(":")[0].split(" ")[0]+" vs "+commondatesfiltered[0]['name'].split(":")[0].split(" ")[0]];
-                        // var labels2 = ["", commondatesfiltered[1]['name'].split(":")[0].split(" ").slice(1,10).join(" "), commondatesfiltered[0]['name'].split(":")[0].split(" ").slice(1,10).join(" "), "", commondatesfiltered[2]['name'].split(":")[0].split(" ").slice(1,10).join(" "), commondatesfiltered[0]['name'].split(":")[0].split(" ").slice(1,10).join(" ")];
-                        // var labels3 = ["", commondatesfiltered[1]['name'].split(":").slice(1,10).join(":"), commondatesfiltered[0]['name'].split(":").slice(1,10).join(":"), "", commondatesfiltered[2]['name'].split(":").slice(1,10).join(":"), commondatesfiltered[0]['name'].split(":").slice(1,10).join(":")];
-                        // var data = [
-                        //     ['Prompt Month Price Movement', 
-                        //     "", 
-                        //     "$"+(Prompt_Month_curve2-Prompt_Month_curve1).toFixed(2), (((Prompt_Month_curve2-Prompt_Month_curve1)/Prompt_Month_curve1)*100).toFixed(2)+"%",
-                        //     "", 
-                        //     "$"+(Prompt_Month_curve3-Prompt_Month_curve1).toFixed(2), (((Prompt_Month_curve3-Prompt_Month_curve1)/Prompt_Month_curve1)*100).toFixed(2)+"%"],
-                        //     ['12 Month Price Movement',
-                        //     "",
-                        //     "$"+(Price_Movement_12_2 - Price_Movement_12_1).toFixed(2), (((Price_Movement_12_2 - Price_Movement_12_1)/Price_Movement_12_1)*100).toFixed(2)+"%",
-                        //     "",
-                        //     "$"+(Price_Movement_12_3 - Price_Movement_12_1).toFixed(2), (((Price_Movement_12_3 - Price_Movement_12_1)/Price_Movement_12_1)*100).toFixed(2)+"%" ],
-                        //     ['24 Month Price Movement',
-                        //     "",
-                        //     "$"+(Price_Movement_24_2 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_2 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2)+"%",
-                        //     "",
-                        //     "$"+(Price_Movement_24_3 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_3 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2)+"%" ],
-                        //     ['Cal Strip Price Movement',
-                        //     "",
-                        //     "$"+(Price_Movement_10_2 - Price_Movement_10_1).toFixed(2), (((Price_Movement_10_2 - Price_Movement_10_1)/Price_Movement_10_1)*100).toFixed(2)+"%",
-                        //     "",
-                        //     "$"+(Price_Movement_10_3 - Price_Movement_10_1).toFixed(2), (((Price_Movement_10_3 - Price_Movement_10_1)/Price_Movement_10_1)*100).toFixed(2)+"%" ],
-                        //     ['Winter Strip Price Movement',
-                        //     "",
-                        //     "$"+(Price_Movement_winter_2 - Price_Movement_winter_1).toFixed(2), (((Price_Movement_winter_2 - Price_Movement_winter_1)/Price_Movement_winter_1)*100).toFixed(2)+"%",
-                        //     "",
-                        //     "$"+(Price_Movement_winter_3 - Price_Movement_winter_1).toFixed(2), (((Price_Movement_winter_3 - Price_Movement_winter_1)/Price_Movement_winter_1)*100).toFixed(2)+"%" ],
-                        //     ['Summer Strip Price Movement',
-                        //     "",
-                        //     "$"+(Price_Movement_summer_2 - Price_Movement_summer_1).toFixed(2), (((Price_Movement_summer_2 - Price_Movement_summer_1)/Price_Movement_summer_1)*100).toFixed(2)+"%",
-                        //     "",
-                        //     "$"+(Price_Movement_summer_3 - Price_Movement_summer_1).toFixed(2), (((Price_Movement_summer_3 - Price_Movement_summer_1)/Price_Movement_summer_1)*100).toFixed(2)+"%" ],
-                        // ];
-                        // // end of comment
-                        var tabledata = []
-                        var headers = ['Summary Analysis:', "", "Volatility ($/MWh)", "Volatility (%)"];
-                        for (var i = 1; i < commondatesfiltered.length; i++) {
-                        var Prompt_Month_curve1 = commondatesfiltered[0]['y'][0]
-                        var Prompt_Month_curve2 = commondatesfiltered[i]['y'][0]
-                        var Price_Movement_12_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12))
-                        var Price_Movement_12_2 = self.weightedAverage(commondatesfiltered[i]['y'].slice(0, 12), commondatesfiltered[i]['hours'].slice(0, 12))
-                        var Price_Movement_24_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 24), commondatesfiltered[0]['hours'].slice(0, 24))
-                        var Price_Movement_24_2 = self.weightedAverage(commondatesfiltered[i]['y'].slice(0, 24), commondatesfiltered[i]['hours'].slice(0, 24))
-                        var Price_Movement_10_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 10), commondatesfiltered[0]['hours'].slice(0, 10))
-                        var Price_Movement_10_2 = self.weightedAverage(commondatesfiltered[i]['y'].slice(0, 10), commondatesfiltered[i]['hours'].slice(0, 10))
-                        var Price_Movement_winter_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'winter')
-                        var Price_Movement_winter_2 = self.weightedAverageseason(commondatesfiltered[i]['y'].slice(0, 12), commondatesfiltered[i]['hours'].slice(0, 12), commondatesfiltered[i]['season'].slice(0, 12), 'winter')
-                        var Price_Movement_summer_1 = self.weightedAverageseason(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12), commondatesfiltered[0]['season'].slice(0, 12), 'summer')
-                        var Price_Movement_summer_2 = self.weightedAverageseason(commondatesfiltered[i]['y'].slice(0, 12), commondatesfiltered[i]['hours'].slice(0, 12), commondatesfiltered[i]['season'].slice(0, 12), 'summer')
-                        var labels = ['Curve Title:', "", commondatesfiltered[i]['name'].split(":")[0].split(" ")[0], commondatesfiltered[0]['name'].split(":")[0].split(" ")[0]];
-                        var labels2 = ["", commondatesfiltered[i]['name'].split(":")[0].split(" ").slice(1,10).join(" "), commondatesfiltered[0]['name'].split(":")[0].split(" ").slice(1,10).join(" ")];
-                        var labels3 = ["", commondatesfiltered[i]['name'].split(":").slice(1,10).join(":"), commondatesfiltered[0]['name'].split(":").slice(1,10).join(":")];
-                        var data = [
-                            ['Prompt Month Price Movement', 
-                            "", 
-                            "$"+(Prompt_Month_curve2-Prompt_Month_curve1).toFixed(2), (((Prompt_Month_curve2-Prompt_Month_curve1)/Prompt_Month_curve1)*100).toFixed(2)+"%"],
-                            ['12 Month Price Movement',
-                            "",
-                            "$"+(Price_Movement_12_2 - Price_Movement_12_1).toFixed(2), (((Price_Movement_12_2 - Price_Movement_12_1)/Price_Movement_12_1)*100).toFixed(2)+"%"],
-                            ['24 Month Price Movement',
-                            "",
-                            "$"+(Price_Movement_24_2 - Price_Movement_24_1).toFixed(2), (((Price_Movement_24_2 - Price_Movement_24_1)/Price_Movement_24_1)*100).toFixed(2)+"%"],
-                            ['Cal Strip Price Movement',
-                            "",
-                            "$"+(Price_Movement_10_2 - Price_Movement_10_1).toFixed(2), (((Price_Movement_10_2 - Price_Movement_10_1)/Price_Movement_10_1)*100).toFixed(2)+"%"],
-                            ['Winter Strip Price Movement',
-                            "",
-                            "$"+(Price_Movement_winter_2 - Price_Movement_winter_1).toFixed(2), (((Price_Movement_winter_2 - Price_Movement_winter_1)/Price_Movement_winter_1)*100).toFixed(2)+"%"],
-                            ['Summer Strip Price Movement',
-                            "",
-                            "$"+(Price_Movement_summer_2 - Price_Movement_summer_1).toFixed(2), (((Price_Movement_summer_2 - Price_Movement_summer_1)/Price_Movement_summer_1)*100).toFixed(2)+"%"],
-                        ];
-                        tabledata.push({'labels':labels, 'labels2': labels2, 'labels3':labels3, 'data':data})
-                        }
 
-                        var difference_graph_list = [];
-                        // comment start
-                        // var difference_graph = JSON.parse(JSON.stringify(commondatesfiltered[1]));
-                        // var differenceValues = difference_graph.y.map((value, index) => value - commondatesfiltered[0].y[index]);
-                        // difference_graph['y'] = differenceValues
-                        // difference_graph['type']= 'bar'
-                        // difference_graph['marker'] = modifiedresponse[1].marker
-                        // difference_graph['marker'].color = modifiedresponse[1].line.color
-                        // difference_graph['marker'].line.color = modifiedresponse[1].line.color
-                        // difference_graph.name = "Price Movement ("+ commondatesfiltered[1]['name'].split(":")[0]+" vs "+commondatesfiltered[0]['name'].split(":")[0] + ")"
-                        // difference_graph.showlegend = true
-                        // var difference_graph2 = JSON.parse(JSON.stringify(commondatesfiltered[2]));
-                        // var differenceValues2 = difference_graph2.y.map((value, index) => value - commondatesfiltered[0].y[index]);
-                        // difference_graph2['y'] = differenceValues2
-                        // difference_graph2['type']= 'bar'
-                        // difference_graph2['marker'] = modifiedresponse[2].marker
-                        // difference_graph2['marker'].color = modifiedresponse[2].line.color
-                        // difference_graph2['marker'].line.color = modifiedresponse[2].line.color
-                        // difference_graph2.name = "Price Movement ("+ commondatesfiltered[2]['name'].split(":")[0]+" vs "+commondatesfiltered[0]['name'].split(":")[0] + ")"
-                        // difference_graph2.showlegend = true
-                        // difference_graph_list = [difference_graph, difference_graph2]
-                        // end of comment
-                        
-                        // Initialize the list to store the difference graphs
-                        // Loop through all indices starting from 1
-                        for (var i = 1; i < commondatesfiltered.length; i++) {
-                            // Deep copy the current index data
-                            var difference_graph = JSON.parse(JSON.stringify(commondatesfiltered[i]));
-
-                            // Calculate the difference values
-                            var differenceValues = difference_graph.y.map((value, index) => value - commondatesfiltered[0].y[index]);
-                            difference_graph['y'] = differenceValues;
-
-                            // Set the graph type and marker properties
-                            difference_graph['type'] = 'bar';
-                            difference_graph['marker'] = modifiedresponse[i].marker;
-                            difference_graph['marker'].color = modifiedresponse[i].line.color;
-                            difference_graph['marker'].line.color = modifiedresponse[i].line.color;
-
-                            // Set the name and showlegend properties
-                            difference_graph.name = "Price Movement (" + commondatesfiltered[i]['name'].split(":")[0] + " vs " + commondatesfiltered[0]['name'].split(":")[0] + ")";
-                            difference_graph.showlegend = true;
-
-                            // Add the difference graph to the list
-                            difference_graph_list.push(difference_graph);
-                        }
-
-                        Plotly.newPlot('barchart', difference_graph_list, self.layoutbar, 
-                            {
-                                responsive: true
-                            }
-                        );
-                        self.convertDivToTable('comparisontable', 'comparisontablebody', headers, tabledata);
-                    }
-                
-                // Plotly.newPlot('chart', response['data'], response['layout'], {responsive: true});
+                self.convertDivToTable(response.data)    
+                self.renderBarChart(response.data);           
             },
             error: function (xhr, status, error) {
                 truelight.loader.hide();
@@ -452,7 +381,7 @@ truelight.graphview.view = {
         date.setDate(date.getDate() - noOfDays);
         return date.toISOString().replace('T', ' ').substring(0, 16);
     },
-    downloads:() =>{   
+    downloads: () => {
         var element = document.getElementById('chart');
         domtoimage.toPng(element)
             .then(function (dataUrl) {
@@ -540,7 +469,7 @@ truelight.graphview.view = {
         truelight.loader.show();
 
         $.ajax({
-            url: '/update_graph_filters/'+self.cache.graphId,
+            url: '/update_graph_filters/' + self.cache.graphId,
             type: 'PUT',
             async: true,
             // dataType: "html",
@@ -562,10 +491,10 @@ truelight.graphview.view = {
             }
         });
     },
-    setFilters:(graphDetails)=>{
-        if(graphDetails){
+    setFilters: (graphDetails) => {
+        if (graphDetails) {
             let self = truelight.graphview.view;
-            
+
             let filters = JSON.parse(graphDetails.filters);
             self.cache.graphId = graphDetails.graph_id;
 
@@ -573,245 +502,152 @@ truelight.graphview.view = {
             self.cache.defaultFilters = defaultFilter;
             localStorage.setItem('graph_data', JSON.stringify(defaultFilter));
 
-            if(filters.length>1)
+            if (filters.length > 1)
                 self.cache.extraFilters = filters.slice(1);
         }
     },
-    convertDivToTable:(headerdivId, bodydivId, headers, tabledata)=> {
-        let self = truelight.graphview.view;
-        // Get the div by its ID
-        const headerdiv = document.getElementById(headerdivId);
-        const bodydiv = document.getElementById(bodydivId);
+    prepareSummaryAnalysisTable: (data) => {
+        var self = truelight.graphview.view;
+        var templates = self.cache.templates;
+        var controls = self._controls;
 
-        // Create a table element
-        const table = document.createElement('table');
-        const tablebody = document.createElement('table');
-        // table.border = 1; // Optional: add a border to the table for better visibility
-
-        // Create table headers (optional)
-        const headerRow = document.createElement('tr');
-        headers.forEach(function(headerText, index){
-            const th = document.createElement('th');
-            th.textContent = headerText;
-            // if (index == 2)
-            // {th.colSpan = 2;}
-            // th.style.border = '1px solid black';
-            // if (headerText=="")
-            // {th.style.padding = '4px';}
-            // else
-            // {
-                th.style.padding = '4px';
-
-            // }
-            if (index==0)
-            {th.style.textAlign = 'left';}
-            else
-            {th.style.textAlign = 'center';}
-            th.style.paddingBottom = '12px'
-            th.style.paddingTop = '12px'
-            th.style.font = '18px';
-            th.style.color = '#0C4660'
-            headerRow.appendChild(th);
-        });
-        // headerRow.style.border = '1px solid #d3d3d3';
-        headerRow.className = 'table cHeader'
-        table.appendChild(headerRow);
-        tabledata.forEach(function(obj){
-        if (obj.labels.length>0)
-            {const labelRow = document.createElement('tr');
-            const labelRow2 = document.createElement('tr');
-            const labelRow3 = document.createElement('tr');
-            // const labels = ['Curve Title:', "", response['data'][1]['name'].split(":")[0]+" vs "+response['data'][0]['name'].split(":")[0], "", "Volatility ($/MWh)", "Volatility (%)"]; // Adjust headers as needed
-            obj.labels.forEach(function(headerText, index){
-                const labelth = document.createElement('td');
-                labelth.textContent = headerText;
-                
-                if (index!=0)
-                {labelth.style.fontWeight = 'bold';
-                labelth.style.textAlign = 'center';}
-                else
-                {labelth.style.fontWeight = 'normal';
-                labelth.style.textAlign = 'left';}
-                
-                // if (headerText=="")
-                // {labelth.style.paddingLeft = '4px';labelth.style.paddingRight = '4px';}
-                // else
-                // {
-                    labelth.style.padding = '4px';
-                // }
-                
-                // if (index == 2 || index == 4)
-                // {
-                //     labelth.colSpan = 2;
-                //     // labelth.rowSpan = 2;
-                // }
-                if (index == 0)
-                {
-                    labelth.rowSpan = 3;
-                }
-                labelth.style.paddingBottom = '4px';
-                labelth.style.paddingTop = '4px';
-                labelth.style.font = '18px';
-                labelth.style.color = '#0C4660'
-                labelRow.appendChild(labelth);
-            });
-            tablebody.appendChild(labelRow);
-            obj.labels2.forEach(function(headerText, index){
-                const labelth = document.createElement('td');
-                labelth.textContent = headerText;
-                
-                if (index!=0)
-                {labelth.style.fontWeight = 'bold';
-                labelth.style.textAlign = 'center';}
-                else
-                {labelth.style.fontWeight = 'normal';
-                labelth.style.textAlign = 'left';}
-                
-                // if (headerText=="")
-                // {labelth.style.paddingLeft = '4px';labelth.style.paddingRight = '4px';}
-                // else
-                // {
-                    labelth.style.padding = '1px';
-                // }
-                // if (index == 1 || index == 3)
-                // {
-                //     labelth.colSpan = 2;
-                //     // labelth.rowSpan = 2;
-                // }
-                // labelth.style.paddingBottom = '4px';
-                // labelth.style.paddingTop = '4px';
-                labelth.style.font = '18px';
-                labelth.style.color = '#0C4660'
-                labelRow2.appendChild(labelth);
-            });
-            tablebody.appendChild(labelRow2);
-            obj.labels3.forEach(function(headerText, index){
-                const labelth = document.createElement('td');
-                labelth.textContent = headerText;
-                
-                if (index!=0)
-                {labelth.style.fontWeight = 'bold';
-                labelth.style.textAlign = 'center';}
-                else
-                {labelth.style.fontWeight = 'normal';
-                labelth.style.textAlign = 'left';}
-                
-                // if (headerText=="")
-                // {labelth.style.paddingLeft = '4px';labelth.style.paddingRight = '4px';}
-                // else
-                // {
-                    labelth.style.padding = '1px';
-                // }
-                // if (index == 1 || index == 3)
-                // {
-                //     labelth.colSpan = 2;
-                //     // labelth.rowSpan = 2;
-                // }
-                // labelth.style.paddingBottom = '4px';
-                // labelth.style.paddingTop = '4px';
-                labelth.style.font = '18px';
-                labelth.style.color = '#0C4660'
-                labelRow3.appendChild(labelth);
-            });
-            tablebody.appendChild(labelRow3);}
-            // labelRow.style.border = '1px solid #d3d3d3';
-            
-            obj.data.forEach(function(rowData, indexrow){
-                const row = document.createElement('tr');
-                rowData.forEach(function(cellData, index){
-                    const cell = document.createElement('td');
-                    cell.textContent = cellData;
-                    // cell.style.border = '1px solid black';
-                    if (cellData=="")
-                    {cell.style.paddingLeft = '4px';cell.style.paddingRight = '4px';}
-                    else
-                    {cell.style.padding = '4px';}
-                    if (index==0)
-                    {cell.style.textAlign = 'left';}
-                    else
-                    {cell.style.textAlign = 'center';}
-                    // if (indexrow==1 || indexrow==4)
-                    // {cell.style.paddingTop = '36px'}
-                    cell.style.paddingBottom = '12px';
-                    cell.style.paddingTop = '12px';
-                    cell.style.font = '18px';
-                    row.appendChild(cell);
-                });
-                row.style.borderTop = '0.5px solid #d3d3d3';
-                tablebody.appendChild(row);
-            });
-        }
-        )
+        var headerTable = $(templates.summaryAnanlysisTableTemplate);
+        var headerRow = headerTable.find('tr').first();
         
+        controls.summaryAnalysisHeader.hide();
+        controls.summaryAnalysisHeader.empty();
+        $('#barchart').hide();
 
-        // Clear the div's content and append the table
-        headerdiv.innerHTML = '';
-        bodydiv.innerHTML = '';
-        // div.style.paddingTop = '30px'
-        // div.style.display= 'flex';
-        // div.style.justifyContent = 'center'; /* Horizontal centering */
-        // div.style.alignItems = 'center';
-        // div.style.height = '400px'; // Fixed height
-        // div.style.overflowY = 'auto'; // Enable vertical scroll
-        // // div.style.border = '1px solid #ccc'; // Optional: Add border to the div
+        if (data && data.length > 0) {
+            if (data.length === 1) {
+                
+                var headerColumn = $(templates.summaryAnalysisColumnTemplate);
+                headerColumn.text('Energy Price')
+                headerRow.append(headerColumn);
+            }
+            else {
+                $('#barchart').show();
+                var subHeaderRow = $(templates.summaryAnalysisSubRowTemplate);
+                
 
-        // table.style.width = '90%';
-        // table.style.tableLayout = 'fixed';
-        // table.style.whiteSpace = 'nowrap';
-        // Apply styles to the div
-        headerdiv.style.paddingTop = '30px';
-        headerdiv.style.height = '80px'; // Fixed height
+                for (var i = 1; i < data.length; i++) {
+                    var subHeaderColumn = $(templates.summaryAnalysisColumnTemplate);
+                    subHeaderColumn.html(`${data[i].name} <br />vs<br /> ${data[0].name}`);
+                    subHeaderColumn.attr("colspan", 2);
+                    subHeaderColumn.attr("style",`${subHeaderColumn.attr("style")} padding: 30px;`);
+                    subHeaderRow.append(subHeaderColumn);
 
-        bodydiv.style.height = '400px'; // Fixed height
-        bodydiv.style.overflowY = 'auto'; // Enable vertical scroll
-        // div.style.border = '1px solid #ccc'; // Optional: Add border to the div
+                    console.log(`${data[i].name} vs ${data[0].name}`);
+                    var headerColumn1 = $(templates.summaryAnalysisColumnTemplate);
+                    headerColumn1.text('Volatility ($/MWh)');
 
-        // Apply styles to the table
-        table.style.width = '90%';
-        table.style.tableLayout = 'fixed';
-        table.style.whiteSpace = 'nowrap';
-        table.style.margin = '0 auto'; // Center the table horizontally
+                    var headerColumn2 = $(templates.summaryAnalysisColumnTemplate);
+                    headerColumn2.text('Volatility (%)');
 
-        tablebody.style.width = '90%';
-        tablebody.style.tableLayout = 'fixed';
-        tablebody.style.whiteSpace = 'nowrap';
-        tablebody.style.margin = '0 auto'; // Center the table horizontally
+                    headerRow.append(headerColumn1);
+                    headerRow.append(headerColumn2);                    
+                }
+                headerTable.find('thead').append(subHeaderRow);               
+            }
+           
+            controls.summaryAnalysisHeader.append(headerTable);
+        }
 
-        headerdiv.appendChild(table);
-        bodydiv.appendChild(tablebody);
     },
-    sumProduct:(array1, array2)=> {
+    prepareSummaryDataTable: (responseData) => {
+        var self = truelight.graphview.view;
+        var templates = self.cache.templates;
+        var titles = self.cache.summaryDataTableColumnTitleMapping;
+        var controls = self._controls;
+
+        var data = self.calculateSummaryData(responseData);
+        controls.summaryAnalysisData.empty();
+        if (data && data.length > 0) {
+            var summaryDataTable = $(templates.summaryDataTableTemplate);
+            var body = summaryDataTable.find('tbody');
+            var head = summaryDataTable.find('thead');
+            body.empty();
+            head.empty();
+
+            var record = data[0];
+            
+            head.html(controls.summaryAnalysisHeader.find('thead').html());
+
+            for (const key in record) {                
+                if (record.hasOwnProperty(key)) {
+                    var row = $(templates.summaryDataTableRowTemplate);
+                    var column = $(templates.summaryDataTableColumnTemplate);
+                    column.text(titles[key]);
+                    row.append(column);
+
+                    if (responseData.length === 1) {
+                        var column1 = $(templates.summaryDataTableColumnTemplate);
+                        column1.text(`$${record[key].toFixed(2)}`);
+                        row.append(column1);
+                    }
+                    else {
+                        for (var i = 0; i < data.length; i++) {
+                            record = data[i];
+                            if (key.indexOf('Percentage') < 0) {
+                                var column1 = $(templates.summaryDataTableColumnTemplate);
+                                column1.text(`$${record[key].toFixed(2)}`);
+                                row.append(column1);
+
+                                var column2 = $(templates.summaryDataTableColumnTemplate);
+                                column2.text(`${record[key + 'Percentage'].toFixed(2)}%`);
+                                row.append(column2);
+                            }
+                        }
+                    }
+
+                    if (key.indexOf('Percentage') < 0) {
+                        body.append(row);
+                    }
+                }
+            }
+
+            
+            controls.summaryAnalysisData.append(summaryDataTable);
+        }
+    },
+    convertDivToTable: (data) => {
+        var self = truelight.graphview.view;
+
+        self.prepareSummaryAnalysisTable(data);
+        self.prepareSummaryDataTable(data);
+    },
+    sumProduct: (array1, array2) => {
         return array1.reduce((sum, value, index) => sum + value * array2[index], 0);
     },
-    sum:(array)=> {
+    sum: (array) => {
         return array.reduce((sum, value) => sum + value, 0);
     },
-    weightedAverage:(values, weights)=> {
+    weightedAverage: (values, weights) => {
         let self = truelight.graphview.view;
         return self.sumProduct(values, weights) / self.sum(weights);
     },
-    weightedAverageseason:(values, weights, seasons, season_value)=> {
+    weightedAverageseason: (values, weights, seasons, season_value) => {
         let self = truelight.graphview.view;
         let newvalues = [];
         let newweights = [];
 
         seasons.forEach((value, index) => {
-        if (value.toLowerCase() === season_value) {
-            newvalues.push(values[index]);
-            newweights.push(weights[index]);
-        }
+            if (value.toLowerCase() === season_value) {
+                newvalues.push(values[index]);
+                newweights.push(weights[index]);
+            }
         });
 
         return self.sumProduct(newvalues, newweights) / self.sum(newweights);
     },
 
-    generateRandomColor:()=> {
+    generateRandomColor: () => {
         // Choose which primary color to emphasize
         var primaryColors = ['r', 'g', 'b'];
         var primary = primaryColors[Math.floor(Math.random() * primaryColors.length)];
-    
+
         let r, g, b;
-    
+
         // Depending on the choice, make one color component dominant
         if (primary === 'r') {
             r = Math.floor(Math.random() * 128) + 128; // Random value between 128 and 255
@@ -826,27 +662,24 @@ truelight.graphview.view = {
             g = Math.floor(Math.random() * 128);       // Random value between 0 and 127
             b = Math.floor(Math.random() * 128) + 128; // Random value between 128 and 255
         }
-    
+
         // Combine the components into a single string and return it
         return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
     },
-    plotlyobjectformation:(obj, index)=> {
+    plotlyobjectformation: (obj, index) => {
         let self = truelight.graphview.view;
-        if (index==0)
-            {
-                var color = 'rgb(0,90,154)'
-                var markerColor = 'rgb(240,192,85)'
-            }
-        else if (index==1)
-            {
-                var color = 'rgb(240,192,85)'
-                var markerColor = 'rgb(0,90,154)'
+        if (index == 0) {
+            var color = 'rgb(0,90,154)'
+            var markerColor = 'rgb(240,192,85)'
         }
-        else 
-            {
-                var color = self.generateRandomColor()
-                var markerColor = self.generateRandomColor()
-            }
+        else if (index == 1) {
+            var color = 'rgb(240,192,85)'
+            var markerColor = 'rgb(0,90,154)'
+        }
+        else {
+            var color = self.generateRandomColor()
+            var markerColor = self.generateRandomColor()
+        }
         // Apply your transformation logic here
         return {
             x: [...obj['x']],

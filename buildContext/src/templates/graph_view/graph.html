@@ -3,6 +3,39 @@
 {% block title %}Graph View - TRUEPrice{% endblock %}
 
 {% block content %}
+<style>
+    
+        
+    th:first-child, td:first-child {
+            position: -webkit-sticky;
+            position: sticky;
+            left: 0;
+            background-color: #fff;
+            z-index: 2; /* Ensure the first column is above the other columns */
+            text-align: left !important;
+        }
+
+        th:first-child {
+            z-index: 3; /* Ensure the header of the first column is above the other headers */
+        }
+
+        th, td {
+            text-align: center !important;
+            white-space: nowrap !important;
+        }
+        #comparisontablebody {
+            position: relative;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        #comparisontablebody table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        
+</style>
 <div class="content-body">
     <div class="row">
         <div class="col-12 col-md-12">
