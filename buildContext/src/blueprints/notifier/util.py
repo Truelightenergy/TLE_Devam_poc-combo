@@ -20,9 +20,9 @@ class Util:
         self.db_util = NotifierUtil()
         self.filter = Rules()
 
-    def notifications_item_calculations(self, latest_curve_data, prev_curve_data, volume):
+    def notifications_item_calculations(self, latest_curve_data, prev_curve_data):
         """
-        calculate difference between datas
+        calculate difference between data for both increase and decrease volumes
         """
         data_items = []
         #only date part matters for month column
@@ -32,23 +32,46 @@ class Util:
         latest_curve_data['month'] = latest_curve_data['month'].dt.date
         prev_curve_data['month'] = prev_curve_data['month'].dt.date
         
-        merged_df = pd.merge(latest_curve_data, prev_curve_data, on=['month', 'control_area', 'state', 'load_zone', 'capacity_zone', 'capacity_zone', 'utility', 'strip', 'cost_group', 'cost_component', 'sub_cost_component'], suffixes=('_latest', '_prev'))
-        if volume == "increase":
-            filtered_df = merged_df[(merged_df['data_latest'] - merged_df['data_prev']) >=2]
-        else:
-            filtered_df = merged_df[(merged_df['data_prev'] - merged_df['data_latest']) >=2]
-        for itr, row in filtered_df.iterrows():
+        merged_df = pd.merge(latest_curve_data, prev_curve_data, on=['month', 'control_area', 'state', 'load_zone', 'capacity_zone', 'utility', 'strip', 'cost_group', 'cost_component', 'sub_cost_component'], suffixes=('_latest', '_prev'))
+
+        # Calculate increase and decrease data
+        increase_df = merged_df[(merged_df['data_latest'] - merged_df['data_prev']) >= 2]
+        decrease_df = merged_df[(merged_df['data_prev'] - merged_df['data_latest']) >= 2]
+
+        # Process increase data
+        for itr, row in increase_df.iterrows():
             location = f"{row['control_area']}, {row['load_zone']} ({row['strip']})"
             data = (row['data_latest'] - row['data_prev'])
-            if volume == "increase":
-                data_prct = round((abs(row['data_latest'] - row['data_prev'])/ row['data_latest'])*100, 2)
-            else:
-                data_prct = round((abs(row['data_prev'] - row['data_latest'])/ row['data_prev'])*100, 2)
+            data_prct = round((abs(row['data_latest'] - row['data_prev']) / row['data_latest']) * 100, 2)
             date = row['month']
-            data_items.append({"location": location, "data_shift": data, "data_shift_prct": data_prct, "date": date, "volume": volume})
+            data_items.append({"location": location, "data_shift": data, "data_shift_prct": data_prct, "date": date, "volume": "increase"})
+
+        # Process decrease data
+        for itr, row in decrease_df.iterrows():
+            location = f"{row['control_area']}, {row['load_zone']} ({row['strip']})"
+            data = (row['data_latest'] - row['data_prev'])
+            data_prct = round((abs(row['data_prev'] - row['data_latest']) / row['data_prev']) * 100, 2)
+            date = row['month']
+            data_items.append({"location": location, "data_shift": data, "data_shift_prct": data_prct, "date": date, "volume": "decrease"})
+
+        # If no significant data found, get the max data_prct change within the bounds
+        if not data_items:
+            merged_df = pd.merge(latest_curve_data, prev_curve_data, on=['month', 'control_area', 'state', 'load_zone', 'capacity_zone', 'utility', 'strip', 'cost_group', 'cost_component', 'sub_cost_component'], suffixes=('_latest', '_prev'))
+            bound_df = merged_df[(merged_df['data_latest'] - merged_df['data_prev']).abs() < 2]
+            if not bound_df.empty:
+                bound_df['data_shift_prct'] = bound_df.apply(
+                    lambda row: round((abs(row['data_latest'] - row['data_prev']) / (row['data_latest'] if (row['data_latest'] - row['data_prev']) >= 0 else row['data_prev'])) * 100, 2),
+                    axis=1
+                )
+                max_row = bound_df.loc[bound_df['data_shift_prct'].idxmax()]
+                location = f"{max_row['control_area']}, {max_row['load_zone']} ({max_row['strip']})"
+                data = (max_row['data_latest'] - max_row['data_prev'])
+                data_prct = max_row['data_shift_prct']
+                date = max_row['month']
+                volume = "increase" if (max_row['data_latest'] - max_row['data_prev']) >= 0 else "decrease"
+                data_items.append({"location": location, "data_shift": data, "data_shift_prct": data_prct, "date": date, "volume": volume})
 
         return data_items
-    
 
     def calculate_price_change(self, curvestart, filename):
         """
@@ -65,12 +88,8 @@ class Util:
         if (latest_curve_data is None) or (prev_curve_data is None):
             self.db_util.update_notification_status(curvestart, filename)
             return
-        
-        # increase volume
-        increased_data = self.notifications_item_calculations(latest_curve_data, prev_curve_data, "increase")
-        # decrease volume
-        decreased_data = self.notifications_item_calculations(latest_curve_data, prev_curve_data, "decrease")
-        data = [*increased_data, *decreased_data]
+                
+        data = self.notifications_item_calculations(latest_curve_data, prev_curve_data)
         # update notificaions
         success_flag = self.db_util.queue_notifications(data)
         if success_flag:
@@ -177,3 +196,9 @@ class Util:
         fetch latest curvestart from the ingestion
         """
         return self.db_util.fetch_latest_curve_date()
+    
+    def curves_catalog(self):
+        """
+        Get catalog data for monthly normalized data used for curves.
+        """
+        return self.db_util.curves_catalog()

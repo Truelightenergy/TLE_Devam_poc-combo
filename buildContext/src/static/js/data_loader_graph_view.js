@@ -223,11 +223,21 @@ truelight.graphview = {
     filling_dates: (selected_date)=>{
         let self = truelight.graphview;
 
-        response = self.calculateDates(selected_date);
-        start = response["oneMonthLater"];
-        end = response["sixtyOneMonthsLater"];
-        document.getElementById('start').value= start;
-        document.getElementById('end').value= end;
+        
+        if (document.getElementById("startdatecontroller") && document.getElementById("startdatecontroller").value=='custompage')
+        {
+            let graph_params = JSON.parse(localStorage.getItem('graph_data'))
+            document.getElementById('start').value= graph_params.start;
+            document.getElementById('end').value= graph_params.end;
+        }
+        else
+        {
+            response = self.calculateDates(selected_date);
+            start = response["oneMonthLater"];
+            end = response["sixtyOneMonthsLater"];
+            document.getElementById('start').value= start;
+            document.getElementById('end').value= end;
+        }
     },
 
     format_date: (currentDate)=> {

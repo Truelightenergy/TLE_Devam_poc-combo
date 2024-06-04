@@ -264,6 +264,8 @@ class HeadroomModel:
 
 
                             })
+            # Added only for debugging
+            # print(df.sort_values(by=['headroom'], ascending=False).head(10).to_string())
             return data
         except:
             return data

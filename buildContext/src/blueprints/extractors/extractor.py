@@ -96,7 +96,7 @@ class Extractor:
             return flattened_df
         
         elif type =="energy":
-            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month', 'cob'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'sub_cost_component'], aggfunc=list)
+            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month', 'cob'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "my_order", "strip", "cost_group", "cost_component", 'sub_cost_component'], aggfunc=list)
             pivoted_df.columns.name = None
             pivoted_df.index.name = None
             
@@ -105,9 +105,27 @@ class Extractor:
 
             # rename indexes
             flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month" , 'cob': 'COB'})
-
+            flattened_df = flattened_df.droplevel('my_order', axis=1)
             # renaming columns
             flattened_df.columns.names =  ["Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", " "]
+            
+            # returning dataframe
+            return flattened_df
+        
+        elif type =="nonenergy":
+            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "my_order", "strip", "cost_group", "cost_component", 'sub_cost_component'], aggfunc=list) #, "distribution_category"
+            pivoted_df.columns.name = None
+            pivoted_df.index.name = None
+            
+            # Explode the lists into multiple rows
+            flattened_df = pivoted_df.apply(lambda x: pd.Series(x).explode())
+            flattened_df = flattened_df.droplevel('my_order', axis=1)
+
+            # rename indexes
+            flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month"})
+
+            # renaming columns
+            flattened_df.columns.names =  ["Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", " "] #, "Normal Type"
             
             # returning dataframe
             return flattened_df
@@ -128,7 +146,6 @@ class Extractor:
             
             # returning dataframe
             return flattened_df
-        
     
     def post_processing_json(self, df,type):
         """
@@ -211,7 +228,7 @@ class Extractor:
                 if status != "success":
                     return None, "No Subscription available"
 
-            if download_type.lower()=="csv":
+            if download_type.lower() in ("csv", "xlsx"):
                 dataframe = self.post_processing_csv(dataframe, str(query_strings["curve_type"]).lower())
             else:
                 dataframe = self.post_processing_json(dataframe,str(query_strings["curve_type"]).lower())

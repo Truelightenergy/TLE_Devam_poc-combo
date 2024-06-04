@@ -751,6 +751,20 @@ def update_password():
         return render_template("auths/update_password.html")
     
 
-
+@auths.route('/curves_catalog', methods=['GET', 'POST'])
+@roles.readonly_token_required
+def curves_catalog():
+    """
+    Get catalog data for monthly normalized data used for curves.
+    """
+    try:
+        result = notifier_util.curves_catalog()
+        return Response(
+        result,
+        mimetype="text/csv",
+        headers={"Content-disposition":
+                 "attachment; filename=curves_catalog.csv"})
+    except:
+        return 'failed'
 
 

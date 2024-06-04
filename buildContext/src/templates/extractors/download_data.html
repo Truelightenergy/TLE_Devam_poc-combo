@@ -20,63 +20,95 @@
                                         <option value="ptc">PTC</option>
                                         <option value="matrix">Matrix Pricing</option>
                                         <option value="headroom">Headroom</option>
+                                        <option value="all">All</option>
                                     </select>
                                 </div>
                                 <div class="form-control border-0 px-0">
                                     <label for="strip">Strip</label>
-                                    <select name="strip" required id="strip" class="select2-size-lg form-select w-100" multiple data-live-search="true" data-select-all="true">
+                                    <select name="strip" required id="strip" class="select2-size-lg form-select w-100"
+                                        multiple data-live-search="true" data-select-all="true">
                                     </select>
                                 </div>
                                 <div class="form-control border-0 px-0">
-                                    <label for="start">Start Date</label>
-                                    <input type="date" class="form-control" required id="start" name="start" />
+                                    <label for="idcob">Intraday or Close of Business</label>
+                                    <select name="idcob" id="idcob" class="select2-size-lg form-select">
+                                        <option value="all">ALL available curves</option>
+                                    </select>
                                 </div>
-                                
                             </div>
                             <div class="col-12 col-md-6">
                                 <div class="form-control border-0 px-0">
                                     <label for="iso">ISO</label>
                                     <select name="iso" id="iso" class="select2-size-lg form-select"></select>
                                 </div>
-                                <div class="form-control border-0 px-0" id="odc">
-                                    <label for="operating_day">Operating Day</label>
-                                    <input readonly type="text" required class="form-control " id="operating_day"
-                                        name="operating_day" />
+                                <div class="row">
+                                    <div class="col-6 col-md-6">
+                                        <div class="form-control border-0 px-0" id="odc">
+                                            <label for="operating_day">Operating Day Start</label>
+                                            <input readonly type="text" required class="form-control "
+                                                id="operating_day" name="operating_day" />
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-6">
+                                        <div class="col-md-6 form-control border-0 px-0" id="odce">
+                                            <label for="operating_day_end">Operating Day end</label>
+                                            <input readonly type="text" required class="form-control "
+                                                id="operating_day_end" name="operating_day_end" />
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="form-control border-0 px-0">
-                                    <label for="end">End Date</label>
-                                    <input type="date" class="form-control " required id="end" name="end">
+                                <div class="row">
+                                    <div class="col-6 col-md-6">
+                                        <div class="form-control border-0 px-0">
+                                            <label for="start">Start Date</label>
+                                            <input type="date" class="form-control" required id="start" name="start" />
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-6">
+                                        <div class="form-control border-0 px-0">
+                                            <label for="end">End Date</label>
+                                            <input type="date" class="form-control " required id="end" name="end">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="mt-2 d-flex align-items-center">
-                                <div class="form-check form-check-inline">
-                                    <label class="form-check-label" for="all">
-                                        <input type="radio" class="form-check-input" value="all" id="all" name="history" />
+                                <!-- <div class="form-check form-check-inline">
+                                    <label hidden class="form-check-label" for="all">
+                                        <input checked type="radio" class="form-check-input" value="all" id="all" name="history" />
                                         All Curves
                                     </label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <label class="form-check-label" for="cob">
+                                    <label hidden class="form-check-label" for="cob">
                                         <input type="radio" class="form-check-input" value="cob" id="cob" name="history" />
                                         COB Only
                                     </label>
-                                </div>
+                                </div> -->
                                 <!-- Grey Pipe Separator -->
-                                <span class="mx-2 separator"></span>
+                                <!-- <span class="mx-2 separator"></span> -->
                                 <div class="form-check form-check-inline">
                                     <label class="form-check-label" for="csv">
-                                        <input type="radio" checked class="form-check-input" value="csv" id="csv" name="type" />
+                                        <input type="radio" checked class="form-check-input" value="xlsx" id="xlsx"
+                                            name="type" />
+                                        Excel
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <label class="form-check-label" for="csv">
+                                        <input type="radio" class="form-check-input" value="csv" id="csv" name="type" />
                                         CSV
                                     </label>
                                 </div>
                                 <div class="form-check form-check-inline">
                                     <label class="form-check-label" for="json">
-                                        <input type="radio" class="form-check-input" value="json" id="json" name="type" />
+                                        <input type="radio" class="form-check-input" value="json" id="json"
+                                            name="type" />
                                         JSON
                                     </label>
                                 </div>
                             </div>
-                            
+
                             <div class="col-12 col-md-12 mt-2">
                                 <button id="save" type="submit" class="btn btn-primary btn-block w-100">
                                     <img src="/static/app-assets/media/download.svg" class="me-1" /> DOWNLOAD

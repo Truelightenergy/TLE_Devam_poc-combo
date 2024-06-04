@@ -51,22 +51,42 @@ class ExtractorUtil:
         fetches the latest operating day from table
         """
         operating_days = []
-        if curve.lower() in ['energy', 'nonenergy', 'rec']:
-            table = f"{iso}_{curve}"
-            query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table};"
-        else:
-            table = curve
-            query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table} WHERE control_area_type = '{iso}';"
         try:
-            operating_days = []
-            result = self.engine.execute(query)
-            if result.rowcount >0:
-                for row in result:
-                    result = row
-                    operating_days.append(result[0].strftime('%Y-%m-%d'))
-            return operating_days
+            if curve.lower() == 'all':
+                curve_list = ['energy', 'nonenergy', 'rec', 'ptc', 'matrix', 'headroom']
+            else:
+                curve_list = [curve.lower()]
+            if iso == 'all':
+                iso_list = ["ERCOT", "ISONE", "NYISO","MISO", "PJM"]
+            else:
+                iso_list = [iso]
+            
+            for curve in curve_list:
+                if curve in ['energy', 'nonenergy', 'rec']:
+                    for iso in iso_list:
+                        if curve == 'rec' and iso.lower() == 'miso':
+                            continue
+                        table = f"{iso}_{curve}"
+                        query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table};"
+                        result = self.engine.execute(query)
+                        if result.rowcount >0:
+                            for row in result:
+                                result = row
+                                operating_days.append(result[0].strftime('%Y-%m-%d'))
+                else:
+                    table = curve
+                    query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table}"
+                    if iso != 'all':
+                        query = query + f" WHERE control_area_type = '{iso}'"
+                    query = query + ";"
+                    result = self.engine.execute(query)
+                    if result.rowcount >0:
+                        for row in result:
+                            result = row
+                            operating_days.append(result[0].strftime('%Y-%m-%d'))
         except:
             return operating_days
+        return operating_days
         
     def get_all_operating_days_with_load_zone(self, table, load_zone):
         """
@@ -86,17 +106,84 @@ class ExtractorUtil:
         except:
             return operating_days
         
-    def cob_availability(self, table, date):
+    def cob_availability(self, iso, sdate, edate):
         """
         availability check for cob
         """
-
         try:
-
-            query = f"SELECT * FROM trueprice.{table} where cob = {True} and curvestart::date='{date}';"
-            result = self.engine.execute(query)
-            if result.rowcount >0:
-                return True
-            return False
+            cob = False
+            noncob = False
+            if iso=='all':
+                iso_list = ["isone", "pjm", "ercot", "nyiso", "miso"]
+            else:
+                iso_list = [iso]
+            for iso in iso_list:
+                query = f"SELECT * FROM trueprice.{iso}_energy where cob = {True} and curvestart::date>='{sdate}' and curvestart::date<='{edate}';"
+                result = self.engine.execute(query)
+                if result.rowcount >0:
+                    cob =  True
+                    break
+            for iso in iso_list:
+                query = f"SELECT * FROM trueprice.{iso}_energy where cob = {False} and curvestart::date>='{sdate}' and curvestart::date<='{edate}';"
+                result = self.engine.execute(query)
+                if result.rowcount >0:
+                    noncob =  True
+                    break
+            return cob, noncob
         except:
-            return False
+            return False, False
+    
+    def intraday_timestamps_download(self, curve, iso, operating_day_start, operating_day_end):
+        """
+        extracts all the intraday timestamps and their history status from the database
+        """
+        try:
+            timestamps = []
+            if curve.lower() == 'all':
+                curve_list = ['energy', 'nonenergy', 'rec', 'ptc', 'matrix', 'headroom']
+            else:
+                curve_list = [curve.lower()]
+            if iso == 'all':
+                iso_list = ["ERCOT", "ISONE", "NYISO","MISO", "PJM"]
+            else:
+                iso_list = [iso]
+            
+            for curve in curve_list:
+                if curve in ['energy', 'nonenergy', 'rec']:
+                    for iso in iso_list:
+                        if curve == 'rec' and iso.lower() == 'miso':
+                            continue
+                        table = f"{iso}_{curve}"
+                        query = f"""
+                            SELECT distinct curvestart, false "cob" FROM trueprice.{table}_history 
+                            WHERE curvestart::date >= '{operating_day_start}' and curvestart::date <= '{operating_day_end}'
+                            UNION 
+                            SELECT distinct curvestart, false "cob" FROM trueprice.{table} 
+                            WHERE curvestart::date >= '{operating_day_start}' and curvestart::date <= '{operating_day_end}'
+                            order by curvestart desc;
+                        """
+                        if curve == 'energy':
+                            query = query.replace('false "cob"', 'cob')
+                        results = self.engine.execute(query).fetchall()
+                        timestamps.extend([{'timestamp': row['curvestart'].strftime('%Y-%m-%d %H:%M'),'cob':row['cob'], 'curve': table} for row in results])
+                else:
+                    table = curve
+                    # Will add "strip='7x24'" in query just to replace with strings below else its not necessary
+                    query = f"""
+                        SELECT distinct curvestart, false "cob" FROM trueprice.{table}_history 
+                        WHERE curvestart::date >= '{operating_day_start}' and curvestart::date <= '{operating_day_end}' AND strip='7x24'
+                        UNION 
+                        SELECT distinct curvestart, false "cob" FROM trueprice.{table} 
+                        WHERE curvestart::date >= '{operating_day_start}' and curvestart::date <= '{operating_day_end}' AND strip='7x24'
+                        order by curvestart desc
+                    """
+                    if iso != 'all':
+                        query = query.replace("AND strip='7x24'", f" and control_area_type = '{iso}'")
+                    else:
+                        query = query.replace("AND strip='7x24'", '')
+                    query = query + ";"
+                    results = self.engine.execute(query).fetchall()
+                    timestamps.extend([{'timestamp': row['curvestart'].strftime('%Y-%m-%d %H:%M'),'cob':row['cob'], 'curve': table} for row in results])
+            return timestamps
+        except:
+            return []
