@@ -57,6 +57,7 @@ function populate_table(data) {
         "state",
         "utility",
         "customer_type",
+        "term",
         "retail_price",
         "utility_price",
         "headroom",
