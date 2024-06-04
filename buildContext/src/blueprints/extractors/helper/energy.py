@@ -25,7 +25,7 @@ class Energy:
         Handling extraction for ancillarydata
         """
         try:
-            history = (query_strings["idcob"].lower() == 'all')
+            history = False
             cobonly = (query_strings["idcob"].lower() == 'cobonly')
             intradayonly  = (query_strings["idcob"].lower() == 'intradayonly')
             control_area = query_strings["iso"]

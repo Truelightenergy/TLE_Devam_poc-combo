@@ -25,7 +25,7 @@ class Rec:
         Handling extraction for recdata
         """
         try:
-            history = (query_strings["idcob"].lower() == 'all')
+            history = False
             control_area = query_strings["iso"]
             strips = query_strings["strip"]
             strip_filters = list()
