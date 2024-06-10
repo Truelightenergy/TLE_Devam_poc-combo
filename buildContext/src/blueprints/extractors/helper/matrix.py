@@ -25,7 +25,7 @@ class Matrix:
         Handling extraction for ancillarydata
         """
         try:
-            history = (query_strings["idcob"].lower() == 'all')
+            history = False
             control_area = str(query_strings["iso"]).lower()
             strips = query_strings["strip"]
             strip_filters = list()

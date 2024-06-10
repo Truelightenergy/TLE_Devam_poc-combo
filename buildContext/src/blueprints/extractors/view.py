@@ -153,7 +153,7 @@ def get_data():
     if rest_api_condition:
         setup_session(request.headers['Authorization'].split()[-1])
     args = request.args.to_dict()
-
+    args["idcob"] = request.args.get("idcob","all")
     args['strip'] = request.args.getlist('strip')
     if request.args.get('history').lower()=="all":
         args['history'] = True

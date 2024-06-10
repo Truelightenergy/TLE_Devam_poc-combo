@@ -14,6 +14,7 @@ from .helper.rec import Rec
 from .helper.ptc import Ptc
 from .helper.matrix import Matrix
 from .helper.headroom import Headroom
+import re
 
 
 class Extractor:
@@ -224,6 +225,9 @@ class Extractor:
             if session["level"]!= 'admin':
                 rules = self.filter.filter_data(control_table, email)
                 dataframe, status = self.dataframe_filtering(dataframe, rules, control_table)
+                if str(query_strings["curve_type"]).lower() == "nonenergy":
+                    dataframe.cost_component = dataframe.cost_component.apply(lambda x: self.non_energy.replace_or_append(r'[KkMmWw]{2}[\-/ ]{0,1}[MmOoNnTtHhDdAaYyHhOoUuRr]{1,5}', 'MWh', x))
+                    dataframe.sub_cost_component = dataframe.sub_cost_component.apply(lambda x: re.sub(r'[KkMmWw]{2}[\-/ ]{0,1}[MmOoNnTtHhDdAaYyHhOoUuRr]{1,5}', 'MWh', x))
             
                 if status != "success":
                     return None, "No Subscription available"
