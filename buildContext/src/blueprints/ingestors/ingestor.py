@@ -34,6 +34,7 @@ class Ingestion:
         self.ptc = Ptc()
         self.matrix = MATRIX()
         self.hierarchy = BaseTableHierarchy()
+        self.profile = Profile_Loader()
 
     def validate(self, file_name):
         """
@@ -184,7 +185,7 @@ class Ingestion:
         elif re.search("matrix", file, re.IGNORECASE):
             result = self.process(files, {"validate_data":self.validate, "ingestion":self.matrix.ingestion, "storage":self.storage, "validate_api": self.validate_api})
         elif re.search("loader_profile", file, re.IGNORECASE):
-            result = self.process(files, {"validate_data":self.validate, "ingestion":self.matrix.ingestion, "storage":self.storage, "validate_api": self.validate_api})
+            result = self.process(files, {"validate_data":self.validate, "ingestion":self.profile.ingestion, "storage":self.storage, "validate_api": self.validate_api})
         else:
             result = "Shouldn't be here"
         
