@@ -22,9 +22,8 @@ class Profile_Loader:
         self.secret_salt = config['secret_salt']
         self.db_util = IngestorUtil(self.secret_key, self.secret_salt)
         
-    def ingestion(self, data):
+    def ingestion(self, df):
         try:
-            df = pd.read_csv(data.fileName, header=None)
             df= self.setup_dataframe(df)
             if not isinstance(df, pd.DataFrame):
                return "File Format Not Matched"
@@ -65,7 +64,7 @@ class Profile_Loader:
                 UNION ALL
                 select exists(select 1 from trueprice.curves_data where curvestart>='{sod}' and curvestart<'{eod}' and cob ) -- ignore, db has cob already
             """
-            r = pd.read_sql(check_query, self.engine)
+            r = pd.read_sql(check_query, self.db_util.engine)
             same, old_exists, new_exists, cob_exists = r.exists[0], r.exists[1], r.exists[2], r.exists[3]
             
 
@@ -79,19 +78,19 @@ class Profile_Loader:
                 return "Insert aborted, newer data in database"
 
             elif not same and not new_exists and not old_exists and not cob_exists: # upsert new data
-                r = df.to_sql(f"curves_data", con = self.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
+                r = df.to_sql(f"curves_data", con = self.db_util.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
                 if r is not None:
                     return "Data Inserted"
                 return "Insert aborted, failed to insert new data"
                     
             elif old_exists: # perform scd-2
                 tmp_table_name = f"curves_data_{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
-                r = df.to_sql(f'{tmp_table_name}', con = self.engine, if_exists = 'replace', chunksize=1000, schema="trueprice", index=False)
+                r = df.to_sql(f'{tmp_table_name}', con = self.db_util.engine, if_exists = 'replace', chunksize=1000, schema="trueprice", index=False)
                 if r is None:
                     return "Unable to create temp data table for update"
                             
 
-                with self.engine.connect() as con:
+                with self.db_util.engine.connect() as con:
                     curveend = data.curveStart # the new data ends the old data
                     backup_query = f'''
 
@@ -137,7 +136,7 @@ class Profile_Loader:
                 
 
                     # finally execute the query
-                    r = con.execute(backup_query)            
+                    r = con.execute(backup_query)
                     con.execute(f"drop table trueprice.{tmp_table_name}")
                 return "Data updated"
             else:
