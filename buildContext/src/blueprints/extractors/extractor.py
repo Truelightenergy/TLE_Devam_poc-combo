@@ -14,6 +14,7 @@ from .helper.rec import Rec
 from .helper.ptc import Ptc
 from .helper.matrix import Matrix
 from .helper.headroom import Headroom
+from .helper.loadprofile import LoadProfile
 
 
 class Extractor:
@@ -34,6 +35,7 @@ class Extractor:
         self.ptc = Ptc()
         self.matrix = Matrix()
         self.headroom = Headroom()
+        self.loadprofile = LoadProfile()
         self.filter = Rules()
 
     def post_processing_csv(self, df, type):
@@ -130,6 +132,24 @@ class Extractor:
             # returning dataframe
             return flattened_df
         
+        elif type =="loadprofile":
+            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month'], columns=["hierarchy_id"], aggfunc=list) #, "distribution_category"
+            pivoted_df.columns.name = None
+            pivoted_df.index.name = None
+            
+            # Explode the lists into multiple rows
+            flattened_df = pivoted_df.apply(lambda x: pd.Series(x).explode())
+            # flattened_df = flattened_df.droplevel('my_order', axis=1)
+
+            # rename indexes
+            # flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month"})
+
+            # renaming columns
+            # flattened_df.columns.names =  ["Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", " "] #, "Normal Type"
+            
+            # returning dataframe
+            return flattened_df
+        
         else:
             pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'sub_cost_component'], aggfunc=list)
             pivoted_df.columns.name = None
@@ -213,7 +233,9 @@ class Extractor:
             elif str(query_strings["curve_type"]).lower() == "matrix":
                 dataframe, status = self.matrix.extraction(query_strings) 
             elif str(query_strings["curve_type"]).lower() == "headroom":
-                dataframe, status = self.headroom.extraction(query_strings) 
+                dataframe, status = self.headroom.extraction(query_strings)
+            elif str(query_strings["curve_type"]).lower() == "loadprofile":
+                dataframe, status = self.loadprofile.extraction(query_strings) 
 
             if not isinstance(dataframe, pd.DataFrame):
                     return dataframe, status

@@ -73,11 +73,21 @@ class ExtractorUtil:
                             for row in result:
                                 result = row
                                 operating_days.append(result[0].strftime('%Y-%m-%d'))
-                else:
+                elif curve in ['ptc', 'matrix', 'headroom']:
                     table = curve
                     query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table}"
                     if iso != 'all':
                         query = query + f" WHERE control_area_type = '{iso}'"
+                    query = query + ";"
+                    result = self.engine.execute(query)
+                    if result.rowcount >0:
+                        for row in result:
+                            result = row
+                            operating_days.append(result[0].strftime('%Y-%m-%d'))
+                else:
+                    query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.curves_data"
+                    # if iso != 'all':
+                    #     query = query + f" WHERE control_area_type = '{iso}'"
                     query = query + ";"
                     result = self.engine.execute(query)
                     if result.rowcount >0:
