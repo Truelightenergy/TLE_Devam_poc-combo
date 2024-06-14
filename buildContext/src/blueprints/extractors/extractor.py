@@ -133,7 +133,7 @@ class Extractor:
             return flattened_df
         
         elif type =="loadprofile":
-            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'customer_type'], aggfunc=list) #, "distribution_category"
+            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month', 'he'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'customer_type'], aggfunc=list) #, "distribution_category"
             pivoted_df.columns.name = None
             pivoted_df.index.name = None
             
@@ -141,7 +141,7 @@ class Extractor:
             flattened_df = pivoted_df.apply(lambda x: pd.Series(x).explode())
 
             # rename indexes
-            flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month"})
+            flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month", "he": "HE"})
 
             # renaming columns
             flattened_df.columns.names =  ["Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", "Customer Type"] #, "Normal Type"

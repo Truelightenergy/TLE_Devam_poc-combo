@@ -7,6 +7,7 @@ import datetime
 from ..ingestor_model import IngestorUtil
 from utils.configs import read_config
 from ...hierarchy_utils.utils import BaseTableHierarchy
+import time
 
 config = read_config()
 
@@ -27,7 +28,9 @@ class Profile_Loader:
     def ingestion(self, data):
         try:
             df = pd.read_csv(data.fileName, header=None)
+            temp_time = time.time()
             df= self.setup_dataframe(df, data.curveType)
+            print("time.time()-temp_time total", time.time()-temp_time)
             if not isinstance(df, pd.DataFrame):
                return "File Format Not Matched"
             
@@ -35,7 +38,6 @@ class Profile_Loader:
             df['date'] = pd.to_datetime(df['date'])
             df['data'] = df['data'].astype(float)
             df.rename(inplace=True, columns={
-                'block_type' : 'strip', 
                 'date' : 'month'
             })
 
@@ -53,7 +55,7 @@ class Profile_Loader:
 
             # using exists always return true or false versus empty/None
             # sod = data.curveStart.strftime('%Y-%m-%d') # drop time, since any update should be new
-            # now = data.curveStart
+            now = data.curveStart
             # eod = (data.curveStart + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
 
             # check_query = f"""
@@ -67,12 +69,17 @@ class Profile_Loader:
             #     UNION ALL
             #     select exists(select 1 from trueprice.curves_data where curvestart>='{sod}' and curvestart<'{eod}' and cob ) -- ignore, db has cob already
             # """
+            check_query = f"""
+            select exists(select 1 from trueprice.curves_data where curvestart='{now}') -- ignore, "db == file" based on timestamp
+            """
             # r = pd.read_sql(check_query, self.db_util.engine)
             # same, old_exists, new_exists, cob_exists = r.exists[0], r.exists[1], r.exists[2], r.exists[3]
+            r = pd.read_sql(check_query, self.db_util.engine)
+            same = r.exists[0]
             
 
-            # if same: # if data already exists neglect it
-            #     return "Insert aborted, data already exists based on timestamp and strip"
+            if same: # if data already exists neglect it
+                return "Insert aborted, data already exists based on timestamp and strip"
             
             # elif cob_exists:
             #     return "Insert aborted, existing data marked with cob"
@@ -169,7 +176,7 @@ class Profile_Loader:
         formats the data frame into proper format
         """
         try:
-            data_frame = data_frame.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+            # data_frame = data_frame.applymap(lambda x: x.strip() if isinstance(x, str) else x)
             data_frame.replace('', pd.NA, inplace=True)
             data_frame.dropna(axis = 1, how = 'all', inplace = True)
             data_frame.dropna(axis = 0, how = 'all', inplace = True)
@@ -178,31 +185,54 @@ class Profile_Loader:
 
             # dataprocessing for headers/labels
             header = header.transpose()
+            header.dropna(axis = 0, how = 'all', inplace = True)
+            # header.reset_index(inplace=True, drop=True)
             header.columns = header.loc[0]
             header = header.drop(header.index[0])
             header.reset_index(inplace=True, drop=True)
+            temp_time = time.time()
             header = self.hierarchy.get_hierarchy_id(header, curveType)
+            print("time.time()-temp_time db schema", time.time() - temp_time)
 
             # data processing for data
             data.reset_index(drop=True, inplace=True)
-            data = data.transpose()
-            data = data.drop([0], axis=1)
             data.columns = data.iloc[0]
             data = data.drop(data.index[0])
+            data['Date'] = data['Date'] + "-" + data['HE'].astype(str)
+            data.drop(['HE'], axis=1, inplace=True)
+            data = data.transpose()
+            data.columns = data.iloc[0]
+            data = data.drop(data.index[0])
+            # data = data.drop([0], axis=1)
             data.reset_index(inplace=True, drop=True)
             # data = data.rename(columns = {data.columns[0]:'sub_cost_component'})
             
             merged_df = pd.merge(header, data, left_index=True, right_index=True)
-            melted_df = pd.melt(merged_df, id_vars=list(header.columns), var_name='Date', value_name='data')
-            melted_df = melted_df.rename(columns=lambda x: x.strip().replace(' ', '_').lower())
+            temp_time = time.time()
+            melted_df = pd.melt(merged_df, id_vars=list(header.columns), var_name='date', value_name='data')
+            print("time.time()-temp_time melt", time.time() - temp_time)
+            # melted_df = melted_df.rename(columns=lambda x: x.strip().replace(' ', '_').lower())
             # melted_df.loc[melted_df['sub_cost_component'].apply(lambda x: isinstance(x, float)), 'sub_cost_component'] = melted_df['cost_component']
             # melted_df.drop(['lookup_id1'], axis=1, inplace=True)
-            melted_df=melted_df.sort_values("date")
-            melted_df['data'].fillna(0, inplace=True)
-            melted_df['data'].replace('[\$,]', '', regex=True, inplace=True)
-            melted_df['data'].replace('[\%,]', '', regex=True, inplace=True)
+            # melted_df=melted_df.sort_values("date")
+            # melted_df['data'].fillna(0, inplace=True)
+            # melted_df['data'] = melted_df['data'].str.replace(r'$', '', regex=False)
+            # melted_df['data'] = melted_df['data'].str.replace(r'%', '', regex=False)
+            melted_df['data'] = melted_df['data'].replace('$', '', regex=False)
             melted_df.reset_index(drop=True, inplace=True)
             melted_df = melted_df.rename(columns={'id':'hierarchy_id'})
+            temp_time = time.time()
+            melted_df[['date', 'he']] = melted_df['date'].str.split('-', expand=True)
+            print("time.time()-temp_time date-hour", time.time() - temp_time)
+            # temp_time = time.time()
+            # melted_df[['date', 'he']] = melted_df['Date'].str.rsplit('-', n=1, expand=True)
+            # print("time.time()-temp_time date-hour", time.time() - temp_time)
+            # temp_time = time.time()
+            # melted_df['he'] = melted_df['date'].str.slice(11, 13)  # Extract 'HH'
+            # melted_df['date'] = melted_df['date'].str.slice(0, 10)  # Extract 'YYYY-MM-DD'
+            # print("time.time()-temp_time date-hour", time.time() - temp_time)
+            # melted_df['he'] = melted_df['date'].apply(lambda x: x.split("-")[1])
+            # melted_df['date'] = melted_df['date'].apply(lambda x: x.split("-")[0])
             return melted_df
         except Exception as e:
 

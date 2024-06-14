@@ -6,6 +6,7 @@ import pandas as pd
 from datetime import datetime
 from utils.database_connection import ConnectDatabase
 from sqlalchemy import text
+import time
 
 
 class LoadProfile:
@@ -26,6 +27,7 @@ class LoadProfile:
         Handling extraction for ancillarydata
         """
         try:
+            time_temp = time.time()
             history = (query_strings["idcob"].lower() == 'all')
             cobonly = (query_strings["idcob"].lower() == 'cobonly')
             intradayonly  = (query_strings["idcob"].lower() == 'intradayonly')
@@ -64,7 +66,7 @@ class LoadProfile:
                 return None, "Unable to Fetch Results"
             else:
                 psql_query = f"""
-                select d.id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, 
+                select d.id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, he,
                 data, 
                 ca.name control_area, state.name state, lz.name load_zone, cz.name capacity_zone, u.name utility, strip.name strip, cg.name cost_group, cc.name cost_component , ct.name customer_type
                 from trueprice.curves_data d
@@ -84,8 +86,9 @@ class LoadProfile:
                 order by curvestart desc;
                 """
             data_frame = None
+            time_temp = time.time()
             data_frame = pd.read_sql_query(sql=text(psql_query), con=self.engine.connect())
-            
+            print('readtime complexity', time.time()-time_temp)
             return data_frame, "success"  
             
 
