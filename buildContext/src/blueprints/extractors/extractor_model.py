@@ -85,7 +85,7 @@ class ExtractorUtil:
                             result = row
                             operating_days.append(result[0].strftime('%Y-%m-%d'))
                 else:
-                    query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.curves_data"
+                    query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.loadprofile"
                     # if iso != 'all':
                     #     query = query + f" WHERE control_area_type = '{iso}'"
                     query = query + ";"
