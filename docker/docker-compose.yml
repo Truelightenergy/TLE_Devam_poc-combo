@@ -1263,7 +1263,7 @@ services:
           FOREIGN KEY (cost_component_id) REFERENCES trueprice.cost_component(id) ON DELETE CASCADE ON UPDATE CASCADE,
           FOREIGN KEY (customer_type_id) REFERENCES trueprice.customer_type(id) ON DELETE CASCADE ON UPDATE CASCADE
         );
-        --select * from trueprice.hierarchy
+        --select * from trueprice.hierarchy;
 
         -- Index on the curve_datatype_id column
         CREATE INDEX hierarchy_curve_datatype_id_idx ON trueprice.hierarchy (curve_datatype_id);
@@ -1296,10 +1296,8 @@ services:
         CREATE INDEX hierarchy_customer_type_id_idx ON trueprice.hierarchy (customer_type_id);
 
 
-        reindex table trueprice.hierarchy;
-
-        --drop table trueprice.loadprofile
-        create table trueprice.loadprofile(
+        --drop table trueprice.ercot_loadprofile
+        create table trueprice.ercot_loadprofile(
           id SERIAL primary key,
           hierarchy_id int,
           curvestart timestamptz,
@@ -1307,19 +1305,111 @@ services:
           he int,
           data numeric(20,10),
           FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
-        )
-        --select * from trueprice.loadprofile;
+        );
+        --select * from trueprice.ercot_loadprofile
+
 
         -- Index on the foreign key column
-        CREATE INDEX loadprofile_hierarchy_id_idx ON trueprice.loadprofile (hierarchy_id);
+        CREATE INDEX ercot_loadprofile_hierarchy_id_idx ON trueprice.ercot_loadprofile (hierarchy_id);
 
         -- Index on the curvestart column
-        CREATE INDEX loadprofile_curvestart_idx ON trueprice.loadprofile (curvestart);
+        CREATE INDEX ercot_loadprofile_curvestart_idx ON trueprice.ercot_loadprofile (curvestart);
 
         -- Index on the month column
-        CREATE INDEX loadprofile_month_idx ON trueprice.loadprofile ("month");
+        CREATE INDEX ercot_loadprofile_month_idx ON trueprice.ercot_loadprofile ("month");
 
-        --reindex table trueprice.loadprofile;
+
+        --drop table trueprice.isone_loadprofile
+        create table trueprice.isone_loadprofile(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          "month" timestamptz,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.isone_loadprofile
+
+
+        -- Index on the foreign key column
+        CREATE INDEX isone_loadprofile_hierarchy_id_idx ON trueprice.isone_loadprofile (hierarchy_id);
+
+        -- Index on the curvestart column
+        CREATE INDEX isone_loadprofile_curvestart_idx ON trueprice.isone_loadprofile (curvestart);
+
+        -- Index on the month column
+        CREATE INDEX isone_loadprofile_month_idx ON trueprice.isone_loadprofile ("month");
+
+
+        --drop table trueprice.miso_loadprofile
+        create table trueprice.miso_loadprofile(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          "month" timestamptz,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.miso_loadprofile
+
+
+        -- Index on the foreign key column
+        CREATE INDEX miso_loadprofile_hierarchy_id_idx ON trueprice.miso_loadprofile (hierarchy_id);
+
+        -- Index on the curvestart column
+        CREATE INDEX miso_loadprofile_curvestart_idx ON trueprice.miso_loadprofile (curvestart);
+
+        -- Index on the month column
+        CREATE INDEX miso_loadprofile_month_idx ON trueprice.miso_loadprofile ("month");
+
+
+        --drop table trueprice.nyiso_loadprofile
+        create table trueprice.nyiso_loadprofile(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          "month" timestamptz,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.nyiso_loadprofile
+
+
+        -- Index on the foreign key column
+        CREATE INDEX nyiso_loadprofile_hierarchy_id_idx ON trueprice.nyiso_loadprofile (hierarchy_id);
+
+        -- Index on the curvestart column
+        CREATE INDEX nyiso_loadprofile_curvestart_idx ON trueprice.nyiso_loadprofile (curvestart);
+
+        -- Index on the month column
+        CREATE INDEX nyiso_loadprofile_month_idx ON trueprice.nyiso_loadprofile ("month");
+
+
+        --drop table trueprice.pjm_loadprofile
+        create table trueprice.pjm_loadprofile(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          "month" timestamptz,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.pjm_loadprofile
+
+
+        -- Index on the foreign key column
+        CREATE INDEX pjm_loadprofile_hierarchy_id_idx ON trueprice.pjm_loadprofile (hierarchy_id);
+
+        -- Index on the curvestart column
+        CREATE INDEX pjm_loadprofile_curvestart_idx ON trueprice.pjm_loadprofile (curvestart);
+
+        -- Index on the month column
+        CREATE INDEX pjm_loadprofile_month_idx ON trueprice.pjm_loadprofile ("month");
+
 
         reindex database trueprice;
 
