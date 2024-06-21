@@ -61,16 +61,16 @@ class Profile_Loader:
             # check_query = f"""
             #     -- if nothing found, new data, insert it, or do one of these
             
-            #     select exists(select 1 from trueprice.loadprofile where curvestart='{now}') -- ignore, "db == file" based on timestamp
+            #     select exists(select 1 from trueprice.{data.controlArea}_loadprofile where curvestart='{now}') -- ignore, "db == file" based on timestamp
             #     UNION ALL
-            #     select exists(select 1 from trueprice.loadprofile where curvestart>='{sod}' and curvestart<='{now}') -- update, db already exists
+            #     select exists(select 1 from trueprice.{data.controlArea}_loadprofile where curvestart>='{sod}' and curvestart<='{now}') -- update, db already exists
             #     UNION ALL
-            #     select exists(select 1 from trueprice.loadprofile where curvestart>='{now}' and curvestart<'{eod}' ) -- ignore, db is equal or newer
+            #     select exists(select 1 from trueprice.{data.controlArea}_loadprofile where curvestart>='{now}' and curvestart<'{eod}' ) -- ignore, db is equal or newer
             #     UNION ALL
-            #     select exists(select 1 from trueprice.loadprofile where curvestart>='{sod}' and curvestart<'{eod}' and cob ) -- ignore, db has cob already
+            #     select exists(select 1 from trueprice.{data.controlArea}_loadprofile where curvestart>='{sod}' and curvestart<'{eod}' and cob ) -- ignore, db has cob already
             # """
             check_query = f"""
-            select exists(select 1 from trueprice.loadprofile where curvestart='{now}') -- ignore, "db == file" based on timestamp
+            select exists(select 1 from trueprice.{data.controlArea}_loadprofile where curvestart='{now}') -- ignore, "db == file" based on timestamp
             """
             # r = pd.read_sql(check_query, self.db_util.engine)
             # same, old_exists, new_exists, cob_exists = r.exists[0], r.exists[1], r.exists[2], r.exists[3]
@@ -88,13 +88,13 @@ class Profile_Loader:
             #     return "Insert aborted, newer data in database"
 
             # elif not same and not new_exists and not old_exists and not cob_exists: # upsert new data
-            r = df.to_sql(f"loadprofile", con = self.db_util.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
+            r = df.to_sql(f"{data.controlArea}_loadprofile", con = self.db_util.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
             if r is not None:
                 return "Data Inserted"
             return "Insert aborted, failed to insert new data"
                     
             # elif old_exists: # perform scd-2
-            #     tmp_table_name = f"loadprofile_{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
+            #     tmp_table_name = f"{data.controlArea}_loadprofile_{data.snake_timestamp()}" # temp table to hold new csv data so we can work in SQL
             #     r = df.to_sql(f'{tmp_table_name}', con = self.db_util.engine, if_exists = 'replace', chunksize=1000, schema="trueprice", index=False)
             #     if r is None:
             #         return "Unable to create temp data table for update"
@@ -110,12 +110,12 @@ class Profile_Loader:
             #                     -- get the current rows in the database, all of them, not just things that will change
 
             #                     select id, cob, month, curvestart, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component 
-            #                     from trueprice.loadprofile where curvestart>='{sod}' and curvestart<='{eod}'
+            #                     from trueprice.{data.controlArea}_loadprofile where curvestart>='{sod}' and curvestart<='{eod}'
             #                 ),
             #                 backup as (
             #                     -- take current rows and insert into database but with a new "curveend" timestamp
 
-            #                     insert into trueprice.loadprofile_history ( cob, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component)
+            #                     insert into trueprice.{data.controlArea}_loadprofile_history ( cob, month, curvestart, curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component)
 
             #                     select  cob, month, curvestart, '{curveend}' as curveend, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component
             #                     from current
@@ -128,18 +128,18 @@ class Profile_Loader:
             #             -- update the existing "current" with the new "csv"
                         
             #                 deletion as(
-            #                 DELETE from trueprice.loadprofile
+            #                 DELETE from trueprice.{data.controlArea}_loadprofile
             #                 WHERE curvestart = (select curvestart from single)
 
             #                 ),
 
             #                 updation as (
-            #                 insert into trueprice.loadprofile ( cob, month, curvestart, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component)
+            #                 insert into trueprice.{data.controlArea}_loadprofile ( cob, month, curvestart, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component)
 
             #                 select  cob, month, curvestart, data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component, sub_cost_component
             #                     from trueprice.{tmp_table_name}
             #                 )
-            #             select * from trueprice.loadprofile;
+            #             select * from trueprice.{data.controlArea}_loadprofile;
                    
                     
             #         '''          

@@ -186,7 +186,7 @@ class Ingestion:
             result = self.process(files, {"validate_data":self.validate, "ingestion":self.ptc.ingestion, "storage":self.storage, "validate_api": self.validate_api})
         elif re.search("matrix", file, re.IGNORECASE):
             result = self.process(files, {"validate_data":self.validate, "ingestion":self.matrix.ingestion, "storage":self.storage, "validate_api": self.validate_api})
-        elif re.search("loaderprofile", file, re.IGNORECASE):
+        elif re.search("loadprofile", file, re.IGNORECASE):
             result = self.process(files, {"validate_data":self.validate, "ingestion":self.profile.ingestion, "storage":self.storage, "validate_api": self.validate_api})
         else:
             result = "Shouldn't be here"

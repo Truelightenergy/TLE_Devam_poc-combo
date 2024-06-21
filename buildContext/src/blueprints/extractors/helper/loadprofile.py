@@ -72,7 +72,7 @@ class LoadProfile:
                 select d.id, month, curvestart, he,
                 data,
                 ca.name control_area, state.name state, lz.name load_zone, cz.name capacity_zone, u.name utility, strip.name strip, cg.name cost_group, cc.name cost_component , ct.name customer_type
-                from trueprice.loadprofile d
+                from trueprice.{control_area}_loadprofile d
                 join trueprice.hierarchy h on h.id = d.hierarchy_id
                 join trueprice.curve_datatype cd on cd.id = h.curve_datatype_id
                 join trueprice.control_area ca on ca.id = h.control_area_id
@@ -86,7 +86,7 @@ class LoadProfile:
                 join trueprice.customer_type ct on ct.id = h.customer_type_id
                 where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}' and curvestart::date >= '{curve_start}' and curvestart::date <= '{curve_end}'
                 and LOWER(ca."name") = '{control_area}'
-                order by curvestart;"""
+                order by curvestart, month, he;"""
             data_frame = None
             data_frame = pl.read_database_uri(psql_query, str(self.engine.url), engine="connectorx")
             if dimension_check:
