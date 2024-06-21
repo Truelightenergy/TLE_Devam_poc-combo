@@ -12,6 +12,7 @@ import json
 from io import BytesIO
 from io import StringIO
 import pandas as pd
+import polars as pl
 import datetime
 import utils.trueprice_database as tpdb
 from werkzeug.utils import secure_filename
@@ -85,11 +86,25 @@ class Util:
         """
         converts the dataframe to excel
         """
+        temp_time = time.time()
         data_frame = pd.read_csv(StringIO(data_frame), header = None)
+        print('IO object read from csv_string', time.time()-temp_time)
         output = BytesIO()
+        temp_time2 = time.time()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
             data_frame.to_excel(writer, sheet_name='Sheet1', index=False, header=False)
-
+        print('xlsx writer', time.time()-temp_time2)
+        output.seek(0)
+        print('IO object read from csv_string and xlsx writer', time.time()-temp_time)
+        return output
+    
+    def pd_str_to_excel_pl(self, data_frame):
+        """
+        converts the dataframe to excel using polars
+        """
+        data_frame = pl.read_csv(StringIO(data_frame), has_header = False)
+        output = BytesIO()
+        data_frame.write_excel(output, include_header=False)
         output.seek(0)
         return output
     
@@ -168,13 +183,13 @@ class Util:
                         if query_strings["type"].lower()=="xlsx":
                             if (query_strings["curve_type"]).lower() == 'matrix':
                                 data = self.get_csv_string_with_disclaimer(data_frame.to_csv(header=None))
-                                data = self.pd_str_to_excel(data)
+                                data = self.pd_str_to_excel_pl(data)
                             elif(query_strings["curve_type"]).lower() == 'headroom':
                                 data = self.get_csv_string_with_disclaimer(data_frame.to_csv(index=False))
-                                data = self.pd_str_to_excel(data)
+                                data = self.pd_str_to_excel_pl(data)
                             else:
                                 data = self.get_csv_string_with_disclaimer(data_frame.to_csv())
-                                data = self.pd_str_to_excel(data)
+                                data = self.pd_str_to_excel_pl(data)
                             response_dataframes.append((data.getvalue(), file_name+".xlsx"))
                             
                         elif query_strings["type"].lower()=="csv":

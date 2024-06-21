@@ -15,6 +15,7 @@ from .helper.ptc import Ptc
 from .helper.matrix import Matrix
 from .helper.headroom import Headroom
 from .helper.loadprofile import LoadProfile
+import time
 
 
 class Extractor:
@@ -133,14 +134,17 @@ class Extractor:
             return flattened_df
         
         elif type =="loadprofile":
-            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month', 'he'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'customer_type'], aggfunc=list) #, "distribution_category"
-            pivoted_df.columns.name = None
-            pivoted_df.index.name = None
+            # temp_time = time.time()
+            # pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month', 'he'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'customer_type'], aggfunc=list) #, "distribution_category"
+            # print("Pivot pandas time complexity", time.time()-temp_time)
+            # pivoted_df.columns.name = None
+            # pivoted_df.index.name = None
             
-            # Explode the lists into multiple rows
-            flattened_df = pivoted_df.apply(lambda x: pd.Series(x).explode())
+            # # Explode the lists into multiple rows
+            # flattened_df = pivoted_df.apply(lambda x: pd.Series(x).explode())
 
             # rename indexes
+            flattened_df = df
             flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month", "he": "HE"})
 
             # renaming columns
@@ -197,7 +201,7 @@ class Extractor:
                 df.columns = columns
                            
             elif type == 'loadprofile':
-                columns=["month", 'data', 'curvestart', "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'customer_type']
+                columns=["month", "he", 'data', 'curvestart', "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'customer_type']
 
                 df= df[columns]
                 df = df.copy()
@@ -206,7 +210,7 @@ class Extractor:
                     df["month"] = df["month"].dt.strftime('%Y-%m-%d %H:%M:%S')
 
 
-                df.columns = ["Curve Start Month", 'Data', 'Curve Update Date', "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", 'Sub Cost Component']
+                df.columns = ["Curve Start Month", "HE", 'Data', 'Curve Update Date', "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", 'Customer Type']
 
             else:
                 columns=["month", 'data', 'curvestart', "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'sub_cost_component']
@@ -246,7 +250,7 @@ class Extractor:
             elif str(query_strings["curve_type"]).lower() == "headroom":
                 dataframe, status = self.headroom.extraction(query_strings)
             elif str(query_strings["curve_type"]).lower() == "loadprofile":
-                dataframe, status = self.loadprofile.extraction(query_strings) 
+                dataframe, status = self.loadprofile.extraction(query_strings, download_type.lower() in ("csv", "xlsx")) 
 
             if not isinstance(dataframe, pd.DataFrame):
                     return dataframe, status
