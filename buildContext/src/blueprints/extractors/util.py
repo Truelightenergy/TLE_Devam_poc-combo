@@ -81,24 +81,8 @@ class Util:
             logging.error(f"{session['user']}: Unable to download the data")
             
         return response, status
-         
-    def pd_str_to_excel(self, data_frame):
-        """
-        converts the dataframe to excel
-        """
-        temp_time = time.time()
-        data_frame = pd.read_csv(StringIO(data_frame), header = None)
-        print('IO object read from csv_string', time.time()-temp_time)
-        output = BytesIO()
-        temp_time2 = time.time()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            data_frame.to_excel(writer, sheet_name='Sheet1', index=False, header=False)
-        print('xlsx writer', time.time()-temp_time2)
-        output.seek(0)
-        print('IO object read from csv_string and xlsx writer', time.time()-temp_time)
-        return output
     
-    def pd_str_to_excel_pl(self, data_frame):
+    def pd_str_to_excel(self, data_frame):
         """
         converts the dataframe to excel using polars
         """
@@ -183,13 +167,13 @@ class Util:
                         if query_strings["type"].lower()=="xlsx":
                             if (query_strings["curve_type"]).lower() == 'matrix':
                                 data = self.get_csv_string_with_disclaimer(data_frame.to_csv(header=None))
-                                data = self.pd_str_to_excel_pl(data)
+                                data = self.pd_str_to_excel(data)
                             elif(query_strings["curve_type"]).lower() == 'headroom':
                                 data = self.get_csv_string_with_disclaimer(data_frame.to_csv(index=False))
-                                data = self.pd_str_to_excel_pl(data)
+                                data = self.pd_str_to_excel(data)
                             else:
                                 data = self.get_csv_string_with_disclaimer(data_frame.to_csv())
-                                data = self.pd_str_to_excel_pl(data)
+                                data = self.pd_str_to_excel(data)
                             response_dataframes.append((data.getvalue(), file_name+".xlsx"))
                             
                         elif query_strings["type"].lower()=="csv":
