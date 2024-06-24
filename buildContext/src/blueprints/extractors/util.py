@@ -68,7 +68,7 @@ class Util:
         query_strings["type"] = request.form.get('type')
         query_strings["start"] = str(request.form.get('start'))
         query_strings["end"] = str(request.form.get('end'))
-        query_strings["idcob"] = str(request.form.get('idcob'))
+        query_strings["idcob"] = str(request.form.get('idcob', 'all'))
 
         query_strings["offset"] =  0
         query_strings["operating_day"] = request.form.get('operating_day')

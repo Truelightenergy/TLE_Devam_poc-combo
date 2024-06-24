@@ -32,7 +32,7 @@ class NonEnergy:
         Handling extraction for ancillarydata
         """
         try:
-            history = (query_strings["idcob"].lower() == 'all')
+            history = False
             control_area = query_strings["iso"]
             strips = query_strings["strip"]
             strip_filters = list()
@@ -255,9 +255,7 @@ class NonEnergy:
                             {psql_query} order by curvestart desc,strip;
                             """
             data_frame = None
-            data_frame = pd.read_sql_query(sql=text(psql_query), con=self.engine.connect())
-            data_frame.cost_component = data_frame.cost_component.apply(lambda x: self.replace_or_append(r'[KkMmWw]{2}[\-/ ]{0,1}[MmOoNnTtHhDdAaYyHhOoUuRr]{1,5}', 'MWh', x))
-            data_frame.sub_cost_component = data_frame.sub_cost_component.apply(lambda x: re.sub(r'[KkMmWw]{2}[\-/ ]{0,1}[MmOoNnTtHhDdAaYyHhOoUuRr]{1,5}', 'MWh', x))
+            data_frame = pd.read_sql_query(sql=text(psql_query), con=self.engine.connect())           
             return data_frame, "success"
         
         except:
