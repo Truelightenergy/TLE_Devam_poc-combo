@@ -12,6 +12,7 @@ import json
 from io import BytesIO
 from io import StringIO
 import pandas as pd
+import polars as pl
 import datetime
 import utils.trueprice_database as tpdb
 from werkzeug.utils import secure_filename
@@ -80,16 +81,14 @@ class Util:
             logging.error(f"{session['user']}: Unable to download the data")
             
         return response, status
-         
+    
     def pd_str_to_excel(self, data_frame):
         """
-        converts the dataframe to excel
+        converts the dataframe to excel using polars
         """
-        data_frame = pd.read_csv(StringIO(data_frame), header = None)
+        data_frame = pl.read_csv(StringIO(data_frame), has_header = False)
         output = BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            data_frame.to_excel(writer, sheet_name='Sheet1', index=False, header=False)
-
+        data_frame.write_excel(output, include_header=False)
         output.seek(0)
         return output
     

@@ -62,7 +62,7 @@ class ExtractorUtil:
                 iso_list = [iso]
             
             for curve in curve_list:
-                if curve in ['energy', 'nonenergy', 'rec']:
+                if curve in ['energy', 'nonenergy', 'rec', 'loadprofile']:
                     for iso in iso_list:
                         if curve == 'rec' and iso.lower() == 'miso':
                             continue

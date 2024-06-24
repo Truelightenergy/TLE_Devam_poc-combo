@@ -1169,6 +1169,250 @@ services:
         update trueprice.price_changes_notifications set created_on  = '2023-12-12 05:00:00.000 +0000';
         ALTER TABLE trueprice.price_changes_notifications ADD change_with_bounds bool DEFAULT false NULL;
 
+        --drop table trueprice.curve_datatype
+        CREATE TABLE trueprice.curve_datatype (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE
+        );
+        --select * from trueprice.curve_datatype;
+
+        --drop table trueprice.control_area
+        CREATE TABLE trueprice.control_area (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE
+        );
+        --select * from trueprice.control_area;
+
+        --drop table trueprice.state
+        CREATE TABLE trueprice.state (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE
+        );
+        --select * from trueprice.state;
+
+        --drop table trueprice.load_zone
+        CREATE TABLE trueprice.load_zone (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE
+        );
+        --select * from trueprice.load_zone;
+
+        --drop table trueprice.capacity_zone
+        CREATE TABLE trueprice.capacity_zone (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE
+        );
+        --select * from trueprice.capacity_zone;
+
+        --drop table trueprice.utility
+        CREATE TABLE trueprice.utility (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE
+        );
+        --select * from trueprice.utility;
+
+        --drop table trueprice.block_type
+        CREATE TABLE trueprice.block_type (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(4) NOT NULL UNIQUE
+        );
+        --select * from trueprice.block_type;
+
+        --drop table trueprice.cost_group
+        CREATE TABLE trueprice.cost_group (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE
+        );
+        --select * from trueprice.cost_group;
+
+        --drop table trueprice.cost_component
+        CREATE TABLE trueprice.cost_component (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE
+        );
+        --select * from trueprice.cost_component;
+
+        --drop table trueprice.customer_type
+        CREATE TABLE trueprice.customer_type (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE
+        );
+        --select * from trueprice.customer_type;
+
+        --drop table trueprice.hierarchy
+        create table trueprice.hierarchy (
+          id SERIAL PRIMARY key,
+          curve_datatype_id int, -- energy, non-energy, rec, load-profile etc.
+          control_area_id int, -- ercot, isone, miso, nyiso etc
+          state_id int,
+          load_zone_id int,
+          capacity_zone_id int,
+          utility_id int,
+          block_type_id int,
+          cost_group_id int,
+          cost_component_id int,
+          customer_type_id int,
+          FOREIGN KEY (curve_datatype_id) REFERENCES trueprice.curve_datatype(id) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (control_area_id) REFERENCES trueprice.control_area(id) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (state_id) REFERENCES trueprice.state(id) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (load_zone_id) REFERENCES trueprice.load_zone(id) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (capacity_zone_id) REFERENCES trueprice.capacity_zone(id) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (utility_id) REFERENCES trueprice.utility(id) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (block_type_id) REFERENCES trueprice.block_type(id) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (cost_group_id) REFERENCES trueprice.cost_group(id) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (cost_component_id) REFERENCES trueprice.cost_component(id) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (customer_type_id) REFERENCES trueprice.customer_type(id) ON DELETE CASCADE ON UPDATE CASCADE
+        );
+        --select * from trueprice.hierarchy;
+
+        -- Index on the curve_datatype_id column
+        CREATE INDEX hierarchy_curve_datatype_id_idx ON trueprice.hierarchy (curve_datatype_id);
+
+        -- Index on the control_area_id column
+        CREATE INDEX hierarchy_control_area_id_idx ON trueprice.hierarchy (control_area_id);
+
+        -- Index on the state_id column
+        CREATE INDEX hierarchy_state_id_idx ON trueprice.hierarchy (state_id);
+
+        -- Index on the load_zone_id column
+        CREATE INDEX hierarchy_load_zone_id_idx ON trueprice.hierarchy (load_zone_id);
+
+        -- Index on the capacity_zone_id column
+        CREATE INDEX hierarchy_capacity_zone_id_idx ON trueprice.hierarchy (capacity_zone_id);
+
+        -- Index on the utility_id column
+        CREATE INDEX hierarchy_utility_id_idx ON trueprice.hierarchy (utility_id);
+
+        -- Index on the block_type_id column
+        CREATE INDEX hierarchy_block_type_id_idx ON trueprice.hierarchy (block_type_id);
+
+        -- Index on the cost_group_id column
+        CREATE INDEX hierarchy_cost_group_id_idx ON trueprice.hierarchy (cost_group_id);
+
+        -- Index on the cost_component_id column
+        CREATE INDEX hierarchy_cost_component_id_idx ON trueprice.hierarchy (cost_component_id);
+
+        -- Index on the customer_type_id column
+        CREATE INDEX hierarchy_customer_type_id_idx ON trueprice.hierarchy (customer_type_id);
+
+
+        --drop table trueprice.ercot_loadprofile
+        create table trueprice.ercot_loadprofile(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          "month" timestamptz,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.ercot_loadprofile
+
+
+        -- Index on the foreign key column
+        CREATE INDEX ercot_loadprofile_hierarchy_id_idx ON trueprice.ercot_loadprofile (hierarchy_id);
+
+        -- Index on the curvestart column
+        CREATE INDEX ercot_loadprofile_curvestart_idx ON trueprice.ercot_loadprofile (curvestart);
+
+        -- Index on the month column
+        CREATE INDEX ercot_loadprofile_month_idx ON trueprice.ercot_loadprofile ("month");
+
+
+        --drop table trueprice.isone_loadprofile
+        create table trueprice.isone_loadprofile(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          "month" timestamptz,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.isone_loadprofile
+
+
+        -- Index on the foreign key column
+        CREATE INDEX isone_loadprofile_hierarchy_id_idx ON trueprice.isone_loadprofile (hierarchy_id);
+
+        -- Index on the curvestart column
+        CREATE INDEX isone_loadprofile_curvestart_idx ON trueprice.isone_loadprofile (curvestart);
+
+        -- Index on the month column
+        CREATE INDEX isone_loadprofile_month_idx ON trueprice.isone_loadprofile ("month");
+
+
+        --drop table trueprice.miso_loadprofile
+        create table trueprice.miso_loadprofile(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          "month" timestamptz,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.miso_loadprofile
+
+
+        -- Index on the foreign key column
+        CREATE INDEX miso_loadprofile_hierarchy_id_idx ON trueprice.miso_loadprofile (hierarchy_id);
+
+        -- Index on the curvestart column
+        CREATE INDEX miso_loadprofile_curvestart_idx ON trueprice.miso_loadprofile (curvestart);
+
+        -- Index on the month column
+        CREATE INDEX miso_loadprofile_month_idx ON trueprice.miso_loadprofile ("month");
+
+
+        --drop table trueprice.nyiso_loadprofile
+        create table trueprice.nyiso_loadprofile(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          "month" timestamptz,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.nyiso_loadprofile
+
+
+        -- Index on the foreign key column
+        CREATE INDEX nyiso_loadprofile_hierarchy_id_idx ON trueprice.nyiso_loadprofile (hierarchy_id);
+
+        -- Index on the curvestart column
+        CREATE INDEX nyiso_loadprofile_curvestart_idx ON trueprice.nyiso_loadprofile (curvestart);
+
+        -- Index on the month column
+        CREATE INDEX nyiso_loadprofile_month_idx ON trueprice.nyiso_loadprofile ("month");
+
+
+        --drop table trueprice.pjm_loadprofile
+        create table trueprice.pjm_loadprofile(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          "month" timestamptz,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.pjm_loadprofile
+
+
+        -- Index on the foreign key column
+        CREATE INDEX pjm_loadprofile_hierarchy_id_idx ON trueprice.pjm_loadprofile (hierarchy_id);
+
+        -- Index on the curvestart column
+        CREATE INDEX pjm_loadprofile_curvestart_idx ON trueprice.pjm_loadprofile (curvestart);
+
+        -- Index on the month column
+        CREATE INDEX pjm_loadprofile_month_idx ON trueprice.pjm_loadprofile ("month");
+
+
+        reindex database trueprice;
+
         EOSQL
   # adminer: # for postgres, php admin interface
   #   image: adminer

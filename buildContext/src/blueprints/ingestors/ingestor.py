@@ -8,6 +8,8 @@ from .helper.energy import Energy
 from .helper.rec import Rec
 from .helper.ptc import Ptc
 from .helper.matrix import MATRIX
+from .helper.profile_loader import Profile_Loader
+from ..hierarchy_utils.utils import BaseTableHierarchy
 
 from botocore.exceptions import ClientError
 
@@ -31,6 +33,8 @@ class Ingestion:
         self.rec = Rec()
         self.ptc = Ptc()
         self.matrix = MATRIX()
+        self.hierarchy = BaseTableHierarchy()
+        self.profile = Profile_Loader()
 
     def validate(self, file_name):
         """
@@ -91,6 +95,8 @@ class Ingestion:
 
         # ingestion to the database
         for m in valid:
+            # if steps.get("hierarchy_first") != None:
+            #     m = steps["hierarchy_first"](m)
             result = steps["ingestion"](m) # store before we place in db
             if result is not None:
                 if result in ["Data Inserted", "Data updated"]:
@@ -180,11 +186,16 @@ class Ingestion:
             result = self.process(files, {"validate_data":self.validate, "ingestion":self.ptc.ingestion, "storage":self.storage, "validate_api": self.validate_api})
         elif re.search("matrix", file, re.IGNORECASE):
             result = self.process(files, {"validate_data":self.validate, "ingestion":self.matrix.ingestion, "storage":self.storage, "validate_api": self.validate_api})
+        elif re.search("loadprofile", file, re.IGNORECASE):
+            result = self.process(files, {"validate_data":self.validate, "ingestion":self.profile.ingestion, "storage":self.storage, "validate_api": self.validate_api})
         else:
             result = "Shouldn't be here"
         
-
         return result
+    
+    # def hierarchy_call(self, data):
+    #     hierarchy_id_series = self.hierarchy.get_hierarchy_id_csv(data.fileName, data.curveType)
+    #     pass
 
 class TLE_Meta:
     def __init__(self, fileName, curveType, controlArea, curveTimestamp):
