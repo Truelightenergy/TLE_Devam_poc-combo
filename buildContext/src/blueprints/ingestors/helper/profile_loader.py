@@ -8,8 +8,10 @@ from ..ingestor_model import IngestorUtil
 from utils.configs import read_config
 from ...hierarchy_utils.utils import BaseTableHierarchy
 import time
+import logging
 
 config = read_config()
+logging.basicConfig(level=logging.INFO)
 
 class Profile_Loader:
     """
@@ -88,7 +90,15 @@ class Profile_Loader:
             #     return "Insert aborted, newer data in database"
 
             # elif not same and not new_exists and not old_exists and not cob_exists: # upsert new data
-            r = df.to_sql(f"{data.controlArea}_loadprofile", con = self.db_util.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
+            chunk_size = 1000
+
+            # Loop over DataFrame in chunks
+            for start in range(0, len(df), chunk_size):
+                end = start + chunk_size
+                df_chunk = df.iloc[start:end]
+                r = df_chunk.to_sql(f"{data.controlArea}_loadprofile", con = self.db_util.engine, if_exists = 'append', schema="trueprice", index=False)
+            
+            # r = df.to_sql(f"{data.controlArea}_loadprofile", con = self.db_util.engine, if_exists = 'append', schema="trueprice", index=False)
             if r is not None:
                 return "Data Inserted"
             return "Insert aborted, failed to insert new data"
@@ -155,6 +165,7 @@ class Profile_Loader:
             import traceback, sys
             print(traceback.format_exc())
             print("Error in data dump: ", exp)
+            logging.info(exp)
             return "Failure in Ingestion"
 
     def renaming_columns(self, df):
