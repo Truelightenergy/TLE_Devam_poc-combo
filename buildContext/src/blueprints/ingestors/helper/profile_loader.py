@@ -151,9 +151,10 @@ class Profile_Loader:
             #     return "Data updated"
             # else:
             #     return "Unknown insert/update error"
-        except:
+        except Exception as exp:
             import traceback, sys
             print(traceback.format_exc())
+            print("Error in data dump: ", exp)
             return "Failure in Ingestion"
 
     def renaming_columns(self, df):
