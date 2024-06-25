@@ -90,15 +90,7 @@ class Profile_Loader:
             #     return "Insert aborted, newer data in database"
 
             # elif not same and not new_exists and not old_exists and not cob_exists: # upsert new data
-            chunk_size = 1000
-
-            # Loop over DataFrame in chunks
-            for start in range(0, len(df), chunk_size):
-                end = start + chunk_size
-                df_chunk = df.iloc[start:end]
-                r = df_chunk.to_sql(f"{data.controlArea}_loadprofile", con = self.db_util.engine, if_exists = 'append', schema="trueprice", index=False)
-            
-            # r = df.to_sql(f"{data.controlArea}_loadprofile", con = self.db_util.engine, if_exists = 'append', schema="trueprice", index=False)
+            r = df.to_sql(f"{data.controlArea}_loadprofile", con = self.db_util.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
             if r is not None:
                 return "Data Inserted"
             return "Insert aborted, failed to insert new data"
