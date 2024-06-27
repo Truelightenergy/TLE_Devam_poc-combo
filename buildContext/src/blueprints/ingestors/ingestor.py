@@ -9,6 +9,7 @@ from .helper.rec import Rec
 from .helper.ptc import Ptc
 from .helper.matrix import MATRIX
 from .helper.profile_loader import Profile_Loader
+from .helper.shaping import Shaping
 from ..hierarchy_utils.utils import BaseTableHierarchy
 
 from botocore.exceptions import ClientError
@@ -35,6 +36,7 @@ class Ingestion:
         self.matrix = MATRIX()
         self.hierarchy = BaseTableHierarchy()
         self.profile = Profile_Loader()
+        self.shaping = Shaping()
 
     def validate(self, file_name):
         """
@@ -188,6 +190,8 @@ class Ingestion:
             result = self.process(files, {"validate_data":self.validate, "ingestion":self.matrix.ingestion, "storage":self.storage, "validate_api": self.validate_api})
         elif re.search("loadprofile", file, re.IGNORECASE):
             result = self.process(files, {"validate_data":self.validate, "ingestion":self.profile.ingestion, "storage":self.storage, "validate_api": self.validate_api})
+        elif re.search("shaping", file, re.IGNORECASE):
+            result = self.process(files, {"validate_data":self.validate, "ingestion":self.shaping.ingestion, "storage":self.storage, "validate_api": self.validate_api})
         else:
             result = "Shouldn't be here"
         

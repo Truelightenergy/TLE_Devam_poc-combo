@@ -6,14 +6,14 @@ import pandas as pd
 import datetime
 from ..ingestor_model import IngestorUtil
 from utils.configs import read_config
-from ...hierarchy_utils.utils import BaseTableHierarchy
+from ...hierarchy_utils.utils_shaping import BaseTableHierarchy
 import time
 import logging
 
 config = read_config()
 logging.basicConfig(level=logging.INFO)
 
-class Profile_Loader:
+class Shaping:
     """
     constructor which will makes the connection to the database
     """
