@@ -11,7 +11,7 @@ import polars as pl
 import json
 
 
-class LoadProfile:
+class Shaping:
     """
     constructor which will makes the connection to the database
     """
@@ -83,7 +83,7 @@ class LoadProfile:
             temp_time = time.time()
             data_frame = pl.read_database_uri(psql_query_data, str(self.engine.url), engine="connectorx")
             print("time complexity polars db data reading: ", time.time()-temp_time)
-            psql_query_hierarchy = f"""select h.id, ca.name control_area, state.name state, lz.name load_zone, cz.name capacity_zone, u.name utility, strip.name strip, cg.name cost_group, cc.name cost_component , ct.name customer_type
+            psql_query_hierarchy = f"""select h.id, ca.name control_area, state.name state, lz.name load_zone, cz.name capacity_zone, u.name utility, strip.name strip, cg.name cost_group, cc.name cost_component
                 from trueprice.hierarchy h
                 join trueprice.curve_datatype cd on cd.id = h.curve_datatype_id 
                 join trueprice.control_area ca on ca.id = h.control_area_id 
@@ -93,8 +93,7 @@ class LoadProfile:
                 join trueprice.utility u on u.id = h.utility_id 
                 join trueprice.block_type strip on strip.id = h.block_type_id  
                 join trueprice.cost_group cg on cg.id = h.cost_group_id 
-                join trueprice.cost_component cc on cc.id = h.cost_component_id 
-                join trueprice.customer_type ct on ct.id = h.customer_type_id
+                join trueprice.cost_component cc on cc.id = h.cost_component_id
                 where h.id in ({', '.join(map(str, data_frame["hierarchy_id"].unique()))});"""
             temp_time = time.time()
             hierarchy_frame = pl.read_database_uri(psql_query_hierarchy, str(self.engine.url), engine="connectorx")
@@ -106,14 +105,14 @@ class LoadProfile:
                 temp_time = time.time()
                 pl_pivoted_df = merged_inner.pivot(
                     values="data",
-                    index=["curvestart", "month", "he"],
-                    columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'customer_type'],
+                    index=["curvestart", "month", "year", "datemonth", "weekday", "he"],
+                    columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component"],
                     aggregate_function="first"
                 )
                 pd_pivoted_df = pl_pivoted_df.to_pandas()
-                pd_pivoted_df.set_index(['curvestart', 'month', 'he'], inplace=True)
+                pd_pivoted_df.set_index(["curvestart", "month", "year", "datemonth", "weekday", "he"], inplace=True)
                 hierarchy = [ json.loads(i.replace('{', '[').replace('}', ']')) for i in pd_pivoted_df.columns]
-                multi_index = pd.MultiIndex.from_tuples(hierarchy, names=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "customer_type"])
+                multi_index = pd.MultiIndex.from_tuples(hierarchy, names=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component"])
                 pd_pivoted_df.columns = multi_index
                 print("time complexity polars pivoting: ", time.time()-temp_time)
                 return pd_pivoted_df, "success"  

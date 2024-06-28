@@ -6,14 +6,14 @@ import pandas as pd
 import datetime
 from ..ingestor_model import IngestorUtil
 from utils.configs import read_config
-from ...hierarchy_utils.utils import BaseTableHierarchy
+from ...hierarchy_utils.utils_shaping import BaseTableHierarchy
 import time
 import logging
 
 config = read_config()
 logging.basicConfig(level=logging.INFO)
 
-class Profile_Loader:
+class Shaping:
     """
     constructor which will makes the connection to the database
     """
@@ -39,10 +39,14 @@ class Profile_Loader:
 
             df['date'] = pd.to_datetime(df['date'])
             df['data'] = df['data'].astype(float)
+            df['year'] = df['year'].astype(int)
+            df['datemonth'] = df['datemonth'].astype(int)
+            df['weekday'] = df['weekday'].astype(int)
             df['he'] = df['he'].astype(int)
             df.rename(inplace=True, columns={
                 'date' : 'month'
             })
+
             df.insert(0, 'curvestart', data.curveStart) # date on file, not the internal zone/month column
             # df.insert(0, 'strip', data.strip) # stored as object, don't freak on dtypes
             
@@ -62,14 +66,11 @@ class Profile_Loader:
             """
             r = pd.read_sql(check_query, self.db_util.engine)
             same, old_exists, new_exists = r.exists[0], r.exists[1], r.exists[2]
-            
 
             if same: # if data already exists neglect it
                 return "Insert aborted, data already exists based on timestamp and strip"
-            
             elif new_exists:
                 return "Insert aborted, newer data in database"
-
             elif not same and not new_exists and not old_exists: # upsert new data
                 r = df.to_sql(f"{data.controlArea}_{data.curveType}", con = self.db_util.engine, if_exists = 'append', chunksize=1000, schema="trueprice", index=False)
                 if r is not None:
@@ -92,15 +93,15 @@ class Profile_Loader:
                             with current as (
                                 -- get the current rows in the database, all of them, not just things that will change
 
-                                select id, month, curvestart, data, hierarchy_id, he
+                                select id, month, curvestart, data, hierarchy_id, year, datemonth, weekday, he
                                 from trueprice.{data.controlArea}_{data.curveType} where curvestart>='{sod}' and curvestart<='{eod}'
                             ),
                             backup as (
                                 -- take current rows and insert into database but with a new "curveend" timestamp
 
-                                insert into trueprice.{data.controlArea}_{data.curveType}_history (month, curvestart, curveend, data, hierarchy_id, he)
+                                insert into trueprice.{data.controlArea}_{data.curveType}_history ( month, curvestart, curveend, data, hierarchy_id, year, datemonth, weekday, he)
 
-                                select month, curvestart, '{curveend}' as curveend, data, hierarchy_id, he
+                                select  month, curvestart, '{curveend}' as curveend, data, hierarchy_id, year, datemonth, weekday, he
                                 from current
                             ),
                             single as (
@@ -117,12 +118,15 @@ class Profile_Loader:
                             ),
 
                             updation as (
-                            insert into trueprice.{data.controlArea}_{data.curveType} ( month, curvestart, data, hierarchy_id, he)
+                            insert into trueprice.{data.controlArea}_{data.curveType} ( month, curvestart, data, hierarchy_id, year, datemonth, weekday, he)
 
-                            select  month, curvestart, data, hierarchy_id, he
+                            select  month, curvestart, data, hierarchy_id, year, datemonth, weekday, he
                                 from trueprice.{tmp_table_name}
                             )
-                        select * from trueprice.{data.controlArea}_{data.curveType};'''          
+                        select * from trueprice.{data.controlArea}_{data.curveType};
+                   
+                    
+                    '''          
                 
 
                     # finally execute the query
@@ -137,7 +141,7 @@ class Profile_Loader:
             print("Error in data dump: ", exp)
             logging.info(exp)
             return "Failure in Ingestion"
-        
+    
     def setup_dataframe(self, data_frame, curveType):
         """
         formats the data frame into proper format
@@ -165,13 +169,13 @@ class Profile_Loader:
             data.reset_index(drop=True, inplace=True)
             # data.columns = data.iloc[0]
             data = data.drop(data.index[0])
-            base_list = [0, 1]
+            base_list = [0, 1, 2, 3, 4]
             data_list = data.columns.difference(base_list)
             temp_time = time.time()
             dataframes = [data[base_list + [col]].assign(hierarchy_id=header.iloc[i].id).rename(columns={col: 'data'})
               for i, col in enumerate(data_list)]
             melted_df = pd.concat(dataframes)
-            melted_df.rename(columns={0:"date", 1:'he'}, inplace=True)
+            melted_df.rename(columns={0:"date", 1:"year", 2:"datemonth", 3:"weekday", 4:'he'}, inplace=True)
             print("time.time()-temp_time melt", time.time() - temp_time)
             melted_df['data'] = melted_df['data'].replace('$', '', regex=False)
             melted_df.reset_index(drop=True, inplace=True)
