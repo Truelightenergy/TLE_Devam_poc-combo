@@ -137,7 +137,9 @@ $(document).ready(function () {
 			$('#status').html("&#10004; Success");
 			$("#status").css("color", "green");
 		}
-		else if ((resultant['months'] >= 60) && ((resultant.negativeResult.foundNegative !==true) || (file.name.toLowerCase().includes("nonenergy")))) {
+		// Below is the comment that was removed to allow small month-range uploads
+		// (resultant['months'] >= 60) && 
+		else if ((resultant.negativeResult.foundNegative !==true) || (file.name.toLowerCase().includes("nonenergy"))) {
 
 			$('#status').html("&#10004; Success");
 			$("#status").css("color", "green");
@@ -154,7 +156,8 @@ $(document).ready(function () {
 
 			}
 			else {
-				$('#status').html("&#10006; Failure: Months range must be 61 month long!");
+				// Months range must be 61 month long! //previous notification
+				$('#status').html("&#10006; Failure: Months range had some issue!");
 				$("#status").css("color", "red");
 
 			}

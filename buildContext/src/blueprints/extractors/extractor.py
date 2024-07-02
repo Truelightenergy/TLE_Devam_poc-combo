@@ -150,7 +150,8 @@ class Extractor:
         elif type == "shaping":
             # rename indexes
             flattened_df = df
-            flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month", "year": "Year", "datemonth": "Month", "weekday": "WeekDay", "he": "HE"})
+            # flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month", "year": "Year", "datemonth": "Month", "weekday": "WeekDay", "he": "HE"})
+            flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month"})
 
             # renaming columns
             flattened_df.columns.names =  ["Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component"] #, "Normal Type"
