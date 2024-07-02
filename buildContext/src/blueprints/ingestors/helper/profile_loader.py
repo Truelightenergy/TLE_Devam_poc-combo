@@ -25,7 +25,7 @@ class Profile_Loader:
         self.secret_key = config['secret_key']
         self.secret_salt = config['secret_salt']
         self.db_util = IngestorUtil(self.secret_key, self.secret_salt)
-        self.hierarchy = BaseTableHierarchy()
+        self.hierarchy = BaseTableHierarchy(curve_type='loadprofile')
         
     def ingestion(self, data):
         try:

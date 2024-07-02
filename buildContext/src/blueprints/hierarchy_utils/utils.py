@@ -2,7 +2,7 @@ import pandas as pd
 from utils.database_connection import ConnectDatabase
 
 class BaseTableHierarchy():
-    def __init__(self, ):
+    def __init__(self, curve_type = 'shaping'):
         data_base = ConnectDatabase()
         self.engine = data_base.get_engine()
         self.hierarchy_id_to_csv_id = {
@@ -15,27 +15,9 @@ class BaseTableHierarchy():
             'block_type': 'Block Type',
             'cost_group': 'Cost Group',
             'cost_component': 'Cost Component',
-            'customer_type': 'Customer Type'
         }
-
-    def get_hierarchy_id_csv(self, fileName, curveType):
-        df = pd.read_csv(fileName, header=None)
-
-        df_info = df.iloc[1:12]
-        df_info = df_info.dropna(axis = 1, how = 'all')
-        df_info = df_info.dropna(axis = 0, how = 'all')
-        df_info.reset_index(inplace=True, drop=True)
-        df_info = df_info.transpose()
-        df_info.columns = df_info.iloc[0]
-        df_info = df_info.drop(df_info.index[0])
-        df_info.reset_index(inplace=True, drop=True)
-
-        if df_info.isnull().values.any():
-            raise Exception("File Format Not Matched")
-        
-        hierarchy_id_frame = self.get_hierarchy_id(df_info, curveType)
-        
-        return hierarchy_id_frame
+        if curve_type == 'loadprofile':
+            self.hierarchy_id_to_csv_id['customer_type'] = 'Customer Type'
 
     def get_hierarchy_id(self, df, curveType):
         df['curve_datatype'] = curveType
@@ -160,17 +142,18 @@ class BaseTableHierarchy():
                 cost_component = pd.concat([cost_component, temp_df])
         mapping_dfs['cost_component'] = cost_component
 
-        customer_type = pd.read_sql(customer_type, self.engine)
-        values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['customer_type']].isin(list(customer_type['name']))][self.hierarchy_id_to_csv_id['customer_type']])
-        if len(values_list)>0:
-            hierarchy["customer_type"] = values_list
-            values_str = ", ".join(f"('{value}')" for value in values_list)
-            with self.engine.connect() as con:
-                query = f"INSERT INTO trueprice.customer_type (name) VALUES {values_str} RETURNING id, name;"
-                result = con.execute(query)
-                temp_df = pd.DataFrame(result.fetchall(), columns=result.keys())
-                customer_type = pd.concat([customer_type, temp_df])
-        mapping_dfs['customer_type'] = customer_type
+        if 'customer_type' in self.hierarchy_id_to_csv_id.keys():
+            customer_type = pd.read_sql(customer_type, self.engine)
+            values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['customer_type']].isin(list(customer_type['name']))][self.hierarchy_id_to_csv_id['customer_type']])
+            if len(values_list)>0:
+                hierarchy["customer_type"] = values_list
+                values_str = ", ".join(f"('{value}')" for value in values_list)
+                with self.engine.connect() as con:
+                    query = f"INSERT INTO trueprice.customer_type (name) VALUES {values_str} RETURNING id, name;"
+                    result = con.execute(query)
+                    temp_df = pd.DataFrame(result.fetchall(), columns=result.keys())
+                    customer_type = pd.concat([customer_type, temp_df])
+            mapping_dfs['customer_type'] = customer_type
 
         if len(hierarchy)>0:
             # Create a filter condition
