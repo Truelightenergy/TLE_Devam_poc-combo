@@ -47,7 +47,7 @@ class BaseTableHierarchy():
         mapping_dfs['curve_datatype'] = curve_datatype
 
         control_area = pd.read_sql(control_area, self.engine)
-        values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['control_area']].isin(list(control_area['name']))][self.hierarchy_id_to_csv_id['control_area']])
+        values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['control_area']].astype(str).isin(list(control_area['name']))][self.hierarchy_id_to_csv_id['control_area']])
         if len(values_list)>0:
             hierarchy["control_area"] = values_list
             values_str = ", ".join(f"('{value}')" for value in values_list)
@@ -59,7 +59,7 @@ class BaseTableHierarchy():
         mapping_dfs['control_area'] = control_area
 
         state = pd.read_sql(state, self.engine)
-        values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['state']].isin(list(state['name']))][self.hierarchy_id_to_csv_id['state']])
+        values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['state']].astype(str).isin(list(state['name']))][self.hierarchy_id_to_csv_id['state']])
         if len(values_list)>0:
             hierarchy["state"] = values_list
             values_str = ", ".join(f"('{value}')" for value in values_list)
@@ -71,7 +71,7 @@ class BaseTableHierarchy():
         mapping_dfs['state'] = state
 
         load_zone = pd.read_sql(load_zone, self.engine)
-        values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['load_zone']].isin(list(load_zone['name']))][self.hierarchy_id_to_csv_id['load_zone']])
+        values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['load_zone']].astype(str).isin(list(load_zone['name']))][self.hierarchy_id_to_csv_id['load_zone']])
         if len(values_list)>0:
             hierarchy["load_zone"] = values_list
             values_str = ", ".join(f"('{value}')" for value in values_list)
@@ -83,7 +83,7 @@ class BaseTableHierarchy():
         mapping_dfs['load_zone'] = load_zone
 
         capacity_zone = pd.read_sql(capacity_zone, self.engine)
-        values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['capacity_zone']].isin(list(capacity_zone['name']))][self.hierarchy_id_to_csv_id['capacity_zone']])
+        values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['capacity_zone']].astype(str).isin(list(capacity_zone['name']))][self.hierarchy_id_to_csv_id['capacity_zone']])
         if len(values_list)>0:
             hierarchy["capacity_zone"] = values_list
             values_str = ", ".join(f"('{value}')" for value in values_list)
@@ -95,7 +95,7 @@ class BaseTableHierarchy():
         mapping_dfs['capacity_zone'] = capacity_zone
 
         utility = pd.read_sql(utility, self.engine)
-        values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['utility']].isin(list(utility['name']))][self.hierarchy_id_to_csv_id['utility']])
+        values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['utility']].astype(str).isin(list(utility['name']))][self.hierarchy_id_to_csv_id['utility']])
         if len(values_list)>0:
             hierarchy["utility"] = values_list
             values_str = ", ".join(f"('{value}')" for value in values_list)
@@ -107,7 +107,7 @@ class BaseTableHierarchy():
         mapping_dfs['utility'] = utility
 
         block_type = pd.read_sql(block_type, self.engine)
-        values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['block_type']].isin(list(block_type['name']))][self.hierarchy_id_to_csv_id['block_type']])
+        values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['block_type']].astype(str).isin(list(block_type['name']))][self.hierarchy_id_to_csv_id['block_type']])
         if len(values_list)>0:
             hierarchy["block_type"] = values_list
             values_str = ", ".join(f"('{value}')" for value in values_list)
@@ -119,7 +119,7 @@ class BaseTableHierarchy():
         mapping_dfs['block_type'] = block_type
 
         cost_group = pd.read_sql(cost_group, self.engine)
-        values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['cost_group']].isin(list(cost_group['name']))][self.hierarchy_id_to_csv_id['cost_group']])
+        values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['cost_group']].astype(str).isin(list(cost_group['name']))][self.hierarchy_id_to_csv_id['cost_group']])
         if len(values_list)>0:
             hierarchy["cost_group"] = values_list
             values_str = ", ".join(f"('{value}')" for value in values_list)
@@ -131,7 +131,7 @@ class BaseTableHierarchy():
         mapping_dfs['cost_group'] = cost_group
 
         cost_component = pd.read_sql(cost_component, self.engine)
-        values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['cost_component']].isin(list(cost_component['name']))][self.hierarchy_id_to_csv_id['cost_component']])
+        values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['cost_component']].astype(str).isin(list(cost_component['name']))][self.hierarchy_id_to_csv_id['cost_component']])
         if len(values_list)>0:
             hierarchy["cost_component"] = values_list
             values_str = ", ".join(f"('{value}')" for value in values_list)
@@ -144,7 +144,7 @@ class BaseTableHierarchy():
 
         if 'customer_type' in self.hierarchy_id_to_csv_id.keys():
             customer_type = pd.read_sql(customer_type, self.engine)
-            values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['customer_type']].isin(list(customer_type['name']))][self.hierarchy_id_to_csv_id['customer_type']])
+            values_list = set(df.loc[~df[self.hierarchy_id_to_csv_id['customer_type']].astype(str).isin(list(customer_type['name']))][self.hierarchy_id_to_csv_id['customer_type']])
             if len(values_list)>0:
                 hierarchy["customer_type"] = values_list
                 values_str = ", ".join(f"('{value}')" for value in values_list)
