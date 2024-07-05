@@ -1657,6 +1657,179 @@ services:
 
         CREATE INDEX pjm_shaping_history_month_curvestart_idx ON trueprice.pjm_shaping_history USING brin (month, curvestart);
         
+        --drop table trueprice.ercot_vlr
+        create table trueprice.ercot_vlr(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          datemonth int,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.ercot_vlr
+
+
+        CREATE INDEX ercot_vlr_hierarchy_id_idx ON trueprice.ercot_vlr (hierarchy_id);
+
+        CREATE INDEX ercot_vlr_curvestart_idx ON trueprice.ercot_vlr using brin (curvestart);
+
+
+        --drop table trueprice.isone_vlr
+        create table trueprice.isone_vlr(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          datemonth int,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.isone_vlr
+
+
+        CREATE INDEX isone_vlr_hierarchy_id_idx ON trueprice.isone_vlr (hierarchy_id);
+
+        CREATE INDEX isone_vlr_curvestart_idx ON trueprice.isone_vlr using brin (curvestart);
+
+
+        --drop table trueprice.miso_vlr
+        create table trueprice.miso_vlr(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          datemonth int,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.miso_vlr
+
+        CREATE INDEX miso_vlr_hierarchy_id_idx ON trueprice.miso_vlr (hierarchy_id);
+
+        CREATE INDEX miso_vlr_curvestart_idx ON trueprice.miso_vlr using brin (curvestart);
+
+
+        --drop table trueprice.nyiso_vlr
+        create table trueprice.nyiso_vlr(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          datemonth int,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.nyiso_vlr
+
+        CREATE INDEX nyiso_vlr_hierarchy_id_idx ON trueprice.nyiso_vlr (hierarchy_id);
+
+        CREATE INDEX nyiso_vlr_curvestart_idx ON trueprice.nyiso_vlr using brin (curvestart);
+
+
+        --drop table trueprice.pjm_vlr
+        create table trueprice.pjm_vlr(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          datemonth int,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.pjm_vlr
+
+        CREATE INDEX pjm_vlr_hierarchy_id_idx ON trueprice.pjm_vlr (hierarchy_id);
+
+        CREATE INDEX pjm_vlr_curvestart_idx ON trueprice.pjm_vlr using brin (curvestart);
+
+
+        --drop table trueprice.ercot_vlr_history
+        create table trueprice.ercot_vlr_history(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          datemonth int,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.ercot_vlr_history
+
+
+        CREATE INDEX ercot_vlr_history_hierarchy_id_idx ON trueprice.ercot_vlr_history (hierarchy_id);
+
+        CREATE INDEX ercot_vlr_history_curvestart_idx ON trueprice.ercot_vlr_history using brin (curvestart);
+
+
+        --drop table trueprice.isone_vlr_history
+        create table trueprice.isone_vlr_history(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          datemonth int,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.isone_vlr_history
+
+
+        CREATE INDEX isone_vlr_history_hierarchy_id_idx ON trueprice.isone_vlr_history (hierarchy_id);
+
+        CREATE INDEX isone_vlr_history_curvestart_idx ON trueprice.isone_vlr_history using brin (curvestart);
+
+
+        --drop table trueprice.miso_vlr_history
+        create table trueprice.miso_vlr_history(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          datemonth int,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.miso_vlr_history
+
+        CREATE INDEX miso_vlr_history_hierarchy_id_idx ON trueprice.miso_vlr_history (hierarchy_id);
+
+        CREATE INDEX miso_vlr_history_curvestart_idx ON trueprice.miso_vlr_history using brin (curvestart);
+
+
+        --drop table trueprice.nyiso_vlr_history
+        create table trueprice.nyiso_vlr_history(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          datemonth int,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.nyiso_vlr_history
+
+        CREATE INDEX nyiso_vlr_history_hierarchy_id_idx ON trueprice.nyiso_vlr_history (hierarchy_id);
+
+        CREATE INDEX nyiso_vlr_history_curvestart_idx ON trueprice.nyiso_vlr_history using brin (curvestart);
+
+
+        --drop table trueprice.pjm_vlr_history
+        create table trueprice.pjm_vlr_history(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          datemonth int,
+          he int,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.pjm_vlr_history
+
+        CREATE INDEX pjm_vlr_history_hierarchy_id_idx ON trueprice.pjm_vlr_history (hierarchy_id);
+
+        CREATE INDEX pjm_vlr_history_curvestart_idx ON trueprice.pjm_vlr_history using brin (curvestart);
+        
         reindex database trueprice;
 
         EOSQL
