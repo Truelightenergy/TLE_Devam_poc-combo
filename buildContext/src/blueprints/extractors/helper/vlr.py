@@ -11,7 +11,7 @@ import polars as pl
 import json
 
 
-class LoadProfile:
+class Vlr:
     """
     constructor which will makes the connection to the database
     """
@@ -54,8 +54,10 @@ class LoadProfile:
             start_date_stamp = query_strings["start"]
             end_date_stamp = query_strings["end"]
 
-            start_date = str(datetime.strptime(start_date_stamp, "%Y%m%d").date())
-            end_date = str(datetime.strptime(end_date_stamp, "%Y%m%d").date())
+            start_year = datetime.strptime(start_date_stamp, "%Y%m%d").year
+            end_year = datetime.strptime(end_date_stamp, "%Y%m%d").year
+            start_month = datetime.strptime(start_date_stamp, "%Y%m%d").month
+            end_month = datetime.strptime(end_date_stamp, "%Y%m%d").month
 
             if query_strings["curvestart"]:
                 curve_start = str(datetime.strptime(query_strings["curvestart"], "%Y%m%d").date())
@@ -68,22 +70,16 @@ class LoadProfile:
             if control_area not in ["isone", "pjm", "ercot", "nyiso", "miso"]:
                 return None, "Unable to Fetch Results"
             else:
-                # Original query::: , TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend
-                # psql_query_data = f"""
-                # select * from trueprice.{control_area}_{curveType} d
-                # where "month" between '{start_date} 00:00:00.000 +0500' and '{end_date} 00:00:00.000 +0500' 
-                # and curvestart between '{curve_start}' and '{curve_end}';"""
                 psql_query_data = f"""select *
                 from trueprice.{control_area}_{curveType} d
-                where "month" between '{start_date} 00:00:00.000 +0500' and '{end_date} 00:00:00.000 +0500' 
-                and curvestart between 
+                where curvestart between 
                 (select curvestart from trueprice.{control_area}_{curveType} where curvestart > '{curve_start} 00:00:00.000 +0500' limit 1) and 
                 (select curvestart from trueprice.{control_area}_{curveType} where curvestart > '{curve_end} 00:00:00.000 +0500' limit 1);"""
             data_frame = None
             temp_time = time.time()
             data_frame = pl.read_database_uri(psql_query_data, str(self.engine.url), engine="connectorx")
             print("time complexity polars db data reading: ", time.time()-temp_time)
-            psql_query_hierarchy = f"""select h.id, ca.name control_area, state.name state, lz.name load_zone, cz.name capacity_zone, u.name utility, strip.name strip, cg.name cost_group, cc.name cost_component , ct.name customer_type
+            psql_query_hierarchy = f"""select h.id, ca.name control_area, state.name state, lz.name load_zone, cz.name capacity_zone, u.name utility, strip.name strip, cg.name cost_group, cc.name cost_component
                 from trueprice.hierarchy h
                 join trueprice.curve_datatype cd on cd.id = h.curve_datatype_id 
                 join trueprice.control_area ca on ca.id = h.control_area_id 
@@ -94,7 +90,6 @@ class LoadProfile:
                 join trueprice.block_type strip on strip.id = h.block_type_id  
                 join trueprice.cost_group cg on cg.id = h.cost_group_id 
                 join trueprice.cost_component cc on cc.id = h.cost_component_id 
-                join trueprice.customer_type ct on ct.id = h.customer_type_id
                 where h.id in ({', '.join(map(str, data_frame["hierarchy_id"].unique()))});"""
             temp_time = time.time()
             hierarchy_frame = pl.read_database_uri(psql_query_hierarchy, str(self.engine.url), engine="connectorx")
@@ -102,26 +97,38 @@ class LoadProfile:
             temp_time = time.time()
             merged_inner = data_frame.join(hierarchy_frame, left_on='hierarchy_id', right_on='id', how='inner')
             print("time complexity merging: ", time.time()-temp_time)
+
+            # Define the range of years
+            years = list(range(start_year, end_year+1))
+            # Define months and hours
+            months = list(range(1, 13))
+            hours = list(range(1, 25))
+            # Generate all combinations of years, months, and hours
+            data = [(year, month, hour) for year in years for month in months for hour in hours]
+            # Create the DataFrame
+            df = pl.DataFrame(data, schema=["year", "datemonth", "he"])
+            df = df.filter((pl.col("year") > start_year) | ((pl.col("year") == start_year) & (pl.col("datemonth") >= start_month)))
+            df = df.filter((pl.col("year") < end_year) | ((pl.col("year") == end_year) & (pl.col("datemonth") <= end_month)))
+            df = df.with_columns(pl.col(["datemonth", "he"]).cast(pl.Int32))
+            df = df.join(merged_inner, on=['datemonth', 'he'], how='left')
             if dimension_check:
                 temp_time = time.time()
-                pl_pivoted_df = merged_inner.pivot(
+                pl_pivoted_df = df.pivot(
                     values="data",
-                    index=["curvestart", "month", "he"],
-                    columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'customer_type'],
+                    index=["curvestart", 'year', "datemonth", "he"],
+                    columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component"],
                     aggregate_function="first"
                 )
                 pd_pivoted_df = pl_pivoted_df.to_pandas()
-                pd_pivoted_df.set_index(['curvestart', 'month', 'he'], inplace=True)
+                pd_pivoted_df.set_index(['curvestart', 'year', 'datemonth', 'he'], inplace=True)
                 hierarchy = [ json.loads(i.replace('{', '[').replace('}', ']')) for i in pd_pivoted_df.columns]
-                multi_index = pd.MultiIndex.from_tuples(hierarchy, names=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "customer_type"])
+                multi_index = pd.MultiIndex.from_tuples(hierarchy, names=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component"])
                 pd_pivoted_df.columns = multi_index
                 print("time complexity polars pivoting: ", time.time()-temp_time)
                 return pd_pivoted_df, "success"  
             else:
-                merged_inner = merged_inner.to_pandas()
-                return merged_inner, "success"  
-            
-
+                df = df.to_pandas()
+                return df, "success"  
         except:
             import traceback, sys
             print(traceback.format_exc())
