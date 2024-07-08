@@ -84,15 +84,15 @@ class Line_Loss:
                             with current as (
                                 -- get the current rows in the database, all of them, not just things that will change
 
-                                select id, month, curvestart, data, hierarchy_id, year, datemonth, weekday, he
+                                select id, curvestart, data, hierarchy_id
                                 from trueprice.{data.curveType} where curvestart>='{sod}' and curvestart<='{eod}'
                             ),
                             backup as (
                                 -- take current rows and insert into database but with a new "curveend" timestamp
 
-                                insert into trueprice.{data.curveType}_history ( month, curvestart, curveend, data, hierarchy_id, year, datemonth, weekday, he)
+                                insert into trueprice.{data.curveType}_history ( curvestart, curveend, data, hierarchy_id)
 
-                                select  month, curvestart, '{curveend}' as curveend, data, hierarchy_id, year, datemonth, weekday, he
+                                select  curvestart, '{curveend}' as curveend, data, hierarchy_id
                                 from current
                             ),
                             single as (
@@ -109,9 +109,9 @@ class Line_Loss:
                             ),
 
                             updation as (
-                            insert into trueprice.{data.curveType} ( month, curvestart, data, hierarchy_id, year, datemonth, weekday, he)
+                            insert into trueprice.{data.curveType} ( curvestart, data, hierarchy_id)
 
-                            select  month, curvestart, data, hierarchy_id, year, datemonth, weekday, he
+                            select  curvestart, data, hierarchy_id
                                 from trueprice.{tmp_table_name}
                             )
                         select * from trueprice.{data.curveType};
@@ -150,8 +150,8 @@ class Line_Loss:
             print("time.time()-temp_time db schema", time.time() - temp_time)
 
             melted_df = pd.merge(hierarchy, data_frame, left_index=True, right_index=True)
-            melted_df.rename(columns={'Line Loss Factor': 'data'}, inplace=True)
-            melted_df = melted_df[['id', 'data']]
+            melted_df.rename(columns={'Line Loss Factor': 'data', 'id': 'hierarchy_id'}, inplace=True)
+            melted_df = melted_df[['hierarchy_id', 'data']]
             melted_df['data'] = melted_df['data'].replace('$', '', regex=False)
             melted_df.reset_index(drop=True, inplace=True)
             return melted_df

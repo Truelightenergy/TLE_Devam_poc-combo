@@ -1749,6 +1749,7 @@ services:
           id SERIAL primary key,
           hierarchy_id int,
           curvestart timestamptz,
+          curveend timestamptz,
           datemonth int,
           he int,
           data numeric(20,10),
@@ -1767,6 +1768,7 @@ services:
           id SERIAL primary key,
           hierarchy_id int,
           curvestart timestamptz,
+          curveend timestamptz,
           datemonth int,
           he int,
           data numeric(20,10),
@@ -1785,6 +1787,7 @@ services:
           id SERIAL primary key,
           hierarchy_id int,
           curvestart timestamptz,
+          curveend timestamptz,
           datemonth int,
           he int,
           data numeric(20,10),
@@ -1802,6 +1805,7 @@ services:
           id SERIAL primary key,
           hierarchy_id int,
           curvestart timestamptz,
+          curveend timestamptz,
           datemonth int,
           he int,
           data numeric(20,10),
@@ -1819,6 +1823,7 @@ services:
           id SERIAL primary key,
           hierarchy_id int,
           curvestart timestamptz,
+          curveend timestamptz,
           datemonth int,
           he int,
           data numeric(20,10),
@@ -1829,6 +1834,36 @@ services:
         CREATE INDEX pjm_vlr_history_hierarchy_id_idx ON trueprice.pjm_vlr_history (hierarchy_id);
 
         CREATE INDEX pjm_vlr_history_curvestart_idx ON trueprice.pjm_vlr_history using brin (curvestart);
+
+        --drop table trueprice.lineloss
+        create table trueprice.lineloss(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.lineloss
+
+        CREATE INDEX lineloss_hierarchy_id_idx ON trueprice.lineloss (hierarchy_id);
+
+        CREATE INDEX lineloss_curvestart_idx ON trueprice.lineloss using brin (curvestart);
+
+
+        --drop table trueprice.lineloss_history
+        create table trueprice.lineloss_history(
+          id SERIAL primary key,
+          hierarchy_id int,
+          curvestart timestamptz,
+          curveend timestamptz,
+          data numeric(20,10),
+          FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
+        );
+        --select * from trueprice.lineloss_history
+
+        CREATE INDEX lineloss_history_hierarchy_id_idx ON trueprice.lineloss_history (hierarchy_id);
+
+        CREATE INDEX lineloss_history_curvestart_idx ON trueprice.lineloss_history using brin (curvestart);
         
         reindex database trueprice;
 

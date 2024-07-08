@@ -53,7 +53,7 @@ class ExtractorUtil:
         operating_days = []
         try:
             if curve.lower() == 'all':
-                curve_list = ['energy', 'nonenergy', 'rec', 'ptc', 'matrix', 'headroom', 'loadprofile', 'shaping', 'vlr']
+                curve_list = ['energy', 'nonenergy', 'rec', 'ptc', 'matrix', 'headroom', 'loadprofile', 'shaping', 'vlr', 'lineloss']
             else:
                 curve_list = [curve.lower()]
             if iso == 'all':

@@ -168,7 +168,7 @@ class Util:
                             if (query_strings["curve_type"]).lower() == 'matrix':
                                 data = self.get_csv_string_with_disclaimer(data_frame.to_csv(header=None))
                                 data = self.pd_str_to_excel(data)
-                            elif(query_strings["curve_type"]).lower() == 'headroom':
+                            elif(query_strings["curve_type"]).lower() in ('headroom', 'lineloss'):
                                 data = self.get_csv_string_with_disclaimer(data_frame.to_csv(index=False))
                                 data = self.pd_str_to_excel(data)
                             else:
@@ -190,9 +190,8 @@ class Util:
                             data = data_frame.to_json(orient="records", indent=4)
                             response_dataframes.append((data, file_name+'.json'))
                         # logging.info(f"{session['user']}: Data Extracted Successfully")
-                
-                        # return resp
-                    # return None, status 
+                        if temp_curve == 'lineloss':
+                            break
             log_info = "Data Extracted Successfully"
             if len(response_dataframes)>1:
                 zip_buffer = BytesIO()

@@ -118,9 +118,8 @@ class LoadProfile:
                 print("time complexity polars pivoting: ", time.time()-temp_time)
                 return pd_pivoted_df, "success"  
             else:
-                data_frame = data_frame.to_arrow()
-                data_frame = data_frame.to_pandas()
-                return data_frame, "success"  
+                merged_inner = merged_inner.to_pandas()
+                return merged_inner, "success"  
             
 
         except:

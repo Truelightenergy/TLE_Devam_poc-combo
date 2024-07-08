@@ -18,6 +18,7 @@ import re
 from .helper.loadprofile import LoadProfile
 from .helper.shaping import Shaping
 from .helper.vlr import Vlr
+from .helper.lineloss import LineLoss
 import time
 
 
@@ -42,6 +43,7 @@ class Extractor:
         self.loadprofile = LoadProfile()
         self.shaping = Shaping()
         self.vlr = Vlr()
+        self.lineloss = LineLoss()
         self.filter = Rules()
 
     def post_processing_csv(self, df, type):
@@ -152,7 +154,6 @@ class Extractor:
         elif type == "shaping":
             # rename indexes
             flattened_df = df
-            # flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month", "year": "Year", "datemonth": "Month", "weekday": "WeekDay", "he": "HE"})
             flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month"})
 
             # renaming columns
@@ -172,6 +173,17 @@ class Extractor:
             
             # returning dataframe
             return flattened_df
+        
+        elif type == "lineloss":
+            columns=["curvestart", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "data"]
+
+            df= df[columns]
+
+            # renaming columns
+            df.columns =  ["Curve Update Date", "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", "Line Loss Factor"] #, "Normal Type"
+            
+            # returning dataframe
+            return df
         
         else:
             pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'sub_cost_component'], aggfunc=list)
@@ -231,6 +243,42 @@ class Extractor:
 
 
                 df.columns = ["Curve Start Month", "HE", 'Data', 'Curve Update Date', "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", 'Customer Type']
+            
+            elif type == 'shaping':
+                columns=["month", 'data', 'curvestart', "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component"]
+
+                df= df[columns]
+                df = df.copy()
+                if not df.empty:
+                    df["curvestart"] = df["curvestart"].dt.strftime('%Y-%m-%d %H:%M:%S')
+                    df["month"] = df["month"].dt.strftime('%Y-%m-%d %H:%M:%S')
+
+
+                df.columns = ["Curve Start Month", 'Data', 'Curve Update Date', "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component"]
+
+            elif type == 'vlr':
+                columns=["curvestart", 'year', "datemonth", "he", "data", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component"]
+
+                df= df[columns]
+                df = df.copy()
+                if not df.empty:
+                    df["curvestart"] = df["curvestart"].dt.strftime('%Y-%m-%d %H:%M:%S')
+                    df["month"] = df["month"].dt.strftime('%Y-%m-%d %H:%M:%S')
+
+
+                df.columns = ['Curve Update Date', "Year", "Month", "HE", "Data", "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component"]
+
+            elif type == 'lineloss':
+                columns=["curvestart", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "data"]
+
+                df= df[columns]
+                df = df.copy()
+                if not df.empty:
+                    df["curvestart"] = df["curvestart"].dt.strftime('%Y-%m-%d %H:%M:%S')
+                    df["month"] = df["month"].dt.strftime('%Y-%m-%d %H:%M:%S')
+
+
+                df.columns = ["Curve Update Date", "Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component", "Line Loss Factor"]
 
             else:
                 columns=["month", 'data', 'curvestart', "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'sub_cost_component']
@@ -275,6 +323,8 @@ class Extractor:
                 dataframe, status = self.shaping.extraction(query_strings, download_type.lower() in ("csv", "xlsx")) 
             elif str(query_strings["curve_type"]).lower() == "vlr":
                 dataframe, status = self.vlr.extraction(query_strings, download_type.lower() in ("csv", "xlsx")) 
+            elif str(query_strings["curve_type"]).lower() == "lineloss":
+                dataframe, status = self.lineloss.extraction(query_strings) 
 
             if not isinstance(dataframe, pd.DataFrame):
                     return dataframe, status
