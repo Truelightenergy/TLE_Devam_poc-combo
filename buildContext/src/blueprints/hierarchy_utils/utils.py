@@ -33,7 +33,7 @@ class BaseTableHierarchy():
         cost_group = "select id, name from trueprice.cost_group;"
         cost_component = "select id, name from trueprice.cost_component;"
         customer_type = "select id, name from trueprice.customer_type;"
-        hierarchy_table = "select * from trueprice.hierarchy"
+        hierarchy_table = "select * from trueprice.hierarchy;"
 
         curve_datatype = pd.read_sql(curve_datatype, self.engine)
         if curveType not in list(curve_datatype['name']):

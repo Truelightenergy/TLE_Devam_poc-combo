@@ -8,6 +8,7 @@ from blueprints.extractors.view import extractors
 from blueprints.ingestors.view import ingestors
 from blueprints.graph_view.view import graph_view
 from blueprints.headrooms.view import headrooms
+from blueprints.pricingdesk.views import price
 from utils.revoke_tokens import RevokedTokens
 from utils.roles import RolesDecorator
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
@@ -55,6 +56,7 @@ def create_app():
     app.register_blueprint(extractors)
     app.register_blueprint(graph_view)
     app.register_blueprint(headrooms)
+    app.register_blueprint(price)
 
     return app
 template = {

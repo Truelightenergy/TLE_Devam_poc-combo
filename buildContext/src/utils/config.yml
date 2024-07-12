@@ -23,3 +23,4 @@ extractors_path : extractors
 graph_view_path : graph_view
 headrooms_path : headrooms
 ingestors_path : ingestors
+price_desk : pricedesk
