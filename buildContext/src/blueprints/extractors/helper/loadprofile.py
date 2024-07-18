@@ -9,6 +9,7 @@ from sqlalchemy import text
 import time
 import polars as pl
 import json
+import datetime as datetime2
 
 
 class LoadProfile:
@@ -118,8 +119,57 @@ class LoadProfile:
                 print("time complexity polars pivoting: ", time.time()-temp_time)
                 return pd_pivoted_df, "success"  
             else:
-                merged_inner = merged_inner.to_pandas()
-                return merged_inner, "success"  
+                tmp_time = time.time()
+                start_date = datetime.datetime(2024, 1, 1)
+                end_date = datetime.datetime(2030, 1, 1)
+                df = pl.DataFrame(pl.datetime_range(start_date, end_date, datetime.timedelta(hours=1), eager=True).alias(
+                    "datetime"
+                ))
+
+                # Add 'YearType' column: Leap or Non-Leap
+                df = df.with_columns(
+                    ((df['curvestart'].dt.year() % 4 == 0) & (
+                        (df['curvestart'].dt.year() % 100 != 0) | (df['curvestart'].dt.year() % 400 == 0) )
+                    ).map_elements(lambda x: 'Leap' if x else 'Non-Leap', return_dtype=pl.Utf8).alias('yeartype')
+                )
+
+                # Add 'Month' column: Extracting month from the datetime
+                df = df.with_columns(df['curvestart'].dt.month().alias('month'))
+
+                # Add 'DayType' column: Weekday or Weekend
+                df = df.with_columns(
+                    df['curvestart'].dt.weekday().map_elements(lambda x: 'Weekend' if x >= 5 else 'Weekday', return_dtype=pl.Utf8).alias('daytype')
+                )
+
+                # Add 'HE' column: Hour number from 1 to 24
+                df = df.with_columns((df['curvestart'].dt.hour() + 1).alias('he'))
+                df = df.with_columns(pl.col("curvestart").dt.date().alias("curvestart"))
+                print(len(df))
+                print(time.time()-tmp_time)
+                
+                merged_inner = merged_inner.with_columns(
+                    ((merged_inner['curvestart'].dt.year() % 4 == 0) & (
+                        (merged_inner['curvestart'].dt.year() % 100 != 0) | (merged_inner['curvestart'].dt.year() % 400 == 0) )
+                    ).map_elements(lambda x: 'Leap' if x else 'Non-Leap', return_dtype=pl.Utf8).alias('yeartype')
+                )
+
+                # Add 'Month' column: Extracting month from the datetime
+                # merged_inner = merged_inner.with_columns(merged_inner['curvestart'].dt.month().alias('Month'))
+
+                # Add 'DayType' column: Weekday or Weekend
+                merged_inner = merged_inner.with_columns(
+                    merged_inner['curvestart'].dt.weekday().map_elements(lambda x: 'Weekend' if x >= 5 else 'Weekday', return_dtype=pl.Utf8).alias('daytype')
+                )
+
+                # Add 'HE' column: Hour number from 1 to 24
+                # merged_inner = merged_inner.with_columns((merged_inner['curvestart'].dt.hour() + 1).alias('HE'))
+                # merged_inner = merged_inner.with_columns(pl.col("curvestart").dt.date().alias("curvestart"))
+                merged_inner = merged_inner.groupby(
+                    ["curvestart", "month", "yeartype", "daytype", "he", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'customer_type']
+                ).agg( pl.col("data").mean().alias("data") )
+                df = df.join(merged_inner, on=["curvestart", "month", "yeartype", "daytype", "he"], how='inner')
+                df = df.to_pandas()
+                return df, "success"  
             
 
         except:
