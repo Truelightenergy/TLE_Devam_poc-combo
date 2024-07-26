@@ -79,7 +79,7 @@ class LoadProfile:
                 where "month" between '{start_date} 00:00:00.000 +0500' and '{end_date} 00:00:00.000 +0500' 
                 and curvestart between 
                 (select curvestart from trueprice.{control_area}_{curveType} where curvestart > '{curve_start} 00:00:00.000 +0500' limit 1) and 
-                (select curvestart from trueprice.{control_area}_{curveType} where curvestart > '{curve_end} 00:00:00.000 +0500' limit 1);"""
+                COALESCE( (select curvestart from trueprice.{control_area}_{curveType} where curvestart > '{curve_end} 00:00:00.000 +0500' limit 1), '9999-12-31 23:59:59.999 +0500');"""
             data_frame = None
             temp_time = time.time()
             data_frame = pl.read_database_uri(psql_query_data, str(self.engine.url), engine="connectorx")
@@ -120,54 +120,55 @@ class LoadProfile:
                 return pd_pivoted_df, "success"  
             else:
                 tmp_time = time.time()
-                start_date = datetime.datetime(2024, 1, 1)
-                end_date = datetime.datetime(2030, 1, 1)
-                df = pl.DataFrame(pl.datetime_range(start_date, end_date, datetime.timedelta(hours=1), eager=True).alias(
-                    "datetime"
+                start_date = datetime.strptime(start_date_stamp, "%Y%m%d").date()
+                end_date = datetime.strptime(end_date_stamp, "%Y%m%d").date()
+                df = pl.DataFrame(pl.datetime_range(start_date, end_date, datetime2.timedelta(hours=1), eager=True).alias(
+                    "datemonth"
                 ))
 
                 # Add 'YearType' column: Leap or Non-Leap
                 df = df.with_columns(
-                    ((df['curvestart'].dt.year() % 4 == 0) & (
-                        (df['curvestart'].dt.year() % 100 != 0) | (df['curvestart'].dt.year() % 400 == 0) )
+                    ((df['datemonth'].dt.year() % 4 == 0) & (
+                        (df['datemonth'].dt.year() % 100 != 0) | (df['datemonth'].dt.year() % 400 == 0) )
                     ).map_elements(lambda x: 'Leap' if x else 'Non-Leap', return_dtype=pl.Utf8).alias('yeartype')
                 )
 
                 # Add 'Month' column: Extracting month from the datetime
-                df = df.with_columns(df['curvestart'].dt.month().alias('month'))
+                df = df.with_columns(df['datemonth'].dt.month().alias('Month'))
 
                 # Add 'DayType' column: Weekday or Weekend
                 df = df.with_columns(
-                    df['curvestart'].dt.weekday().map_elements(lambda x: 'Weekend' if x >= 5 else 'Weekday', return_dtype=pl.Utf8).alias('daytype')
+                    df['datemonth'].dt.weekday().map_elements(lambda x: 'Weekend' if x >= 5 else 'Weekday', return_dtype=pl.Utf8).alias('daytype')
                 )
 
                 # Add 'HE' column: Hour number from 1 to 24
-                df = df.with_columns((df['curvestart'].dt.hour() + 1).alias('he'))
-                df = df.with_columns(pl.col("curvestart").dt.date().alias("curvestart"))
+                df = df.with_columns((df['datemonth'].dt.hour() + 1).alias('he'))
+                df = df.with_columns(pl.col("datemonth").dt.date().alias("datemonth"))
                 print(len(df))
                 print(time.time()-tmp_time)
                 
                 merged_inner = merged_inner.with_columns(
-                    ((merged_inner['curvestart'].dt.year() % 4 == 0) & (
-                        (merged_inner['curvestart'].dt.year() % 100 != 0) | (merged_inner['curvestart'].dt.year() % 400 == 0) )
+                    ((merged_inner['month'].dt.year() % 4 == 0) & (
+                        (merged_inner['month'].dt.year() % 100 != 0) | (merged_inner['month'].dt.year() % 400 == 0) )
                     ).map_elements(lambda x: 'Leap' if x else 'Non-Leap', return_dtype=pl.Utf8).alias('yeartype')
                 )
 
                 # Add 'Month' column: Extracting month from the datetime
-                # merged_inner = merged_inner.with_columns(merged_inner['curvestart'].dt.month().alias('Month'))
+                merged_inner = merged_inner.with_columns(merged_inner['month'].dt.month().alias('Month'))
 
                 # Add 'DayType' column: Weekday or Weekend
                 merged_inner = merged_inner.with_columns(
-                    merged_inner['curvestart'].dt.weekday().map_elements(lambda x: 'Weekend' if x >= 5 else 'Weekday', return_dtype=pl.Utf8).alias('daytype')
+                    merged_inner['month'].dt.weekday().map_elements(lambda x: 'Weekend' if x >= 5 else 'Weekday', return_dtype=pl.Utf8).alias('daytype')
                 )
 
                 # Add 'HE' column: Hour number from 1 to 24
                 # merged_inner = merged_inner.with_columns((merged_inner['curvestart'].dt.hour() + 1).alias('HE'))
-                # merged_inner = merged_inner.with_columns(pl.col("curvestart").dt.date().alias("curvestart"))
+                merged_inner = merged_inner.with_columns(pl.col("month").dt.date().alias("datemonth"))
+                merged_inner = merged_inner.with_columns(pl.col("he").cast(pl.Int8))
                 merged_inner = merged_inner.groupby(
-                    ["curvestart", "month", "yeartype", "daytype", "he", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'customer_type']
+                    ["curvestart", "Month", "yeartype", "daytype", "he", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'customer_type']
                 ).agg( pl.col("data").mean().alias("data") )
-                df = df.join(merged_inner, on=["curvestart", "month", "yeartype", "daytype", "he"], how='inner')
+                df = df.join(merged_inner, on=["Month", "yeartype", "daytype", "he"], how='inner')
                 df = df.to_pandas()
                 return df, "success"  
             

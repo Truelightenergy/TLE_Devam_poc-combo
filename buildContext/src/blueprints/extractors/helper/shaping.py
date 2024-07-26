@@ -103,39 +103,39 @@ class Shaping:
             merged_inner = data_frame.join(hierarchy_frame, left_on='hierarchy_id', right_on='id', how='inner')
             print("time complexity merging: ", time.time()-temp_time)
 
-            if '7x24' in strips:
-                temp_time = time.time()
-                filtered = merged_inner.filter(pl.col("strip").str.contains("2x16|5x16|7x8"))
-                sql_query_monthly_reference_data = f"""
-                    SELECT *
-                    FROM trueprice.monthly_reference_data
-                    WHERE 
-                        "ISO" = '{control_area.upper()}'
-                        AND "CalMonth" >= '{start_date[:7]}'
-                        AND "CalMonth" <= '{end_date[:7]}';"""
-                monthly_reference_data = pl.read_database_uri(sql_query_monthly_reference_data, str(self.engine.url), engine="connectorx")
-                filtered = filtered.with_columns( pl.col('month').apply(lambda x: x.strftime('%Y-%m'), return_dtype=pl.Utf8).alias('CalMonth') )
-                filtered = filtered.join(monthly_reference_data, on='CalMonth', how='inner')
-                filtered = filtered.with_columns(
-                    pl.when(pl.col("strip").str.contains("2x16"))
-                    .then(pl.col("data") * pl.col("2x16"))
-                    .when(pl.col("strip").str.contains("5x16"))
-                    .then(pl.col("data") * pl.col("5x16"))
-                    .when(pl.col("strip").str.contains("7x8"))
-                    .then(pl.col("data") * pl.col("7x8"))
-                    .otherwise(pl.col("data"))
-                    .alias("data")
-                )
-                filtered = filtered.with_columns(pl.lit("7x24").alias("strip"))
-                filtered = filtered.groupby(
-                    ["curvestart", "month", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "7x24"]
-                ).agg( pl.col("data").sum().alias("data") )
-                filtered = filtered.with_columns((pl.col("data") / pl.col("7x24")).alias("data"))
-                merged_inner = merged_inner.drop(['id', 'hierarchy_id'])
-                # filtered = filtered.drop(['7x24'])
-                filtered = filtered[merged_inner.columns]
-                merged_inner = pl.concat([merged_inner, filtered])
-                print("time complexity polars db hierarchy reading: ", time.time()-temp_time)
+            # if '7x24' in strips:
+            #     temp_time = time.time()
+            #     filtered = merged_inner.filter(pl.col("strip").str.contains("2x16|5x16|7x8"))
+            #     sql_query_monthly_reference_data = f"""
+            #         SELECT *
+            #         FROM trueprice.monthly_reference_data
+            #         WHERE 
+            #             "ISO" = '{control_area.upper()}'
+            #             AND "CalMonth" >= '{start_date[:7]}'
+            #             AND "CalMonth" <= '{end_date[:7]}';"""
+            #     monthly_reference_data = pl.read_database_uri(sql_query_monthly_reference_data, str(self.engine.url), engine="connectorx")
+            #     filtered = filtered.with_columns( pl.col('month').apply(lambda x: x.strftime('%Y-%m'), return_dtype=pl.Utf8).alias('CalMonth') )
+            #     filtered = filtered.join(monthly_reference_data, on='CalMonth', how='inner')
+            #     filtered = filtered.with_columns(
+            #         pl.when(pl.col("strip").str.contains("2x16"))
+            #         .then(pl.col("data") * pl.col("2x16"))
+            #         .when(pl.col("strip").str.contains("5x16"))
+            #         .then(pl.col("data") * pl.col("5x16"))
+            #         .when(pl.col("strip").str.contains("7x8"))
+            #         .then(pl.col("data") * pl.col("7x8"))
+            #         .otherwise(pl.col("data"))
+            #         .alias("data")
+            #     )
+            #     filtered = filtered.with_columns(pl.lit("7x24").alias("strip"))
+            #     filtered = filtered.groupby(
+            #         ["curvestart", "month", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "7x24"]
+            #     ).agg( pl.col("data").sum().alias("data") )
+            #     filtered = filtered.with_columns((pl.col("data") / pl.col("7x24")).alias("data"))
+            #     merged_inner = merged_inner.drop(['id', 'hierarchy_id'])
+            #     # filtered = filtered.drop(['7x24'])
+            #     filtered = filtered[merged_inner.columns]
+            #     merged_inner = pl.concat([merged_inner, filtered])
+            #     print("time complexity polars db hierarchy reading: ", time.time()-temp_time)
             
             merged_inner = merged_inner.filter(pl.col("strip").str.contains("|".join(strips)))
             if dimension_check:
@@ -143,22 +143,22 @@ class Shaping:
                 pl_pivoted_df = merged_inner.pivot(
                     values="data",
                     # index=["curvestart", "month", "year", "datemonth", "weekday", "he"],
-                    index=["curvestart", "month"],
+                    index=["curvestart", "month", 'he'],
                     columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component"],
                     aggregate_function="first"
                 )
                 pd_pivoted_df = pl_pivoted_df.to_pandas()
                 # pd_pivoted_df.set_index(["curvestart", "month", "year", "datemonth", "weekday", "he"], inplace=True)
-                pd_pivoted_df.set_index(["curvestart", "month"], inplace=True)
+                pd_pivoted_df.set_index(["curvestart", "month", 'he'], inplace=True)
                 hierarchy = [ json.loads(i.replace('{', '[').replace('}', ']')) for i in pd_pivoted_df.columns]
                 multi_index = pd.MultiIndex.from_tuples(hierarchy, names=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component"])
                 pd_pivoted_df.columns = multi_index
                 print("time complexity polars pivoting: ", time.time()-temp_time)
                 return pd_pivoted_df, "success"  
             else:
-                data_frame = data_frame.to_arrow()
-                data_frame = data_frame.to_pandas()
-                return data_frame, "success"  
+                merged_inner = merged_inner.to_arrow()
+                merged_inner = merged_inner.to_pandas()
+                return merged_inner, "success"
             
 
         except:
