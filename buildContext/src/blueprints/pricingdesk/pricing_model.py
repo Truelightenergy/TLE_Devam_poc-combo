@@ -10,7 +10,8 @@ from ..extractors.helper.loadprofile import LoadProfile
 from ..extractors.helper.shaping import Shaping
 from ..extractors.helper.vlr import Vlr
 from ..extractors.helper.lineloss import LineLoss
-
+from flask import Response
+import datetime
 
 
 class PricingDesk:
@@ -37,17 +38,8 @@ class PricingDesk:
         except Exception as exp:
             print('exp in curve date: ', exp)
             return None, None
-    def data_loading(self, ):
-        query_strings = {'iso': 'ercot',
-                        'strip': ['strip_7x24'],
-                        'start': '20200201',
-                        'end': '20250201',
-                        'idcob': 'latestall',
-                        'offset': 0,
-                        'operating_day': '2025-01-03',
-                        'operating_day_end': '2025-01-03',
-                        'curvestart': '20250103',
-                        'curveend': '20250103'}
+    
+    def data_loading(self, query_strings = {}):
         energy, status = self.energy.extraction(query_strings)
 
         query_strings["curvestart"], query_strings["curveend"] = self.curve_date(query_strings["operating_day_end"], query_strings["iso"]+"_nonenergy")
@@ -58,7 +50,7 @@ class PricingDesk:
 
         query_strings["curve_type"] = "loadprofile"
         query_strings["curvestart"], query_strings["curveend"] = self.curve_date(query_strings["operating_day_end"], query_strings["iso"]+"_loadprofile")
-        loadprofile, status = self.loadprofile.extraction(query_strings)
+        loadprofile, status = self.loadprofile.extraction(query_strings, pricing=True)
 
         query_strings["curve_type"] = "shaping"
         query_strings["strip"] = ['strip_5x16', 'strip_2x16', 'strip_7x8']
@@ -76,8 +68,6 @@ class PricingDesk:
         return energy, non_energy, rec, loadprofile, shaping, vlr, lineloss
 
     def energy_shaping(self, energy, shaping, vlr):
-        shaping = shaping.loc[shaping.load_zone == 'NORTH ZONE'].reset_index(drop=True)
-        vlr = vlr.loc[vlr.load_zone == 'NORTH'].reset_index(drop=True)
         # Lets Prepare shaping
         shaping['day_of_week'] = shaping['month'].dt.dayofweek
         # Define the conditions
@@ -91,13 +81,16 @@ class PricingDesk:
             ((shaping['strip'] == '2x16') & weekend_condition) |
             ((shaping['strip'] == '7x8') & offpeak_condition)
         ]
-        energy = energy.loc[energy.load_zone == 'NORTH ZONE'].reset_index(drop=True)
         energy['merge_month'] = energy.month.dt.to_period('M')
         shaping['merge_month'] = shaping.month.dt.to_period('M')
         energy_shaping = shaping.merge(energy, on=['merge_month'], how='inner')
+        energy_shaping['data_energy_shaped'] = energy_shaping['data_x']*energy_shaping['data_y']
         energy_shaping["Month"] = energy_shaping.month_x.dt.month
         vlr = vlr.rename(columns= {'datemonth': 'Month'})
         energy_shaped = energy_shaping.merge(vlr, on=['Month', 'he'], how='inner')
+        energy_shaped['data_vlr_shaped'] = energy_shaped['data_energy_shaped']*energy_shaped['data']
+        energy_shaped = energy_shaped.rename(columns={'curvestart_x': 'curvestart_shaping', 'curvestart_y': 'curvestart_energy', 'curvestart': 'curvestart_vlr', 'month_x': 'datemonth'})
+        energy_shaped = energy_shaped[['datemonth', 'he', 'curvestart_shaping', 'curvestart_energy', 'curvestart_vlr', 'data_energy_shaped', 'data_vlr_shaped']]
         return energy_shaped
 
     def nonenergy_shaping(self, nonenergy, loadprofile):
@@ -106,23 +99,106 @@ class PricingDesk:
         nonenergy_shaped = loadprofile.merge(nonenergy, on=['merge_month'], how='inner')
         scaling_components = ["ECRS", "NSRS", "RRS", "Reg Down", "Reg Up"]
         nonenergy_shaped.loc[nonenergy_shaped.cost_component_y.isin(scaling_components), 'data_y'] = nonenergy_shaped.data_y/(1000*nonenergy_shaped.data_x)
+        nonenergy_shaped = nonenergy_shaped.groupby(['curvestart_x', 'curvestart_y', 'datemonth', 'he'])['data_y'].sum().reset_index()
+        nonenergy_shaped = nonenergy_shaped.rename(columns={'curvestart_x': 'curvestart_loadprofile', 'curvestart_y': 'curvestart_nonenergy', 'data_y':'data_nonenergy_shaped'})
         return nonenergy_shaped
 
     def rec_shaping(self, rec, loadprofile):
-        rec = rec.loc[rec.sub_cost_component == 'tx_total_cost_per_mWh'].reset_index(drop=True)
         rec['merge_month'] = rec.month.dt.to_period('M')
         loadprofile['merge_month'] = loadprofile.datemonth.dt.to_period('M')
         rec_shaped = loadprofile.merge(rec, on=['merge_month'], how='inner')
+        rec_shaped = rec_shaped.rename(columns={'data_x':'data_loadprofile', 'data_y':'data_rec', 'curvestart_y': 'curvestart_rec'})
+        rec_shaped = rec_shaped[['datemonth', 'he', 'data_loadprofile', 'curvestart_rec', 'data_rec']]
         return rec_shaped
     
-    def calculate_price(self, ):
-        energy, nonenergy, rec, loadprofile, shaping, vlr, lineloss = self.data_loading()
-        loadprofile = loadprofile.loc[loadprofile.cost_component == 'DS3MH-CILCO'].reset_index(drop=True)
-        shaped_energy = self.energy_shaping(energy, shaping, vlr)
-        shaped_nonenergy = self.nonenergy_shaping(nonenergy, loadprofile)
-        shaped_rec = self.rec_shaping(rec, loadprofile)
-        shaped_energy['datemonth'] = shaped_energy.month_x.dt.date
-        merged_df = pd.merge(shaped_energy, shaped_nonenergy, on=['datemonth', 'he'])
-        # Merge the result with the third DataFrame
-        final_df = pd.merge(merged_df, shaped_rec, on=['datemonth', 'he'])
-        return "calculate pricing"
+    def calculate_price(self, price_request = pd.DataFrame(), iso = 'ERCOT'):
+        iso = iso.upper()
+        final_df = pd.DataFrame()
+        if price_request.empty:
+            return None, 'Request form is empty'
+        try:
+            query_strings = {'iso': iso.lower(),
+                             'strip': ['strip_7x24'],
+                             'start': datetime.datetime.strptime(price_request['Start Date'].iat[0],'%m/%d/%Y').strftime('%Y%m%d'),
+                             'end': datetime.datetime.strptime(price_request['End Date'].iat[0], '%m/%d/%Y').strftime('%Y%m%d'),
+                             'idcob': 'latestall',
+                             'offset': 0,
+                             'operating_day': datetime.datetime.strptime(price_request['Curve Date'].iat[0],'%m/%d/%Y').strftime('%Y-%m-%d'),
+                             'operating_day_end': datetime.datetime.strptime(price_request['Curve Date'].iat[0],'%m/%d/%Y').strftime('%Y-%m-%d'),
+                             'curvestart': datetime.datetime.strptime(price_request['Curve Date'].iat[0],'%m/%d/%Y').strftime('%Y%m%d'),
+                             'curveend': datetime.datetime.strptime(price_request['Curve Date'].iat[0],'%m/%d/%Y').strftime('%Y%m%d')}
+
+            # Loading the data
+            energy, nonenergy, rec, loadprofile, shaping, vlr, lineloss = self.data_loading(query_strings)
+
+            # Making filter parameters from price request
+            load_zone = price_request['Load Zone'].iat[0]
+            capacity_zone = price_request['Capacity Zone'].iat[0]
+            loadprofile_cost_component = price_request['Load Profile'].iat[0]
+            lineloss_utility = price_request['Utility'].iat[0]
+            lineloss_cost_component = price_request['Voltage'].iat[0]
+            filename = price_request['Lookup ID4'].iat[0]
+
+            # Removing Reedundancy that restrict joining of curves
+            energy.drop(['id'], axis=1, inplace=True)
+            nonenergy.drop(['id'], axis=1, inplace=True)
+            rec.drop(['id'], axis=1, inplace=True)
+            shaping.drop(['id'], axis=1, inplace=True)
+            vlr.drop(['id'], axis=1, inplace=True)
+            lineloss.drop(['id'], axis=1, inplace=True)
+
+            # Only lineloss needs control_area filter
+            lineloss = lineloss.loc[lineloss.control_area == iso]
+
+            # Filter for Shaping the data
+            shaping_filtered = shaping.loc[shaping.load_zone == load_zone].reset_index(drop=True)
+            vlr_filtered = vlr.loc[vlr.load_zone == capacity_zone].reset_index(drop=True) # needs refinement
+            energy_filtered = energy.loc[energy.load_zone == load_zone].reset_index(drop=True)
+            loadprofile_filtered = loadprofile.loc[loadprofile.cost_component == loadprofile_cost_component].reset_index(drop=True)
+            rec_filtered = rec.loc[rec.sub_cost_component == 'tx_total_cost_per_mWh'].reset_index(drop=True)
+            lineloss = lineloss.loc[(lineloss.utility == lineloss_utility) & (lineloss.cost_component == lineloss_cost_component)]
+            lineloss_factor = lineloss['data'].iat[0]
+            lineloss_curvestart = lineloss['curvestart'].iat[0]
+
+            # Shaping the Data
+            shaped_energy = self.energy_shaping(energy_filtered, shaping_filtered, vlr_filtered)
+            shaped_nonenergy = self.nonenergy_shaping(nonenergy, loadprofile_filtered)
+            shaped_rec = self.rec_shaping(rec_filtered, loadprofile_filtered)
+
+            # date format for join
+            shaped_energy['datemonth'] = shaped_energy.datemonth.dt.date
+            shaped_nonenergy['datemonth'] = shaped_nonenergy['datemonth'].astype(str)
+            shaped_energy['datemonth'] = shaped_energy['datemonth'].astype(str)
+            shaped_rec['datemonth'] = shaped_rec['datemonth'].astype(str)
+
+            # Merging the actual data
+            merged_df = pd.merge(shaped_energy, shaped_nonenergy, on=['datemonth', 'he'])
+            final_df = pd.merge(merged_df, shaped_rec, on=['datemonth', 'he'])
+
+            # Adding factor values
+            final_df['curvestart_lineloss'] = lineloss_curvestart
+            final_df['lineloss_factor'] = lineloss_factor-1
+            final_df['lineloss_factor'] = final_df['lineloss_factor'] * (final_df['data_energy_shaped'] + final_df['data_nonenergy_shaped'])
+            final_df['margin'] = float(price_request['Margin ($/MWh)'].iat[0].replace('$', ''))
+            final_df['sleeve_fee'] = float(price_request['Sleeve Fee ($/MWh)'].iat[0].replace('$', ''))
+            final_df['utility_billing_surcharge'] = float(price_request['Utility Billing Surcharge ($/MWh)'].iat[0].replace('$', ''))
+            final_df['other1'] = float(price_request['Other 1 ($/MWh)'].iat[0].replace('$', ''))
+            final_df['other2'] = float(price_request['Other 2 ($/MWh)'].iat[0].replace('$', ''))
+            final_df['data_loadprofile_avg'] = final_df['data_loadprofile'].mean()
+            final_df['data_loadprofile_max'] = final_df['data_loadprofile'].max()
+
+            # Calculating PRice model
+            final_df['fr_price_hourly'] = final_df['data_energy_shaped'] + final_df['data_vlr_shaped'] + final_df['data_nonenergy_shaped']+\
+                                          final_df['data_rec'] + final_df['lineloss_factor'] + final_df['margin'] + \
+                                          final_df['sleeve_fee'] + final_df['utility_billing_surcharge'] + final_df['other1'] + final_df['other2']
+            final_df['ffr_price'] = sum(final_df['fr_price_hourly'] * final_df['data_loadprofile_max']) / sum(final_df['data_loadprofile_max'])
+            
+            final_df = final_df.sort_values(by=['datemonth', 'he']).reset_index(drop=True)
+            return Response(final_df.to_csv(index=False),
+                            mimetype="text/csv",
+                            headers={"Content-disposition":
+                            f"attachment; filename={filename}.csv"}), 'success'
+        
+        except Exception as exp:
+            print('exception :', exp)
+            return None, 'Exception in price calculation'

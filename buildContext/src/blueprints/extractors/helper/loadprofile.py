@@ -25,7 +25,7 @@ class LoadProfile:
         self.engine = data_base.get_engine()
 
 
-    def extraction(self, query_strings, dimension_check=False):
+    def extraction(self, query_strings, dimension_check=False, pricing=False):
         """
         Handling extraction for ancillarydata
         """
@@ -118,7 +118,7 @@ class LoadProfile:
                 pd_pivoted_df.columns = multi_index
                 print("time complexity polars pivoting: ", time.time()-temp_time)
                 return pd_pivoted_df, "success"  
-            else:
+            elif pricing:
                 tmp_time = time.time()
                 start_date = datetime.strptime(start_date_stamp, "%Y%m%d").date()
                 end_date = datetime.strptime(end_date_stamp, "%Y%m%d").date()
@@ -171,6 +171,9 @@ class LoadProfile:
                 df = df.join(merged_inner, on=["Month", "yeartype", "daytype", "he"], how='inner')
                 df = df.to_pandas()
                 return df, "success"  
+            else:
+                merged_inner = merged_inner.to_pandas()
+                return merged_inner, "success"  
             
 
         except:

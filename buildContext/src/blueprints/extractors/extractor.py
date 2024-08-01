@@ -166,7 +166,7 @@ class Extractor:
             # rename indexes
             flattened_df = df
             # flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'month': "Curve Start Month", "year": "Year", "datemonth": "Month", "weekday": "WeekDay", "he": "HE"})
-            flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'year': 'Year', 'datemonth': "Month", 'he': 'HE'})
+            flattened_df = flattened_df.rename_axis(index={'curvestart': 'Curve Update Date', 'datemonth': "Month", 'he': 'HE'})
 
             # renaming columns
             flattened_df.columns.names =  ["Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component"] #, "Normal Type"

@@ -115,12 +115,12 @@ class Vlr:
                 temp_time = time.time()
                 pl_pivoted_df = merged_inner.pivot(
                     values="data",
-                    index=["curvestart", 'year', "datemonth", "he"],
+                    index=["curvestart", "datemonth", "he"],
                     columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component"],
                     aggregate_function="first"
                 )
                 pd_pivoted_df = pl_pivoted_df.to_pandas()
-                pd_pivoted_df.set_index(['curvestart', 'year', 'datemonth', 'he'], inplace=True)
+                pd_pivoted_df.set_index(['curvestart', 'datemonth', 'he'], inplace=True)
                 hierarchy = [ json.loads(i.replace('{', '[').replace('}', ']')) for i in pd_pivoted_df.columns]
                 multi_index = pd.MultiIndex.from_tuples(hierarchy, names=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component"])
                 pd_pivoted_df.columns = multi_index
