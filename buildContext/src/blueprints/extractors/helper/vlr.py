@@ -98,36 +98,36 @@ class Vlr:
             merged_inner = data_frame.join(hierarchy_frame, left_on='hierarchy_id', right_on='id', how='inner')
             print("time complexity merging: ", time.time()-temp_time)
 
-            # Define the range of years
-            years = list(range(start_year, end_year+1))
-            # Define months and hours
-            months = list(range(1, 13))
-            hours = list(range(1, 25))
-            # Generate all combinations of years, months, and hours
-            data = [(year, month, hour) for year in years for month in months for hour in hours]
-            # Create the DataFrame
-            df = pl.DataFrame(data, schema=["year", "datemonth", "he"])
-            df = df.filter((pl.col("year") > start_year) | ((pl.col("year") == start_year) & (pl.col("datemonth") >= start_month)))
-            df = df.filter((pl.col("year") < end_year) | ((pl.col("year") == end_year) & (pl.col("datemonth") <= end_month)))
-            df = df.with_columns(pl.col(["datemonth", "he"]).cast(pl.Int32))
-            df = df.join(merged_inner, on=['datemonth', 'he'], how='left')
+            # # Define the range of years
+            # years = list(range(start_year, end_year+1))
+            # # Define months and hours
+            # months = list(range(1, 13))
+            # hours = list(range(1, 25))
+            # # Generate all combinations of years, months, and hours
+            # data = [(year, month, hour) for year in years for month in months for hour in hours]
+            # # Create the DataFrame
+            # df = pl.DataFrame(data, schema=["year", "datemonth", "he"])
+            # df = df.filter((pl.col("year") > start_year) | ((pl.col("year") == start_year) & (pl.col("datemonth") >= start_month)))
+            # df = df.filter((pl.col("year") < end_year) | ((pl.col("year") == end_year) & (pl.col("datemonth") <= end_month)))
+            # df = df.with_columns(pl.col(["datemonth", "he"]).cast(pl.Int32))
+            # df = df.join(merged_inner, on=['datemonth', 'he'], how='left')
             if dimension_check:
                 temp_time = time.time()
-                pl_pivoted_df = df.pivot(
+                pl_pivoted_df = merged_inner.pivot(
                     values="data",
-                    index=["curvestart", 'year', "datemonth", "he"],
+                    index=["curvestart", "datemonth", "he"],
                     columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component"],
                     aggregate_function="first"
                 )
                 pd_pivoted_df = pl_pivoted_df.to_pandas()
-                pd_pivoted_df.set_index(['curvestart', 'year', 'datemonth', 'he'], inplace=True)
+                pd_pivoted_df.set_index(['curvestart', 'datemonth', 'he'], inplace=True)
                 hierarchy = [ json.loads(i.replace('{', '[').replace('}', ']')) for i in pd_pivoted_df.columns]
                 multi_index = pd.MultiIndex.from_tuples(hierarchy, names=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component"])
                 pd_pivoted_df.columns = multi_index
                 print("time complexity polars pivoting: ", time.time()-temp_time)
                 return pd_pivoted_df, "success"  
             else:
-                df = df.to_pandas()
+                df = merged_inner.to_pandas()
                 return df, "success"  
         except:
             import traceback, sys

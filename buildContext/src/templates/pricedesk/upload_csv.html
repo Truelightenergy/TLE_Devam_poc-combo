@@ -1,0 +1,101 @@
+{% extends 'master.html' %}
+
+{% block title %}Upload Price Request - TRUEPrice{% endblock %}
+{% block content %}
+<div class="content-body">
+    <div class="row" id="upload_view">
+        <div class="col-12 col-md-12">
+            <div class="card mb-0">
+                <div class="card-body">
+                    <form id="upload_form" enctype="multipart/form-data" method="post">
+                        <h3 class="axiBold text-black">Uploads</h3>
+                        <p>
+                            <label for="formFileLg" class="form-label">Upload CSV file here with following
+                                rules:</label>
+                        <ul class="instructions-list">
+                            <li>Sheet will extract exact operating day from energy curves.</li>
+                            <li>Sheet will extract latest operating day after energy curves for rest of curves.</li>
+                            <li>Price desk will match intersecting values that exist in DataBase for required curves.</li>
+                        </ul>
+                        </p>
+                        <div class="row">
+                            <form id="pricemodel" enctype="multipart/form-data" method="post"></form>
+                                <div class="col-12 col-md-12">
+                                    <div class="form-control border-0 px-0">
+                                        <label></label>
+                                        <input type="file" name="file" class="form-control form-control-md flatpickr-basic"
+                                            id='upload_file' required id="file" />
+                                    </div>
+                                    <div class="col-12 col-md-12 mt-2">
+                                        <button type="submit" id="save" class="btn btn-primary btn-block w-100">
+                                            <img src="/static/app-assets/media/upload (2).svg" class="me-1" /> Fetch Price Model
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <div class="row" id="tester_view" style="display: none;">
+        <div class="col-12 col-md-12">
+            <div class="card mb-0">
+                <div class="card-body">
+                    <h3 class="axiBold text-black">Test Results</h3>
+                    <div class="row">
+                        <div class="col-12 col-md-9">
+                        </div>
+                        <div class="col-12 col-md-3 d-flex justify-content-end">
+                            <button id="retry_btn" class="btn btn-warning me-1">Retry</button>
+                            <button id="upload_btn" class="btn btn-success btnUpload">Upload</button>
+                        </div>
+
+                        <div class="col-12 col-md-4 text-dark">
+                            <strong>Status: </strong>
+                        </div>
+                        <div id="status" class="col-12 col-md-8">
+                            None
+                        </div>
+
+                        <table id="myTable" class=" table table-responsive table-hover bg-white border">
+                            <thead class="bg-white">
+                                <tr>
+                                    <th class="bg-white text-primary text-capitalize">Min/Max</th>
+                                    <th class="bg-white text-primary text-capitalize">Min/Max 5x16 </th>
+                                    <th class="bg-white text-primary text-capitalize">Min/Max 2x16 </th>
+                                    <th class="bg-white text-primary text-capitalize">Min/Max 7x8 </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id='min_max'>0/0</td>
+                                    <td id='min_max_5x16'>0/0</td>
+                                    <td id='min_max_2x16'>0/0</td>
+                                    <td id='min_max_7x8'>0/0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+
+                        <div class="col-12 col-md-12 form-group mt-5" id="process" style="display: none;">
+                            <div class="progress upload-progress">
+                                <div id="progressBar"
+                                    class="progress-bar progress-bar-striped bg-primary progress-bar-animated"
+                                    role="progressbar">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div> -->
+</div>
+{% endblock %}
+{% block scriptblock %}
+<!-- <script src="static/js/multiselect.js"></script> -->
+<!-- <script src="static/js/pricedesk_upload.js"></script> -->
+{% endblock %}

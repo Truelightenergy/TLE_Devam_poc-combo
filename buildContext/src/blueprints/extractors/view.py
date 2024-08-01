@@ -192,6 +192,8 @@ def get_options():
     curve = request.json['curve']
     if curve == "rec":
         option = ["ERCOT", "ISONE", "NYISO", "PJM", "ALL"]
+    elif curve == "lineloss":
+        option = ["ALL"]
     else:
         option = ["ERCOT", "ISONE", "NYISO","MISO", "PJM", "ALL"]
     return jsonify(option)

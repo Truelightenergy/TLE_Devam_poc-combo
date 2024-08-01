@@ -95,15 +95,15 @@ class Shaping:
                             with current as (
                                 -- get the current rows in the database, all of them, not just things that will change
 
-                                select id, month, curvestart, data, hierarchy_id
+                                select id, month, curvestart, data, hierarchy_id, he
                                 from trueprice.{data.controlArea}_{data.curveType} where curvestart>='{sod}' and curvestart<='{eod}'
                             ),
                             backup as (
                                 -- take current rows and insert into database but with a new "curveend" timestamp
 
-                                insert into trueprice.{data.controlArea}_{data.curveType}_history ( month, curvestart, curveend, data, hierarchy_id)
+                                insert into trueprice.{data.controlArea}_{data.curveType}_history ( month, curvestart, curveend, data, hierarchy_id, he)
 
-                                select  month, curvestart, '{curveend}' as curveend, data, hierarchy_id
+                                select  month, curvestart, '{curveend}' as curveend, data, hierarchy_id, he
                                 from current
                             ),
                             single as (
@@ -120,9 +120,9 @@ class Shaping:
                             ),
 
                             updation as (
-                            insert into trueprice.{data.controlArea}_{data.curveType} ( month, curvestart, data, hierarchy_id)
+                            insert into trueprice.{data.controlArea}_{data.curveType} ( month, curvestart, data, hierarchy_id, he)
 
-                            select  month, curvestart, data, hierarchy_id
+                            select  month, curvestart, data, hierarchy_id, he
                                 from trueprice.{tmp_table_name}
                             )
                         select * from trueprice.{data.controlArea}_{data.curveType};
@@ -172,16 +172,17 @@ class Shaping:
             # data.columns = data.iloc[0]
             data = data.drop(data.index[0])
             # base_list = [0, 1, 2, 3, 4]
-            base_list = [0]
+            base_list = [0, 1]
             data_list = data.columns.difference(base_list)
             temp_time = time.time()
             dataframes = [data[base_list + [col]].assign(hierarchy_id=header.iloc[i].id).rename(columns={col: 'data'})
               for i, col in enumerate(data_list)]
             melted_df = pd.concat(dataframes)
             # melted_df.rename(columns={0:"date", 1:"year", 2:"datemonth", 3:"weekday", 4:'he'}, inplace=True)
-            melted_df.rename(columns={0:"date"}, inplace=True)
+            melted_df.rename(columns={0:"date", 1:'he'}, inplace=True)
             print("time.time()-temp_time melt", time.time() - temp_time)
             melted_df['data'] = melted_df['data'].replace('$', '', regex=False)
+            melted_df['data'] = melted_df['data'].replace('-', '0', regex=True)
             melted_df.reset_index(drop=True, inplace=True)
             return melted_df
         except Exception as e:

@@ -1486,6 +1486,7 @@ services:
           hierarchy_id int,
           curvestart timestamptz,
           "month" timestamptz,
+          he int,
           data numeric(20,10),
           FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
         );
@@ -1503,6 +1504,7 @@ services:
           hierarchy_id int,
           curvestart timestamptz,
           "month" timestamptz,
+          he int,
           data numeric(20,10),
           FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
         );
@@ -1521,6 +1523,7 @@ services:
           hierarchy_id int,
           curvestart timestamptz,
           "month" timestamptz,
+          he int,
           data numeric(20,10),
           FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
         );
@@ -1538,6 +1541,7 @@ services:
           hierarchy_id int,
           curvestart timestamptz,
           "month" timestamptz,
+          he int,
           data numeric(20,10),
           FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
         );
@@ -1555,6 +1559,7 @@ services:
           hierarchy_id int,
           curvestart timestamptz,
           "month" timestamptz,
+          he int,
           data numeric(20,10),
           FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
         );
@@ -1573,6 +1578,7 @@ services:
           curvestart timestamptz,
           curveend timestamptz,
           "month" timestamptz,
+          he int,
           data numeric(20,10),
           FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
         );
@@ -1592,6 +1598,7 @@ services:
           curvestart timestamptz,
           curveend timestamptz,
           "month" timestamptz,
+          he int,
           data numeric(20,10),
           FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
         );
@@ -1610,6 +1617,7 @@ services:
           curvestart timestamptz,
           curveend timestamptz,
           "month" timestamptz,
+          he int,
           data numeric(20,10),
           FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
         );
@@ -1628,6 +1636,7 @@ services:
           curvestart timestamptz,
           curveend timestamptz,
           "month" timestamptz,
+          he int,
           data numeric(20,10),
           FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
         );
@@ -1646,6 +1655,7 @@ services:
           curvestart timestamptz,
           curveend timestamptz,
           "month" timestamptz,
+          he int,
           data numeric(20,10),
           FOREIGN KEY (hierarchy_id) REFERENCES trueprice.hierarchy(id)
         );
