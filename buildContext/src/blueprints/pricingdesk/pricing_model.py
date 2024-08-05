@@ -92,6 +92,7 @@ class PricingDesk:
         vlr = vlr.rename(columns= {'datemonth': 'Month'})
         energy_shaped = energy_shaping.merge(vlr, on=['Month', 'he'], how='inner')
         energy_shaped['data_vlr_shaped'] = energy_shaped['data_energy_shaped']*energy_shaped['data']
+        energy_shaped['data_vlr_shaped'] = energy_shaped['data_vlr_shaped']/100
         energy_shaped = energy_shaped.rename(columns={'curvestart_x': 'curvestart_shaping', 'curvestart_y': 'curvestart_energy', 'curvestart': 'curvestart_vlr', 'month_x': 'datemonth', 'strip_x': 'BlockType', 'merge_month': 'Cal Date', 'day_of_week': 'Day'})
         energy_shaped = energy_shaped[['datemonth', 'he', 'BlockType', 'Cal Date', 'Year', 'Day', 'HourType', 'curvestart_shaping', 'curvestart_energy', 'curvestart_vlr', 'data_energy_shaped', 'data_vlr_shaped']]
         return energy_shaped
@@ -101,7 +102,7 @@ class PricingDesk:
         loadprofile['merge_month'] = loadprofile.datemonth.dt.to_period('M')
         nonenergy_shaped = loadprofile.merge(nonenergy, on=['merge_month'], how='inner')
         scaling_components = ["ECRS", "NSRS", "RRS", "Reg Down", "Reg Up"]
-        nonenergy_shaped.loc[nonenergy_shaped.cost_component_y.isin(scaling_components), 'data_y'] = nonenergy_shaped.data_y/(1000*nonenergy_shaped.data_x)
+        nonenergy_shaped.loc[nonenergy_shaped.sub_cost_component.isin(scaling_components), 'data_y'] = nonenergy_shaped.data_y/(1000*nonenergy_shaped.data_x)
         nonenergy_shaped = pd.pivot_table(nonenergy_shaped, values='data_y', index=['curvestart_x', 'curvestart_y', 'datemonth', 'he', 'yeartype', 'Month', 'daytype'], columns=['sub_cost_component'], aggfunc='first')
         sub_cost_components_list_for_aggregate = list(nonenergy_shaped.columns)
         nonenergy_shaped.columns.name = None

@@ -161,7 +161,7 @@ class LoadProfile:
 
                 # Add 'DayType' column: Weekday or Weekend
                 merged_inner = merged_inner.with_columns(
-                    merged_inner['month'].dt.weekday().map_elements(lambda x: 'Weekend' if x >= 5 else 'Weekday', return_dtype=pl.Utf8).alias('daytype')
+                    merged_inner['month'].dt.weekday().map_elements(lambda x: 'Weekend' if x >= 6 else 'Weekday', return_dtype=pl.Utf8).alias('daytype')
                 )
 
                 # Add 'HE' column: Hour number from 1 to 24
@@ -170,7 +170,7 @@ class LoadProfile:
                 merged_inner = merged_inner.with_columns(pl.col("he").cast(pl.Int8))
                 merged_inner = merged_inner.groupby(
                     ["curvestart", "Month", "yeartype", "daytype", "he", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'customer_type']
-                ).agg( pl.col("data").mean().alias("data") )
+                ).agg( (pl.col("data").mean()/1000).alias("data") )
                 df = df.join(merged_inner, on=["Month", "yeartype", "daytype", "he"], how='inner')
                 df = df.to_pandas()
                 return df, "success"  
