@@ -81,16 +81,19 @@ class PricingDesk:
             ((shaping['strip'] == '2x16') & weekend_condition) |
             ((shaping['strip'] == '7x8') & offpeak_condition)
         ]
+        shaping['HourType'] = 'OnPeak'
+        shaping.loc[offpeak_condition, 'HourType'] = 'OffPeak'
         energy['merge_month'] = energy.month.dt.to_period('M')
         shaping['merge_month'] = shaping.month.dt.to_period('M')
+        shaping['Year'] = shaping.month.dt.year
         energy_shaping = shaping.merge(energy, on=['merge_month'], how='inner')
         energy_shaping['data_energy_shaped'] = energy_shaping['data_x']*energy_shaping['data_y']
         energy_shaping["Month"] = energy_shaping.month_x.dt.month
         vlr = vlr.rename(columns= {'datemonth': 'Month'})
         energy_shaped = energy_shaping.merge(vlr, on=['Month', 'he'], how='inner')
         energy_shaped['data_vlr_shaped'] = energy_shaped['data_energy_shaped']*energy_shaped['data']
-        energy_shaped = energy_shaped.rename(columns={'curvestart_x': 'curvestart_shaping', 'curvestart_y': 'curvestart_energy', 'curvestart': 'curvestart_vlr', 'month_x': 'datemonth'})
-        energy_shaped = energy_shaped[['datemonth', 'he', 'curvestart_shaping', 'curvestart_energy', 'curvestart_vlr', 'data_energy_shaped', 'data_vlr_shaped']]
+        energy_shaped = energy_shaped.rename(columns={'curvestart_x': 'curvestart_shaping', 'curvestart_y': 'curvestart_energy', 'curvestart': 'curvestart_vlr', 'month_x': 'datemonth', 'strip_x': 'BlockType', 'merge_month': 'Cal Date', 'day_of_week': 'Day'})
+        energy_shaped = energy_shaped[['datemonth', 'he', 'BlockType', 'Cal Date', 'Year', 'Day', 'HourType', 'curvestart_shaping', 'curvestart_energy', 'curvestart_vlr', 'data_energy_shaped', 'data_vlr_shaped']]
         return energy_shaped
 
     def nonenergy_shaping(self, nonenergy, loadprofile):
@@ -99,16 +102,22 @@ class PricingDesk:
         nonenergy_shaped = loadprofile.merge(nonenergy, on=['merge_month'], how='inner')
         scaling_components = ["ECRS", "NSRS", "RRS", "Reg Down", "Reg Up"]
         nonenergy_shaped.loc[nonenergy_shaped.cost_component_y.isin(scaling_components), 'data_y'] = nonenergy_shaped.data_y/(1000*nonenergy_shaped.data_x)
-        nonenergy_shaped = nonenergy_shaped.groupby(['curvestart_x', 'curvestart_y', 'datemonth', 'he'])['data_y'].sum().reset_index()
-        nonenergy_shaped = nonenergy_shaped.rename(columns={'curvestart_x': 'curvestart_loadprofile', 'curvestart_y': 'curvestart_nonenergy', 'data_y':'data_nonenergy_shaped'})
-        return nonenergy_shaped
+        nonenergy_shaped = pd.pivot_table(nonenergy_shaped, values='data_y', index=['curvestart_x', 'curvestart_y', 'datemonth', 'he', 'yeartype', 'Month', 'daytype'], columns=['sub_cost_component'], aggfunc='first')
+        sub_cost_components_list_for_aggregate = list(nonenergy_shaped.columns)
+        nonenergy_shaped.columns.name = None
+        nonenergy_shaped.index.name = None
+        nonenergy_shaped.reset_index(inplace=True)
+        nonenergy_shaped = nonenergy_shaped.rename(columns={'curvestart_x': 'curvestart_loadprofile', 'curvestart_y': 'curvestart_nonenergy', 'yeartype': 'YearType', 'daytype': 'DayType'})
+        return nonenergy_shaped, sub_cost_components_list_for_aggregate
 
     def rec_shaping(self, rec, loadprofile):
         rec['merge_month'] = rec.month.dt.to_period('M')
         loadprofile['merge_month'] = loadprofile.datemonth.dt.to_period('M')
         rec_shaped = loadprofile.merge(rec, on=['merge_month'], how='inner')
         rec_shaped = rec_shaped.rename(columns={'data_x':'data_loadprofile', 'data_y':'data_rec', 'curvestart_y': 'curvestart_rec'})
-        rec_shaped = rec_shaped[['datemonth', 'he', 'data_loadprofile', 'curvestart_rec', 'data_rec']]
+        rec_shaped['data_loadprofile_avg'] = rec_shaped['data_loadprofile'].mean()
+        rec_shaped['data_loadprofile_max'] = rec_shaped['data_loadprofile'].max()
+        rec_shaped = rec_shaped[['datemonth', 'he', 'data_loadprofile', 'data_loadprofile_avg', 'data_loadprofile_max', 'curvestart_rec', 'data_rec']]
         return rec_shaped
     
     def calculate_price(self, price_request = pd.DataFrame(), iso = 'ERCOT'):
@@ -162,7 +171,7 @@ class PricingDesk:
 
             # Shaping the Data
             shaped_energy = self.energy_shaping(energy_filtered, shaping_filtered, vlr_filtered)
-            shaped_nonenergy = self.nonenergy_shaping(nonenergy, loadprofile_filtered)
+            shaped_nonenergy, sub_cost_components_list_for_aggregate = self.nonenergy_shaping(nonenergy, loadprofile_filtered)
             shaped_rec = self.rec_shaping(rec_filtered, loadprofile_filtered)
 
             # date format for join
@@ -176,6 +185,7 @@ class PricingDesk:
             final_df = pd.merge(merged_df, shaped_rec, on=['datemonth', 'he'])
 
             # Adding factor values
+            final_df['data_nonenergy_shaped'] = final_df[sub_cost_components_list_for_aggregate].sum(axis=1)
             final_df['curvestart_lineloss'] = lineloss_curvestart
             final_df['lineloss_factor'] = lineloss_factor-1
             final_df['lineloss_factor'] = final_df['lineloss_factor'] * (final_df['data_energy_shaped'] + final_df['data_nonenergy_shaped'])
@@ -184,21 +194,47 @@ class PricingDesk:
             final_df['utility_billing_surcharge'] = float(price_request['Utility Billing Surcharge ($/MWh)'].iat[0].replace('$', ''))
             final_df['other1'] = float(price_request['Other 1 ($/MWh)'].iat[0].replace('$', ''))
             final_df['other2'] = float(price_request['Other 2 ($/MWh)'].iat[0].replace('$', ''))
-            final_df['data_loadprofile_avg'] = final_df['data_loadprofile'].mean()
-            final_df['data_loadprofile_max'] = final_df['data_loadprofile'].max()
 
             # Calculating PRice model
+            # aggregate_cols_list = list(set(final_df.columns) - set({'datemonth', 'he', 'curvestart_shaping', 'curvestart_energy', 'curvestart_vlr','curvestart_loadprofile', 'curvestart_nonenergy', 'curvestart_rec', 'curvestart_lineloss', 'data_loadprofile', 'data_loadprofile_avg','data_loadprofile_max'}))
             final_df['fr_price_hourly'] = final_df['data_energy_shaped'] + final_df['data_vlr_shaped'] + final_df['data_nonenergy_shaped']+\
                                           final_df['data_rec'] + final_df['lineloss_factor'] + final_df['margin'] + \
                                           final_df['sleeve_fee'] + final_df['utility_billing_surcharge'] + final_df['other1'] + final_df['other2']
             final_df['ffr_price'] = sum(final_df['fr_price_hourly'] * final_df['data_loadprofile_max']) / sum(final_df['data_loadprofile_max'])
-            
             final_df = final_df.sort_values(by=['datemonth', 'he']).reset_index(drop=True)
-            return Response(final_df.to_csv(index=False),
+
+            # Column sorting
+
+            # Redundant Info for QA
+            final_df['lookup ID4'] = filename
+            final_df['lookup ID3'] = lineloss_utility + " " + lineloss_cost_component
+            final_df['lookup ID2'] = final_df['YearType'] +" "+ final_df['Month'].astype(str) +" "+\
+                                     final_df['DayType'] +" "+ final_df['he'].astype(str)
+            final_df['lookup ID1'] = final_df['datemonth'] +" "+ final_df['he'].astype(str)
+            final_df['Validation'] = 'y'
+            index_items = ['lookup ID4', 'lookup ID3', 'lookup ID2', 'lookup ID1',
+                           'Validation', 'datemonth', 'Cal Date', 'Year', 'YearType', 'Month',
+                           'Day', 'DayType', 'he', 'HourType', 'BlockType',
+                           'curvestart_shaping', 'curvestart_energy', 'curvestart_vlr', 'curvestart_loadprofile',
+                           'curvestart_nonenergy', 'curvestart_rec', 'curvestart_lineloss']
+            final_df.set_index(index_items, inplace=True)
+            curve_types = ['energy' if i in ['data_energy_shaped','data_vlr_shaped']
+                           else 'nonenergy' if i in sub_cost_components_list_for_aggregate
+                           else 'rec' if i in ['data_rec'] else 'line_loss' if i in ['lineloss_factor']
+                           else 'loadprofile' if i in ['data_loadprofile', 'data_loadprofile_avg','data_loadprofile_max']
+                           else 'FR Price' if i in ['fr_price_hourly', 'ffr_price']
+                           else i for i in final_df.columns]
+            cost_components = final_df.columns
+            final_df.columns = pd.MultiIndex.from_arrays([curve_types, cost_components],
+                                                         names=['curve_type', 'cost_component'])
+            return Response(final_df.to_csv(),
                             mimetype="text/csv",
                             headers={"Content-disposition":
                             f"attachment; filename={filename}.csv"}), 'success'
         
         except Exception as exp:
+            import traceback, sys
+            print('Exception line.')
+            print(traceback.format_exc())
             print('exception :', exp)
             return None, 'Exception in price calculation'
