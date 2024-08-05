@@ -39,7 +39,7 @@ class Energy:
                 strip = strip.split("_")[-1]
                 if '7x24' in strip:
                     normal_strip = True
-                    continue
+                    # continue
                 strip_filters.append(f"LOWER(strip) = '{strip.lower()}'")
             if strip_filters:
                 strip_query = '(' + " OR ".join(strip_filters) + ') and'
@@ -83,7 +83,7 @@ class Energy:
                     from trueprice.{control_area}_energy e
                     join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                     where 
-                    month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
+                    month::date >= '{start_date}' and month::date <= '{end_date}' and e."strip" <> '7x24' curve_start_replace
                 """
                 psql_query_7x24_hist = f"""
                     UNION
@@ -97,7 +97,7 @@ class Energy:
                     from trueprice.{control_area}_energy_history e
                     join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                     where 
-                    month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
+                    month::date >= '{start_date}' and month::date <= '{end_date}' and e."strip" <> '7x24' curve_start_replace
                 """
             else:
                 psql_query = f"""
@@ -117,7 +117,7 @@ class Energy:
                     from trueprice.{control_area}_energy e
                     join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                     where 
-                    month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
+                    month::date >= '{start_date}' and month::date <= '{end_date}' and e."strip" <> '7x24' curve_start_replace
                 """
             
             curve_start_replace = f"""  and curvestart::date >= '{curve_start}' and curvestart::date <= '{curve_end}' """

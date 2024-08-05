@@ -73,8 +73,8 @@ class Vlr:
                 psql_query_data = f"""select *
                 from trueprice.{control_area}_{curveType} d
                 where curvestart between 
-                (select curvestart from trueprice.{control_area}_{curveType} where curvestart > '{curve_start} 00:00:00.000 +0500' limit 1) and 
-                (select curvestart from trueprice.{control_area}_{curveType} where curvestart > '{curve_end} 00:00:00.000 +0500' limit 1);"""
+                (select curvestart from trueprice.{control_area}_{curveType} where curvestart > '{curve_start} 00:00:00.000 +0500' order by curvestart limit 1) and 
+                (select curvestart from trueprice.{control_area}_{curveType} where curvestart > '{curve_end} 00:00:00.000 +0500' order by curvestart limit 1);"""
             data_frame = None
             temp_time = time.time()
             data_frame = pl.read_database_uri(psql_query_data, str(self.engine.url), engine="connectorx")
