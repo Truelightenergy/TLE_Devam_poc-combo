@@ -7,10 +7,11 @@
         <div class="col-12 col-md-12">
             <div class="card mb-0">
                 <div class="card-body">
-                    <form id="priceform" enctype="multipart/form-data" method="post">
+                    <!-- <form id="priceform" enctype="multipart/form-data" method="post"> -->
                         <div class="row">
                             <button type="button" id="formcontrol" class="btn btn-light col-12 col-md-12">Hide Price Request Form</button>
                             <div id="priceformpanel" class="col-12 col-md-12">
+                                <form id="priceform" enctype="multipart/form-data" method="post">
                                 <h3 class="axiBold text-black">Upload Price Request Form</h3>
                                 <p>
                                     <label for="formFileLg" class="form-label">Upload CSV file here with following
@@ -31,8 +32,10 @@
                                         <img src="/static/app-assets/media/upload (2).svg" class="me-1" /> Fetch Price Model
                                     </button>
                                 </div>
+                                </form>
                             </div>
                             <div class="col-12 col-md-12">
+                                <div id="idcontroltable" style="overflow-x: auto;"></div>
                                 <div id="price_model_row" class="row mt-2">
                                     <!-- <h3 class="axiBold text-black mt-1">Price Model Is ready</h3>
                                     <h4 class="text-black mt-1">You can download required data</h4> -->
@@ -73,7 +76,7 @@
                                 </div>
                             </div>
                         </div>
-                    </form>
+                    <!-- </form> -->
                 </div>
             </div>
         </div>
@@ -81,6 +84,7 @@
 </div>
 {% endblock %}
 {% block scriptblock %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
 <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
 <script src="static/js/pricedesk_upload.js"></script>
 {% endblock %}
