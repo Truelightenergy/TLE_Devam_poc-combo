@@ -1,276 +1,294 @@
-;
+var final_df = null;
+var summary_final_df = null;
+var filename_final_df = null;
+var filename_summary_final_df = null;
+var component_labels = null;
+var component_summary = null;
+var fr_price_hourly = null;
+var fr_price_hourly_label = null;
+var data_loadprofile = null;
+
 $(document).ready(function () {
-	$(".btnUpload").click(function(){
-		$(this).attr('disabled', 'disabled');
-	});
-
-	function upload_file(formData) {
-		$("#process").show();
-		$.ajax({
-			xhr: function () {
-				var xhr = new window.XMLHttpRequest();
-
-				xhr.upload.addEventListener('progress', function (e) {
-					if (e.lengthComputable) {
-						console.log('Bytes Loaded: ' + e.loaded);
-						console.log('Total Size: ' + e.total);
-						console.log('Percentage Uploaded: ' + (e.loaded / e.total))
-						var percent = Math.round((e.loaded / e.total) * 100);
-						$('#progressBar').attr('aria-valuenow', percent).css('width', percent + '%').text(percent + '%');
-					}
-				});
-				return xhr;
-			},
-			type: 'POST',
-			cache: false,
-			recreateForm: true,
-			url: '/pricedsk',
-			data: formData,
-			processData: false,
-			contentType: false,
-			headers: {
-				'Authorization': "Bearer " + token
-			},
-			success: function (response) {
-
-				$('#process').hide();
-				$('.progress-bar').css('width', '0%');
-				$('#save').attr('disabled', false);
-				$('#upload_form')[0].reset();
-				document.open();
-				document.write(response);
-				document.close();
-			},
-			error: function (textStatus, errorThrown) {
-				$('#process').hide();
-				$('.progress-bar').css('width', '0%');
-				$('#save').attr('disabled', false);
-				$('#upload_form')[0].reset();
-				$('body').html(response);
-			}
-		});
-
-	}
-
-	function isDateKey(key) {
-		return /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(key);
-	}
-
-	function findMinMax(arr) {
-
-		let values = [];
-
-		arr.forEach(obj => {
-			Object.keys(obj).forEach(key => {
-				if (isDateKey(key)) {
-					const strippedValue = obj[key].replace(/\$/g, ''); // remove the dollar sign
-					const value = parseFloat(strippedValue);
-					if (!isNaN(value)) {
-						values.push(value);
-					}
-				}
-			});
-		});
-
-		let minVal = Math.min(...values) ;
-		let maxVal = Math.max(...values);
-
-		return [minVal === Infinity ? 'N/A':minVal, maxVal === -Infinity ? 'N/A':maxVal];
-	}
-
-	function findMinMax_with_block_type(arr, block_type) {
-		var data = [...arr].filter(function (item) { return item['Block Type'] == block_type; });
-		var result = findMinMax(data);
-		return result;		
-	}
-
-	function findnegative(arr) {
-		let result = {
-			foundNegative:false,
-			value:null
-		}
-
-		var minMax = findMinMax(arr);
-		if(minMax[0] < 0 || minMax[1] < 0) return result = {...result,foundNegative:true,value:minMax[0] < 0 ? minMax[0] : minMax[1]};
-
-		return result;
-	}
-	
-	function balanced_month_check(arr) {
-
-		var monthDiff = -1;
-		dict = arr[0];
-
-		const datePattern = /^\d{1,2}\/\d{1,2}\/\d{4}$/;
-
-		const keysToDelete = Object.entries(dict).filter(([key]) => !datePattern.test(key)).map(([key, value]) =>  key);
-		keysToDelete.forEach(key => delete dict[key]);
-
-		const isDateFormatValid = checkDateFormatInDictionary(dict);
-		if (isDateFormatValid) {
-			const dates = Object.keys(dict).map(dateString => new Date(dateString));
-			var lowestDate = new Date(Math.min(...dates));
-			var highestDate = new Date(Math.max(...dates));
-			monthDiff = (highestDate.getFullYear() - lowestDate.getFullYear()) * 12 + (highestDate.getMonth() - lowestDate.getMonth());
-		}
-		
-		return monthDiff;
-	}
-
-
-	function isValidDateFormat(dateString) {
-		const dateRegex = /^\d{1,2}\/\d{1,2}\/\d{2,4}$/;
-		return dateRegex.test(dateString);
-	}
-
-	function checkDateFormatInDictionary(dateDictionary) {
-		for (const dateKey in dateDictionary) {
-			if (!isValidDateFormat(dateKey)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	function populate_results(resultant, file) {
-		if((file.name.toLowerCase().includes("ptc")) || (file.name.toLowerCase().includes("matrix"))){
-			$('#status').html("&#10004; Success");
-			$("#status").css("color", "green");
-		}
-		// Below is the comment that was removed to allow small month-range uploads
-		// (resultant['months'] >= 60) && 
-		else if ((resultant.negativeResult.foundNegative !==true) || (file.name.toLowerCase().includes("nonenergy"))) {
-
-			$('#status').html("&#10004; Success");
-			$("#status").css("color", "green");
-		}
-		else {
-			if ((resultant.negativeResult.foundNegative ===true) && (!(file.name.toLowerCase().includes("nonenergy")))) {
-				$('#status').html(`&#10006; Failure: Negative price (${resultant.negativeResult.value}) detected!`);
-				$("#status").css("color", "red");
-
-			}
-			else if (resultant['months'] == -1) {
-				$('#status').html("&#10006; Failure: Months date format should be mm/dd/yyyy");
-				$("#status").css("color", "red");
-
-			}
-			else {
-				// Months range must be 61 month long! //previous notification
-				$('#status').html("&#10006; Failure: Months range had some issue!");
-				$("#status").css("color", "red");
-
-			}
-			$('#upload_btn').attr('disabled', 'disabled');
-			$('#upload_btn').addClass('btn-outline-success');
-
-		}
-
-		$('#min_max').html(`${resultant['min_max_values'][0]} - ${resultant['min_max_values'][1]}`);
-		$('#min_max_5x16').html(`${resultant["min_max_values_2x16"][0]} - ${resultant["min_max_values_2x16"][1]}`);
-		$('#min_max_2x16').html(`${resultant['min_max_values_5x16'][0]} - ${resultant['min_max_values_5x16'][1]}`);
-		$('#min_max_7x8').html(`${resultant['min_max_values_7x8'][0]} - ${resultant['min_max_values_7x8'][1]}`);
-
-	}
-
-
-	function pre_test(file) {
-		var resultant;
-		const reader = new FileReader();
-
-		reader.onload = function (event) {
-			try {
-				const content = event.target.result;
-				const lines = content.split('\n');
-				const jsonData = [];
-
-				const new_lines = lines.slice(1).map(line => line.split(','));
-
-				for (let i = 0; i < new_lines[0].length; i++) {
-					const propertyArray = new_lines.map(line => line[i]);
-					jsonData.push(propertyArray);
-				}
-
-				const keys = jsonData[0];
-				const arrays = jsonData.slice(1);
-
-				const file_data = arrays.map(array =>
-					keys.reduce((obj, key, index) => {
-						if ((array[index] !== undefined) && (array[index] != "")) {
-							obj[key] = array[index];
-						}
-
-						return obj;
-					}, {})
-				);
-				// minimum and maximum value of the file
-				min_max_values = findMinMax(file_data);
-				// negative finder from the file
-				const negativeResult = findnegative(file_data);
-				// min and maximum for block type 5x16
-				min_max_values_5x16 = findMinMax_with_block_type(file_data, '5x16');
-				// min and maximum for block type 2x16
-				min_max_values_2x16 = findMinMax_with_block_type(file_data, '2x16');
-				// min and maximum for block type 7x8
-				min_max_values_7x8 = findMinMax_with_block_type(file_data, '7x8');
-				// balanced month verification
-				months = balanced_month_check(file_data);
-
-
-				resultant = {
-					"min_max_values": min_max_values,
-					"negativeResult": negativeResult,
-					"min_max_values_5x16": min_max_values_5x16,
-					"min_max_values_2x16": min_max_values_2x16,
-					"min_max_values_7x8": min_max_values_7x8,
-					"months": months
-				}
-
-				populate_results(resultant, file);
-
-			} catch (error) {
-				console.error('Error processing file:', error);
-			}
-
-
-			return resultant;
-		}
-
-		reader.readAsText(file);
-	}
-
-
-
-	$('#upload_form').on('submit', function (event) {
-		event.preventDefault();
-
-		$('#save').attr('disabled', 'disabled');
-		// $('#process').css('display', 'block');
-
-		var formData = new FormData($('#upload_form')[0]);
-		const fileInput = document.getElementById('upload_file');
-		const file = fileInput.files[0];
-		pre_test(file);
-
-		$('#tester_view').show();
-		$('#upload_view').hide();
-
-
-	});
-	$('#retry_btn').on('click', function (event) {
-		location.reload();
-	});
-
-	$('#upload_btn').on('click', function (event) {
-		var formData = new FormData($('#upload_form')[0]);
-		upload_file(formData);
-	});
-
-
-
+	$("#piechart").hide();
+	$("#barchart_hour").hide();
+    $("#barchart_usage").hide();
+	$("#price_model_row").hide();
+    listners();
 });
-;
 
+function listners()
+{
+	$('#fetch').on('click', function() {
+		truelight.loader.show();
+		// Create a FormData object from the form
+		var formData = new FormData($('#priceform')[0]);
+		
+		// Perform the Ajax request
+		$.ajax({
+			url: '/pricedeskdata',  // Replace with the correct URL
+			type: 'POST',
+			data: formData,
+			processData: false,  // Important: Don't process the data
+			contentType: false,  // Important: Let jQuery set the content type
+			headers: {
+				'Authorization': "Bearer " + token  // Assuming 'token' contains your auth token
+			},
+			success: function(response_json) {
+				response_json = JSON.parse(response_json)
+				// Create a link element to download the file
+				final_df = response_json["final_df"]
+				summary_final_df = response_json["summary_final_df"]
+				filename_final_df= response_json["filename_final_df"];
+				filename_summary_final_df = response_json["filename_summary_final_df"];
+				component_labels = response_json["component_labels"];
+				component_summary = response_json["component_summary"];
+				fr_price_hourly = response_json["fr_price_hourly"];
+				fr_price_hourly_label = response_json["fr_price_hourly_label"];
+                data_loadprofile = response_json["data_loadprofile"];
+                generate_pie();
+                generate_hourly();
+                generate_usage();
+                $("#formcontrol").trigger('click');
+				$('#price_model_row').show();
+				$('#priceform')[0].reset();
+				truelight.loader.hide();
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				console.error('Error:', textStatus, errorThrown);
+				$('#priceform')[0].reset();
+				truelight.loader.hide();
+			}
+		});
+	});
 
+	$('#fetch_sheet').on('click', function(){
+		download_price_sheet();
+	});
+	$('#fetch_summary').on('click', function(){
+		download_price_summary();
+	});
+    $('#formcontrol').on('click', function(){
+        $("#formcontrol").toggleClass("btn-light");
+        $("#formcontrol").toggleClass("btn-dark");
+		$("#priceformpanel").toggle();
+        $("#formcontrol").html(function(i, orgtext){
+            return orgtext === 'Hide Price Request Form' ? 'Show Price Request Form' : orgtext === 'Show Price Request Form' ? 'Hide Price Request Form':'Show Price Request Form';
+        })
+	});
+	// $('#generate_pie').on('click', function(){
+	// 	generate_pie();
+	// });
+	// $('#generate_hourly').on('click', function(){
+	// 	generate_hourly();
+	// });
+    // $('#generate_usage').on('click', function(){
+	// 	generate_usage();
+	// });
 
+}
 
+function download_price_sheet(){
+	var link = document.createElement('a');
+	var blob = new Blob([final_df], { type: 'text/csv;charset=utf-8;' });
+	link.href = window.URL.createObjectURL(blob);
+	link.download = filename_final_df;  // Fallback filename if not provided
+	link.click();
+	window.URL.revokeObjectURL(link.href);
+}
+function download_price_summary(){
+	var link = document.createElement('a');
+	var blob = new Blob([summary_final_df], { type: 'text/csv;charset=utf-8;' });
+	link.href = window.URL.createObjectURL(blob);
+	link.download = filename_summary_final_df;  // Fallback filename if not provided
+	link.click();
+	window.URL.revokeObjectURL(link.href);
+}
+function generate_pie(){
+	$('#piechart').show();
+	var data = [{
+		values: component_summary,
+		labels: component_labels,
+		type: 'pie'
+	  }];
+	  
+	  var layout = {
+        "xaxis": {
+            "tickfont": {
+                "size": 10,
+                "color": "grey"
+            },
+            "showline": false,
+            "mirror": true,
+            "ticks": 'outside', // Ensure the ticks are outside the plot
+            "ticklen": 5, // Length of the ticks
+            showgrid: false
+        },
+        "yaxis": {
+            "tickprefix": "$",
+            "tickfont": {
+                "size": 10,
+                "color": "grey"
+            },
+            "showline": false,
+            "linewidth": 2,
+            "linecolor": 'black',
+            "mirror": true,
+            "ticks": 'outside', // Ensure the ticks are outside the plot
+            "ticklen": 5, // Length of the ticks
+            showgrid: false
+        },
+        "legend": {
+            "orientation": "h",
+            "x": 0.5,
+            "xanchor": "center",
+            "y": -0.2, // You may need to adjust this to place the legend below the plot
+            "yanchor": "top" // Anchors the legend at the top of its bounding box
+        },
+        "hovermode": "x unified",
+        "barmode": 'group',
+        "plot_bgcolor": "white",
+        "margin": {
+            "l": 50,
+            "r": 50,
+            "t": 20,
+            "b": 20
+        }
+    };
+	  
+	  Plotly.newPlot('piechart', data, layout);
+
+}
+function generate_hourly(){
+	$('#barchart_hour').show();
+    const average = fr_price_hourly.reduce((a, b) => a + b) / fr_price_hourly.length;
+	var data = [{
+		x: fr_price_hourly_label,
+		y: fr_price_hourly,
+		type: 'bar'
+	  },
+      {
+        x: fr_price_hourly_label,
+        y: Array(fr_price_hourly_label.length).fill(average), // Same average for each interval
+        mode: 'lines',
+        line: {
+          color: 'red',
+          width: 2,
+          dash: 'dash' // Optional: style the line as dashed
+        },
+        name: 'Average Line'
+      }];
+	  
+	  var layout = {
+        "xaxis": {
+            "tickfont": {
+                "size": 10,
+                "color": "grey"
+            },
+            "showline": false,
+            "mirror": true,
+            "ticks": 'outside', // Ensure the ticks are outside the plot
+            "ticklen": 5, // Length of the ticks
+            showgrid: false
+        },
+        "yaxis": {
+            "tickprefix": "$",
+            "tickfont": {
+                "size": 10,
+                "color": "grey"
+            },
+            "showline": false,
+            "linewidth": 2,
+            "linecolor": 'black',
+            "mirror": true,
+            "ticks": 'outside', // Ensure the ticks are outside the plot
+            "ticklen": 5, // Length of the ticks
+            showgrid: false
+        },
+        "legend": {
+            "orientation": "h",
+            "x": 0.5,
+            "xanchor": "center",
+            "y": -0.2, // You may need to adjust this to place the legend below the plot
+            "yanchor": "top" // Anchors the legend at the top of its bounding box
+        },
+        "hovermode": "x unified",
+        "barmode": 'group',
+        "plot_bgcolor": "white",
+        "margin": {
+            "l": 50,
+            "r": 50,
+            "t": 20,
+            "b": 20
+        }
+    };
+	  
+	  Plotly.newPlot('barchart_hour', data, layout);
+
+}
+function generate_usage(){
+	$('#barchart_usage').show();
+    const average = data_loadprofile.reduce((a, b) => a + b) / data_loadprofile.length;
+	var data = [{
+		x: fr_price_hourly_label,
+		y: data_loadprofile,
+		type: 'bar'
+	  },
+      {
+        x: fr_price_hourly_label,
+        y: Array(fr_price_hourly_label.length).fill(average), // Same average for each interval
+        mode: 'lines',
+        line: {
+          color: 'red',
+          width: 2,
+          dash: 'dash' // Optional: style the line as dashed
+        },
+        name: 'Average Line'
+      }];
+	  
+	  var layout = {
+        "xaxis": {
+            "tickfont": {
+                "size": 10,
+                "color": "grey"
+            },
+            "showline": false,
+            "mirror": true,
+            "ticks": 'outside', // Ensure the ticks are outside the plot
+            "ticklen": 5, // Length of the ticks
+            showgrid: false
+        },
+        "yaxis": {
+            "tickprefix": "$",
+            "tickfont": {
+                "size": 10,
+                "color": "grey"
+            },
+            "showline": false,
+            "linewidth": 2,
+            "linecolor": 'black',
+            "mirror": true,
+            "ticks": 'outside', // Ensure the ticks are outside the plot
+            "ticklen": 5, // Length of the ticks
+            showgrid: false
+        },
+        "legend": {
+            "orientation": "h",
+            "x": 0.5,
+            "xanchor": "center",
+            "y": -0.2, // You may need to adjust this to place the legend below the plot
+            "yanchor": "top" // Anchors the legend at the top of its bounding box
+        },
+        "hovermode": "x unified",
+        "barmode": 'group',
+        "plot_bgcolor": "white",
+        "margin": {
+            "l": 50,
+            "r": 50,
+            "t": 20,
+            "b": 20
+        }
+    };
+	  
+	  Plotly.newPlot('barchart_usage', data, layout);
+
+}

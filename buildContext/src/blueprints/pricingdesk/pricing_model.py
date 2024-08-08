@@ -10,8 +10,11 @@ from ..extractors.helper.loadprofile import LoadProfile
 from ..extractors.helper.shaping import Shaping
 from ..extractors.helper.vlr import Vlr
 from ..extractors.helper.lineloss import LineLoss
-from flask import Response
+from flask import make_response
 import datetime
+import zipfile
+from io import BytesIO
+import json
 
 
 class PricingDesk:
@@ -98,6 +101,7 @@ class PricingDesk:
         return energy_shaped
 
     def nonenergy_shaping(self, nonenergy, loadprofile):
+        nonenergy = nonenergy.loc[nonenergy.sub_cost_component != 'HH']
         nonenergy['merge_month'] = nonenergy.month.dt.to_period('M')
         loadprofile['merge_month'] = loadprofile.datemonth.dt.to_period('M')
         nonenergy_shaped = loadprofile.merge(nonenergy, on=['merge_month'], how='inner')
@@ -203,7 +207,7 @@ class PricingDesk:
                                           final_df['sleeve_fee'] + final_df['utility_billing_surcharge'] + final_df['other1'] + final_df['other2']
             final_df['ffr_price'] = sum(final_df['fr_price_hourly'] * final_df['data_loadprofile_max']) / sum(final_df['data_loadprofile_max'])
             final_df = final_df.sort_values(by=['datemonth', 'he']).reset_index(drop=True)
-
+            
             # Column sorting
 
             # Redundant Info for QA
@@ -213,11 +217,29 @@ class PricingDesk:
                                      final_df['DayType'] +" "+ final_df['he'].astype(str)
             final_df['lookup ID1'] = final_df['datemonth'] +" "+ final_df['he'].astype(str)
             final_df['Validation'] = 'y'
+            graph_df = pd.DataFrame(final_df)
             index_items = ['lookup ID4', 'lookup ID3', 'lookup ID2', 'lookup ID1',
                            'Validation', 'datemonth', 'Cal Date', 'Year', 'YearType', 'Month',
                            'Day', 'DayType', 'he', 'HourType', 'BlockType',
                            'curvestart_shaping', 'curvestart_energy', 'curvestart_vlr', 'curvestart_loadprofile',
                            'curvestart_nonenergy', 'curvestart_rec', 'curvestart_lineloss']
+            
+            price_summary_cols = list(set(final_df.columns) - set(index_items+['data_nonenergy_shaped', 'data_loadprofile', 'data_loadprofile_avg', 'data_loadprofile_max', 'fr_price_hourly', 'ffr_price']))
+            graph_df = graph_df[price_summary_cols+['data_loadprofile']]
+            
+            for i in price_summary_cols:
+                graph_df[i] = graph_df[i]*graph_df["data_loadprofile"]
+            
+            graph_df = pd.DataFrame(graph_df.sum()).T
+            
+            for i in price_summary_cols:
+                graph_df[i] = graph_df[i]/graph_df["data_loadprofile"]
+            graph_df.drop(['data_loadprofile'], axis=1, inplace=True)
+            component_labels = list(graph_df.columns)
+            component_summary = graph_df.iloc[0, :].tolist()
+            fr_price_hourly = list(final_df['fr_price_hourly'])
+            fr_price_hourly_label = list(final_df['lookup ID1'])
+            data_loadprofile = list(final_df['data_loadprofile'])
             final_df.set_index(index_items, inplace=True)
             curve_types = ['energy' if i in ['data_energy_shaped','data_vlr_shaped']
                            else 'nonenergy' if i in sub_cost_components_list_for_aggregate
@@ -228,10 +250,35 @@ class PricingDesk:
             cost_components = final_df.columns
             final_df.columns = pd.MultiIndex.from_arrays([curve_types, cost_components],
                                                          names=['curve_type', 'cost_component'])
-            return Response(final_df.to_csv(),
-                            mimetype="text/csv",
-                            headers={"Content-disposition":
-                            f"attachment; filename={filename}.csv"}), 'success'
+            # return Response(final_df.to_csv(),
+            #                 mimetype="text/csv",
+            #                 headers={"Content-disposition":
+            #                 f"attachment; filename={filename}.csv"}), 'success'
+            # zip_buffer = BytesIO()
+            # with zipfile.ZipFile(zip_buffer, 'a', zipfile.ZIP_DEFLATED, False) as zip_file:
+            #     zip_file.writestr(f"Summary_{filename}.csv", graph_df.to_csv())
+            #     zip_file.writestr(filename+".csv", final_df.to_csv())
+            # # Reset buffer position
+            # zip_buffer.seek(0)
+
+            # return Response(
+            #     zip_buffer,
+            #     mimetype='application/zip',
+            #     headers={"Content-disposition": "attachment; filename=data.zip"}
+            # ), 'success'
+            # response = make_response(final_df.to_csv())
+            # response.headers['Content-Disposition'] = 'attachment; filename=data.csv'
+            # response.headers['Content-Type'] = 'text/csv'
+            return json.dumps({"final_df":final_df.to_csv(),
+                               "filename_final_df":filename+".csv",
+                               "summary_final_df":graph_df.to_csv(),
+                               "filename_summary_final_df":"summary_"+filename+".csv",
+                               "component_labels": component_labels,
+                               "component_summary": component_summary,
+                               "fr_price_hourly":fr_price_hourly,
+                               "fr_price_hourly_label":fr_price_hourly_label,
+                               "data_loadprofile":data_loadprofile,
+                               }), 'success'
         
         except Exception as exp:
             import traceback, sys
