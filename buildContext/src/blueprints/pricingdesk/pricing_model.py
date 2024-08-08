@@ -98,6 +98,7 @@ class PricingDesk:
         return energy_shaped
 
     def nonenergy_shaping(self, nonenergy, loadprofile):
+        nonenergy = nonenergy.loc[nonenergy.sub_cost_component != 'HH']
         nonenergy['merge_month'] = nonenergy.month.dt.to_period('M')
         loadprofile['merge_month'] = loadprofile.datemonth.dt.to_period('M')
         nonenergy_shaped = loadprofile.merge(nonenergy, on=['merge_month'], how='inner')
