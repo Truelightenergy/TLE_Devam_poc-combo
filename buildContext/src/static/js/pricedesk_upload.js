@@ -209,7 +209,8 @@ function generate_hourly(i){
 	var data = [{
 		x: fr_price_hourly_label[i],
 		y: fr_price_hourly[i],
-		type: 'bar'
+		type: 'bar',
+        name: 'Hourly Price (MWH)'
 	  },
       {
         x: fr_price_hourly_label[i],
@@ -220,7 +221,7 @@ function generate_hourly(i){
           width: 2,
           dash: 'dash' // Optional: style the line as dashed
         },
-        name: 'Average Line'
+        name: 'Avg Hourly Price (MWH)'
       }];
 	  
 	  var layout = {
@@ -276,7 +277,8 @@ function generate_usage(i){
 	var data = [{
 		x: fr_price_hourly_label[i],
 		y: data_loadprofile[i],
-		type: 'bar'
+		type: 'bar',
+        name: 'Usage (MWH)'
 	  },
       {
         x: fr_price_hourly_label[i],
@@ -287,7 +289,7 @@ function generate_usage(i){
           width: 2,
           dash: 'dash' // Optional: style the line as dashed
         },
-        name: 'Average Line'
+        name: 'Avg Usage (MWH)'
       }];
 	  
 	  var layout = {
