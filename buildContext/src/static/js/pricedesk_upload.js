@@ -340,6 +340,7 @@ function generate_usage(i){
 
 }
 function populate_control_table(){
+    $('#idcontroltable').empty();
     $('#idcontroltable').show();
 
     // Get the div element where the table will be added
