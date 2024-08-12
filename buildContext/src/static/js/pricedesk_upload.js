@@ -347,23 +347,35 @@ function populate_control_table(){
 
     // Create the table element
     var table = document.createElement("table");
-    table.setAttribute("border", "1");  // Optional: Add border to the table
+    table.style.tableLayout = "fixed";
+    table.style.whiteSpace = "nowrap";
+    // table.style.margin = "0px auto";
+    table.style.margin = "0px";
+    // table.setAttribute("border", "1");  // Optional: Add border to the table
 
     // Create the table header (thead)
     var thead = document.createElement("thead");
     var headerRow = document.createElement("tr");
+    headerRow.classList.add("table", "cHeader");
 
     // Iterate over the keys of the JSON object to create table headers
-    var th = document.createElement("th");
-    th.textContent = 'visual control';
-    headerRow.appendChild(th);
+    
     for (var key in price_input_list[0]) {
         if (price_input_list[0].hasOwnProperty(key)) {
             var th = document.createElement("th");
+            th.style.padding = "14px 4px";
+            th.style.color = "rgb(12, 70, 96)";
             th.textContent = key;
             headerRow.appendChild(th);
         }
     }
+    var th = document.createElement("th");
+    th.style.padding = "14px 4px";
+    th.style.textAlign = "left";
+    th.style.color = "rgb(12, 70, 96)";
+    th.textContent = 'Action';
+    headerRow.appendChild(th);
+
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
@@ -373,23 +385,29 @@ function populate_control_table(){
     for (var i = 0; i < price_input_list.length; i++){
         // Create a single row for the values (since your JSON object is a single record)
         var valueRow = document.createElement("tr");
+        valueRow.style.borderTop = "0.5px solid rgb(211, 211, 211)";
 
         // Iterate over the values of the JSON object to create table cells
-        var td = document.createElement("td");
-        var button = document.createElement("button");
-        button.type = "button";
-        button.textContent = "View";  // Button text
-        td.appendChild(button);
-        // td.onclick = ClickHandler(i)
-        valueRow.appendChild(td);
+        
         for (var key in price_input_list[i]) {
             if (price_input_list[i].hasOwnProperty(key)) {
                 var td = document.createElement("td");
+                td.style.padding = "12px 4px";
                 td.textContent = price_input_list[i][key];
                 valueRow.appendChild(td);
             }
         }
-        valueRow.onclick = ClickHandler(i)
+        // valueRow.onclick = ClickHandler(i)
+        var td = document.createElement("td");
+        td.style.padding = "12px 4px";
+        var button = document.createElement("button");
+        button.type = "button";
+        button.classList.add("btn", "btn-primary")
+        button.textContent = "View";  // Button text
+        td.appendChild(button);
+        td.onclick = ClickHandler(i)
+        valueRow.appendChild(td);
+
         tbody.appendChild(valueRow);
     }
     
