@@ -10,7 +10,7 @@ var data_loadprofile = null;
 var price_input_list = null;
 
 $(document).ready(function () {
-    // $('#tooltip-button').tooltip();
+    // $('#tooltip-button').tooltip();    debugger
     // $('.tooltiphandle').tooltip();
     // document.addEventListener('DOMContentLoaded', function () {
     //     var tooltipTriggerList = [].slice.call(document.querySelectorAll('.tooltiphandle'));
@@ -466,9 +466,9 @@ function populate_control_table() {
     div.append(table);
 
     let tableButtons = table.find("button");    
-    tableButtons.each(function(item){
-        new bootstrap.Tooltip(item.get(0),{title:"<div style='color: red; font-weight: bold;'>Dynamic HTML Content</div>",html:true});
-    });
+    // tableButtons.each(function(item){
+    //     new bootstrap.Tooltip(item,{title:"<div style='color: red; font-weight: bold;'>Dynamic HTML Content</div>",html:true});
+    // });
     
     tableButtons.click(function(){
         var index = parseInt($(this).attr("data-index"),10);
