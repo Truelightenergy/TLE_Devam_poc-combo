@@ -28,7 +28,7 @@ $(document).ready(function () {
     listners();   
 
 
-    new bootstrap.Tooltip($(".btn-demo").get(0),{title:"<div style='color: red; font-weight: bold;'>Dynamic HTML Content</div>",html:true});
+    // new bootstrap.Tooltip($(".btn-demo").get(0),{title:"<div style='color: red; font-weight: bold;'>Dynamic HTML Content</div>",html:true});
 });
 
 function listners() {
@@ -386,12 +386,12 @@ function populate_control_table() {
     headerRow.css("whiteSpace","nowrap");
 
     // Iterate over the keys of the JSON object to create table headers
-    var th = $('<th style="padding:12px 12px; text-align:left;color:rgb(12,70,96);backgroun-color:rgb(216,232,252);" label="Action"></>');
+    var th = $('<th style="padding:12px 12px; text-align:left;color:rgb(12,70,96);background-color:rgb(216,232,252);">Action</th>');
     headerRow.append(th);
 
     for (var key in price_input_list[0]) {
         if (price_input_list[0].hasOwnProperty(key)) {
-            var thContent =$(`<th style="padding:12px 12px; color:rgb(12,70,96);background-color:rgb(216,232,252);" Label="${key}"></th>`);                        
+            var thContent =$(`<th style="padding:12px 12px; color:rgb(12,70,96);background-color:rgb(216,232,252);">${key}</th>`);                        
             headerRow.append(thContent);
         }
     }
@@ -472,7 +472,16 @@ function populate_control_table() {
     
     tableButtons.click(function(){
         var index = parseInt($(this).attr("data-index"),10);
-        ClickHandler(index);
+        // ClickHandler(index);
+        $(".pricedeskoutput").animate({opacity:'0.3',width:'-=150px'});
+        setTimeout(() => {
+            // $(".pricedeskoutput").fadeIn(1000);
+            $(".pricedeskoutput").animate({opacity:'1',width:'+=150px'});
+            generate_pie(index);
+            generate_hourly(index);
+            generate_usage(index);
+            populate_summary_table(index);
+        }, 400);
     });
 }
 function ClickHandler(index) {
@@ -487,9 +496,6 @@ function ClickHandler(index) {
             generate_usage(index);
             populate_summary_table(index);
         }, 400);
-
-
-
     }
 }
 function populate_summary_table(index) {
