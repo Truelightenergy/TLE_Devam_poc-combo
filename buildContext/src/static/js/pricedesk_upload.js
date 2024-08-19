@@ -25,7 +25,10 @@ $(document).ready(function () {
     $("#idcontroltable").hide();
     $("#idcontroltableprice_model_row").hide();
     $("#summary_table_div").hide();
-    listners();
+    listners();   
+
+
+    new bootstrap.Tooltip($(".btn-demo").get(0),{title:"<div style='color: red; font-weight: bold;'>Dynamic HTML Content</div>",html:true});
 });
 
 function listners() {
@@ -371,43 +374,30 @@ function populate_control_table() {
     // $('#idcontroltable').show();
 
     // Get the div element where the table will be added
-    var div = document.getElementById("idcontroltable");
+    var div = $("#idcontroltable");
 
     // Create the table element
-    var table = document.createElement("table");
-    table.style.tableLayout = "fixed";
-    // table.style.borderRadius = "10px";
-    // table.style.whiteSpace = "nowrap";
-    // table.style.margin = "0px auto";
-    table.style.margin = "0px";
-    // table.setAttribute("border", "1");  // Optional: Add border to the table
-
-    // Create the table header (thead)
-    var thead = document.createElement("thead");
-    var headerRow = document.createElement("tr");
-    headerRow.classList.add("table", "cHeader");
-    headerRow.style.whiteSpace = "nowrap";
+    var table = $("<table></table>")
+    table.css("tableLayout","fixed");
+    table.css("margin","0px");
+    
+    var thead = $("<thead></thead>");
+    var headerRow =$('<tr class="table cHeader"></tr>');
+    headerRow.css("whiteSpace","nowrap");
 
     // Iterate over the keys of the JSON object to create table headers
-    var th = document.createElement("th");
-    th.style.padding = "12px 12px";
-    th.style.textAlign = "left";
-    th.style.color = "rgb(12, 70, 96)";
-    th.style.backgroundColor = "rgb(216,232,252)";
-    th.textContent = 'Action';
-    headerRow.appendChild(th);
+    var th = $('<th style="padding:12px 12px; text-align:left;color:rgb(12,70,96);backgroun-color:rgb(216,232,252);" label="Action"></>');
+    headerRow.append(th);
+
     for (var key in price_input_list[0]) {
         if (price_input_list[0].hasOwnProperty(key)) {
-            var th = document.createElement("th");
-            th.style.padding = "12px 12px";
-            th.style.color = "rgb(12, 70, 96)";
-            th.style.backgroundColor = "rgb(216,232,252)";
-            th.textContent = key;
-            headerRow.appendChild(th);
+            var thContent =$(`<th style="padding:12px 12px; color:rgb(12,70,96);background-color:rgb(216,232,252);" Label="${key}"></th>`);                        
+            headerRow.append(thContent);
         }
     }
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
+
+    thead.append(headerRow);
+    table.append(thead);
 
 
 
@@ -446,44 +436,44 @@ function populate_control_table() {
 
 
     // Create the table body (tbody)
-    var tbody = document.createElement("tbody");
+    var tbody = $(`<tbody></tbody>`);
 
     for (var i = 0; i < price_input_list.length; i++) {
-        var valueRow = document.createElement("tr");
-        valueRow.style.borderTop = "0.5px solid rgb(211, 211, 211)";
+        var valueRow = $(`<tr style="border-top:0.5px solid rgb(211,211,211);"></tr>`);
 
-        var td = document.createElement("td");
-        td.style.padding = "4px 12px";
-        var button = document.createElement("button");
-        button.type = "button";
-        button.classList.add("btn", "btn-light") //"tooltip-container"
-        var img = document.createElement("img");
-        img.src = "/static/app-assets/media/eye-pricedesk.svg";
-        img.alt = "View";
-        img.classList.add("icon-size-14");
-        img.style.cursor = "pointer";
-        button.appendChild(img)
+        var td = $(`<td style="padding:4px 12px;"></td>`);
+
+        var button = $(`<button data-index="${i}" type="button" class="btn btn-light"></button>`);
+        
+        var img = (`<img src="/static/app-assets/media/eye-pricedesk.svg" alt="View" class="icon-size-14" />`);
+        button.append(img)
 
         // new bootstrap.Tooltip(button);
-        td.appendChild(button);
-        td.onclick = ClickHandler(i)
-        valueRow.appendChild(td);
+        td.append(button);
+        valueRow.append(td);
         for (var key in price_input_list[i]) {
             if (price_input_list[i].hasOwnProperty(key)) {
-                var td = document.createElement("td");
-                td.style.padding = "4px 12px";
-                td.textContent = price_input_list[i][key];
-                valueRow.appendChild(td);
+                var td = $(`<td style="padding:4px 12px;">${price_input_list[i][key]}</td>`);                
+                valueRow.append(td);
             }
-        }
-        // valueRow.onclick = ClickHandler(i)
-        tbody.appendChild(valueRow);
+        }        
+        tbody.append(valueRow);
     }
 
-    table.appendChild(tbody);
-
+    table.append(tbody);
+    
     // Append the table to the div
-    div.appendChild(table);
+    div.append(table);
+
+    let tableButtons = table.find("button");    
+    tableButtons.each(function(item){
+        new bootstrap.Tooltip(item.get(0),{title:"<div style='color: red; font-weight: bold;'>Dynamic HTML Content</div>",html:true});
+    });
+    
+    tableButtons.click(function(){
+        var index = parseInt($(this).attr("data-index"),10);
+        ClickHandler(index);
+    });
 }
 function ClickHandler(index) {
     return function () {
