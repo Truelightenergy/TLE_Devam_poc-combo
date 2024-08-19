@@ -25,7 +25,7 @@ $(document).ready(function () {
     $("#idcontroltable").hide();
     $("#idcontroltableprice_model_row").hide();
     $("#summary_table_div").hide();
-    listners();   
+    listners();
 
 
     // new bootstrap.Tooltip($(".btn-demo").get(0),{title:"<div style='color: red; font-weight: bold;'>Dynamic HTML Content</div>",html:true});
@@ -378,12 +378,12 @@ function populate_control_table() {
 
     // Create the table element
     var table = $("<table></table>")
-    table.css("tableLayout","fixed");
-    table.css("margin","0px");
-    
+    table.css("tableLayout", "fixed");
+    table.css("margin", "0px");
+
     var thead = $("<thead></thead>");
-    var headerRow =$('<tr class="table cHeader"></tr>');
-    headerRow.css("whiteSpace","nowrap");
+    var headerRow = $('<tr class="table cHeader"></tr>');
+    headerRow.css("whiteSpace", "nowrap");
 
     // Iterate over the keys of the JSON object to create table headers
     var th = $('<th style="padding:12px 12px; text-align:left;color:rgb(12,70,96);background-color:rgb(216,232,252);">Action</th>');
@@ -391,17 +391,13 @@ function populate_control_table() {
 
     for (var key in price_input_list[0]) {
         if (price_input_list[0].hasOwnProperty(key)) {
-            var thContent =$(`<th style="padding:12px 12px; color:rgb(12,70,96);background-color:rgb(216,232,252);">${key}</th>`);                        
+            var thContent = $(`<th style="padding:12px 12px; color:rgb(12,70,96);background-color:rgb(216,232,252);">${key}</th>`);
             headerRow.append(thContent);
         }
     }
 
     thead.append(headerRow);
     table.append(thead);
-
-
-
-
 
 
     // var tooltipContent = document.getElementById('hidden');
@@ -444,7 +440,7 @@ function populate_control_table() {
         var td = $(`<td style="padding:4px 12px;"></td>`);
 
         var button = $(`<button data-index="${i}" type="button" class="btn btn-light"></button>`);
-        
+
         var img = (`<img src="/static/app-assets/media/eye-pricedesk.svg" alt="View" class="icon-size-14" />`);
         button.append(img)
 
@@ -453,30 +449,64 @@ function populate_control_table() {
         valueRow.append(td);
         for (var key in price_input_list[i]) {
             if (price_input_list[i].hasOwnProperty(key)) {
-                var td = $(`<td style="padding:4px 12px;">${price_input_list[i][key]}</td>`);                
+                var td = $(`<td style="padding:4px 12px;">${price_input_list[i][key]}</td>`);
                 valueRow.append(td);
             }
-        }        
+        }
+        valueRow.data("requestData", price_input_list[i]);
         tbody.append(valueRow);
     }
 
     table.append(tbody);
-    
+
     // Append the table to the div
     div.append(table);
 
-    let tableButtons = table.find("button");    
-    // tableButtons.each(function(item){
-    //     new bootstrap.Tooltip(item,{title:"<div style='color: red; font-weight: bold;'>Dynamic HTML Content</div>",html:true});
-    // });
-    
-    tableButtons.click(function(){
-        var index = parseInt($(this).attr("data-index"),10);
+    let tableButtons = table.find("button");
+    tableButtons.each(function (index) {
+        var data = $(this).parents("tr:first").data("requestData");
+        debugger
+        //construct your table here...
+        var item = $(`<div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">                                        
+                                        <div class="row">
+                                            <div class="col-4 font-weight-bold">Lookup ID4:</div>
+                                            <div class="col-8">${data["Lookup ID4"]}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-4 font-weight-bold">Account Name:</div>
+                                            <div class="col-8">ABC Co</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-4 font-weight-bold">Account #:</div>
+                                            <div class="col-8">111111-111111</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-4 font-weight-bold">Start Date:</div>
+                                            <div class="col-8">6/1/2024</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-4 font-weight-bold">Term (Months):</div>
+                                            <div class="col-8">12</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`);
+        new bootstrap.Tooltip(this, { title: item.get(0), html: true });
+    });
+
+    tableButtons.click(function () {
+        var index = parseInt($(this).attr("data-index"), 10);
         // ClickHandler(index);
-        $(".pricedeskoutput").animate({opacity:'0.3',width:'-=150px'});
+        $(".pricedeskoutput").animate({ opacity: '0.3', width: '-=150px' });
         setTimeout(() => {
             // $(".pricedeskoutput").fadeIn(1000);
-            $(".pricedeskoutput").animate({opacity:'1',width:'+=150px'});
+            $(".pricedeskoutput").animate({ opacity: '1', width: '+=150px' });
             generate_pie(index);
             generate_hourly(index);
             generate_usage(index);
@@ -487,10 +517,10 @@ function populate_control_table() {
 function ClickHandler(index) {
     return function () {
         // $(".pricedeskoutput").fadeOut();
-        $(".pricedeskoutput").animate({opacity:'0.3',width:'-=150px'});
+        $(".pricedeskoutput").animate({ opacity: '0.3', width: '-=150px' });
         setTimeout(() => {
             // $(".pricedeskoutput").fadeIn(1000);
-            $(".pricedeskoutput").animate({opacity:'1',width:'+=150px'});
+            $(".pricedeskoutput").animate({ opacity: '1', width: '+=150px' });
             generate_pie(index);
             generate_hourly(index);
             generate_usage(index);
