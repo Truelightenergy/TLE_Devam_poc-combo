@@ -28,6 +28,65 @@
     <link rel="stylesheet" type="text/css" href="/static/app-assets/vendors/css/forms/select/select2.min.css">
     <!-- BEGIN: Page CSS-->
     <link rel="stylesheet" type="text/css" href="/static/app-assets/css/core/menu/menu-types/vertical-menu.css" />
+    <style>
+        .tooltip-inner {
+            background-color: #ffffff !important; /* White background */
+            color: #000000 !important;            /* Black text color */
+            border: 1px solid #ddd;               /* Optional: Add a border */
+        }
+        .tooltip.bs-tooltip-top .tooltip-arrow::before,
+        .tooltip.bs-tooltip-bottom .tooltip-arrow::before,
+        .tooltip.bs-tooltip-left .tooltip-arrow::before,
+        .tooltip.bs-tooltip-right .tooltip-arrow::before {
+            border-top-color: #ffffff !important;   /* Arrow color for top tooltips */
+            border-bottom-color: #ffffff !important; /* Arrow color for bottom tooltips */
+            border-left-color: #ffffff !important;  /* Arrow color for left tooltips */
+            border-right-color: #ffffff !important; /* Arrow color for right tooltips */
+        }
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        /* Tooltip content (hidden by default) */
+        .tooltip-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            padding: 10px;
+            border: 1px solid #ccc;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            white-space: nowrap;
+            max-width: 250px; /* Adjust the max-width as needed */
+            top: 50%;
+            right: 100%;
+            transform: translateY(-50%);
+            margin-right: 10px;
+        }
+
+        /* Show the tooltip content on hover */
+        .tooltip-container:hover .tooltip-content {
+            display: block;
+        }
+
+        /* Table styles */
+        .tooltip-content table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .tooltip-content th, .tooltip-content td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .tooltip-content th {
+            background-color: #f2f2f2;
+        }
+    </style>
 
 </head>
 
@@ -111,6 +170,7 @@
     <script src="{{ url_for('static', filename='external_cdns/js/jquery-3.4.1.min.js')}}"></script>
     <!-- <script src="/static/external_cdns/js/bootstrap.bundle.min.js"></script> -->
     <script src="{{ url_for('static', filename='external_cdns/js/bootstrap.bundle.min.js')}}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <!-- <script src="static/lib/waypoints/waypoints.min.js"></script> -->
     <script src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js')}}"></script>
 
