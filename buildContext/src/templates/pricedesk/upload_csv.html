@@ -3,81 +3,125 @@
 {% block title %}Upload Price Request - TRUEPrice{% endblock %}
 {% block content %}
 <div class="content-body">
+    <!-- <div id="hidden"></div> -->
+    <div class="tooltip-container">
+        Hover over me (Top)
+        <div class="tooltip-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Header 1</th>
+                        <th>Header 2</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Row 1, Cell 1</td>
+                        <td>Row 1, Cell 2</td>
+                    </tr>
+                    <tr>
+                        <td>Row 2, Cell 1</td>
+                        <td>Row 2, Cell 2</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
     <div class="row" id="upload_view">
         <div class="col-12 col-md-12">
-            <div class="card mb-0">
-                <div class="card-body">
-                    <!-- <form id="priceform" enctype="multipart/form-data" method="post"> -->
-                        <div class="row">
-                            <button type="button" id="formcontrol" class="btn btn-light col-12 col-md-12">Hide Price Request Form</button>
-                            <div id="priceformpanel" class="col-12 col-md-12">
-                                <form id="priceform" enctype="multipart/form-data" method="post">
-                                <h3 class="axiBold text-black">Upload Price Request Form</h3>
-                                <p>
-                                    <label for="formFileLg" class="form-label">Upload CSV file here with following
-                                        rules:</label>
-                                <ul class="instructions-list">
-                                    <li>Sheet will extract exact operating day from energy curves.</li>
-                                    <li>Sheet will extract latest operating day after energy curves for rest of curves.</li>
-                                    <li>Price desk will match intersecting values that exist in DataBase for required curves.</li>
-                                </ul>
-                                </p>
-                                <div class="form-control border-0 px-0">
-                                    <label></label>
-                                    <input type="file" name="file" class="form-control form-control-md flatpickr-basic"
-                                        id='upload_file' required id="file" />
+            <!-- <div class="card mb-0"> -->
+            <!-- <div class="card-body"> -->
+            <div class="row grid-container" style="display: grid; grid-template-columns: 25% 25% 25% 25%; gap: 10px;">
+
+                <!-- <div class="row grid-item" style="display: grid; column-gap: 10px; grid-template-columns: auto auto auto;"> -->
+                <div id="priceformpanel" class="col-12 col-md-12 card"
+                    style="grid-area: 1 / 1 / span 1 / span 4; margin-bottom: 0; padding: 0;">
+                    <div class="card-body">
+                        <form id="priceform" enctype="multipart/form-data" method="post">
+                            <div class="row">
+                                <div class="col">
+                                    <h3 class="axiBold text-black">Upload Price Request Form</h3>
                                 </div>
-                                <div class="col-12 col-md-12 mt-2">
-                                    <button type="button" id="fetch" class="btn btn-primary btn-block w-100">
-                                        <img src="/static/app-assets/media/upload (2).svg" class="me-1" /> Fetch Price Model
+                                <div class="col text-end">
+                                    <button type="button" id="formcontrol" class="btn btn-light">
+                                        <!-- <img src="/static/app-assets/media/eye.svg" alt="View" class="icon-size-14" /> -->
+                                        Compress Form
                                     </button>
                                 </div>
-                                </form>
                             </div>
-                            <div class="col-12 col-md-12">
-                                <div id="idcontroltable" style="overflow-x: auto;"></div>
-                                <div id="price_model_row" class="row mt-2">
-                                    <!-- <h3 class="axiBold text-black mt-1">Price Model Is ready</h3>
-                                    <h4 class="text-black mt-1">You can download required data</h4> -->
-                                    <div class="col-6 col-md-6 mt-1">
-                                        <button type="button" id="fetch_sheet" class="btn btn-primary btn-block w-30" style="align-items: center;">
-                                            <img src="/static/app-assets/media/download.svg" class="me-1" /> Download file
-                                        </button>
-                                    </div>
-                                    <div class="col-6 col-md-6 mt-1">
-                                        <button type="button" id="fetch_summary" class="btn btn-primary btn-block w-30" style="align-items: center;">
-                                            <img src="/static/app-assets/media/download.svg" class="me-1" /> Download summary
-                                        </button>
-                                    </div>
-                                    <!-- <div class="col-3 col-md-3 mt-1">
-                                        <button type="button" id="generate_hourly" class="btn btn-primary btn-block w-30" style="align-items: center;">
-                                            <img src="/static/app-assets/media/download.svg" class="me-1" /> Generate Hourly graph
-                                        </button>
-                                    </div>
-                                    <div class="col-3 col-md-3 mt-1">
-                                        <button type="button" id="generate_pie" class="btn btn-primary btn-block w-30" style="align-items: center;">
-                                            <img src="/static/app-assets/media/download.svg" class="me-1" /> Generate PieChart
-                                        </button>
-                                    </div>
-                                    <div class="col-3 col-md-3 mt-1">
-                                        <button type="button" id="generate_usage" class="btn btn-primary btn-block w-30" style="align-items: center;">
-                                            <img src="/static/app-assets/media/download.svg" class="me-1" /> Generate Usage
-                                        </button>
-                                    </div> -->
-                                </div>
-                                <div class="col-12 col-md-12">
-                                    <div style="height: 500px;" id='barchart_hour' class='chart'></div>
-                                </div>
-                                <div class="col-12 col-md-12">
-                                    <div style="height: 500px;" id='piechart' class='chart'></div>
-                                </div>
-                                <div class="col-12 col-md-12">
-                                    <div style="height: 500px;" id='barchart_usage' class='chart'></div>
-                                </div>
+                            <p>
+                                <label for="formFileLg" class="form-label">Upload CSV file here with following
+                                    rules:</label>
+                            <ul class="instructions-list">
+                                <li>Sheet will extract exact operating day from energy curves.</li>
+                                <li>Sheet will extract latest operating day after energy curves for rest of curves.</li>
+                                <li>Price desk will match intersecting values that exist in DataBase for required
+                                    curves.</li>
+                            </ul>
+                            </p>
+                            <div class="form-control border-0 px-0">
+                                <label></label>
+                                <input type="file" name="file" class="form-control form-control-md flatpickr-basic"
+                                    id='upload_file' required id="file" />
+                            </div>
+                            <div>
+                                <button type="button" id="fetch" class="btn btn-primary btn-block w-100">
+                                    <img src="/static/app-assets/media/upload (2).svg" class="me-1" /> Fetch Price Model
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div id="idcontroltableprice_model_row" class="col-12 col-md-12 card grid-item"
+                    style="position: relative; grid-area: 1 / 3 / span 1 / span 2; margin-bottom: 0; border-radius: 10px; padding: 0;">
+                    <div class="card-body" style=" padding: 0;">
+                        <div id="idcontroltable" class="top-div"
+                            style="overflow-x: auto; overflow-y: auto; margin-bottom: 60px; border-radius: 10px; height:250px;">
+                        </div>
+                        <div id="price_model_row" class="row bottom-div mt-auto col-12 col-md-12 ps-1"
+                            style="position: absolute; bottom: 20px; width: 100%;">
+                            <div class="mt-1" style="width: 50%;">
+                                <button type="button" id="fetch_sheet" class="btn btn-primary btn-block"
+                                    style="align-items: center; white-space: nowrap;">
+                                    <img src="/static/app-assets/media/download.svg" class="me-1" /> Download file
+                                </button>
+                            </div>
+                            <div class="mt-1" style="width: 50%;">
+                                <button type="button" id="fetch_summary" class="btn btn-primary btn-block"
+                                    style="align-items: center; white-space: nowrap;">
+                                    <img src="/static/app-assets/media/download.svg" class="me-1" /> Download summary
+                                </button>
                             </div>
                         </div>
-                    <!-- </form> -->
+                    </div>
                 </div>
+                <div id="summary_table_div" class="col-12 col-md-12 card grid-item pricedeskoutput"
+                    style="position: relative; grid-area: 2 / 1 / span 3 / span 1; padding: 0;  border-radius: 10px;">
+                    <div class="card-body" style="padding: 0;">
+                        <div id="summary_table" style="overflow-x: auto; border-radius: 10px;"></div>
+                    </div>
+                </div>
+                    <div id="barchart_hour_div" class="col-12 col-md-12 card grid-item pricedeskoutput"
+                        style="grid-area: 2 / 2 / span 1 / span 3; margin-bottom: 0;  padding: 0;">
+                        <div class="card-body" style=" padding: 0;">
+                            <h3 class="axiBold text-black" style="text-align: center;">FFR Hourly Pricing</h3>
+                            <div id='barchart_hour' class='chart' style="overflow-x: auto;"></div>
+                        </div>
+                    </div>
+                    <div id="piechart_div" class="col-12 col-md-12 card grid-item pricedeskoutput"
+                        style="grid-area: 3 / 2 / span 1 / span 3; margin-bottom: 0; padding: 0;">
+                        <div class="card-body"  style=" padding: 0;">
+                            <h3 class="axiBold text-black" style="text-align: center;">Cost Components</h3>
+                            <div id='piechart' class='chart' style="overflow-x: auto;"></div>
+                        </div>
+                    </div>
+                    <div id="barchart_usage_div" class="col-12 col-md-12 card grid-item pricedeskoutput"
+                        style="grid-area: 4 / 2 / span 1 / span 3; margin-bottom: 0; padding: 0;">
+                        <div class="card-body" style=" padding: 0;">
+                            <h3 class="axiBold text-black" style="text-align: center;">Usage</h3>
+                            <div id='barchart_usage' class='chart' style="overflow-x: auto;"></div>
+                        </div>
+                    </div>
             </div>
         </div>
     </div>
