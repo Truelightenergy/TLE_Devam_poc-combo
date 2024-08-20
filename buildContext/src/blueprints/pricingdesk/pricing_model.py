@@ -143,8 +143,7 @@ class PricingDesk:
             # graph_df_list = list()
             price_input_list = list()
             for i in range(len(price_request)):
-                price_input = price_request[["Lookup ID4", "Account Name", "Account #", "Start Date", "Term (Months)"]]
-                price_input_list.append(price_input.loc[i].to_dict())
+                price_input_list.append(price_request.loc[i].to_dict())
                 query_strings = {'iso': iso.lower(),
                                 'strip': ['strip_7x24'],
                                 'start': datetime.datetime.strptime(price_request['Start Date'].iat[i],'%m/%d/%Y').strftime('%Y%m%d'),
