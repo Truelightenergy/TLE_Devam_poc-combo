@@ -9,9 +9,97 @@
     #idcontroltableprice_model_row{
         display: none;
     }
+    .highlight {
+    background-color: #d3d3d3; /* Light gray background */
+    }
+    /* Fix the header row */
+    #idcontroltable thead th {
+        position: sticky;
+        top: 0;
+        z-index: 3; /* Ensure the header is above the body rows */
+        /*background-color: white; /* Adjust this color to match your table */
+    }
+
+    /* Fix the first column */
+    #idcontroltable tbody td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 2; /* Ensure the first column is above other cells */
+        /*background-color: white; /* Adjust this color to match your table */
+    }
+    #idcontroltable thead th:first-child{
+        position: sticky;
+        left: 0;
+        z-index: 4;
+    }
+
+    #idcontroltable tbody td:first-child button {
+        z-index: 1; /* Ensure this is above other table cells */
+    }
+
+    #idcontroltable {
+        overflow-x: auto;
+        overflow-y: auto;
+    }
+    .tooltip-inner {
+        background-color: #ffffff !important; /* White background */
+        color: #000000 !important;            /* Black text color */
+        border: 1px solid #ddd;               /* Optional: Add a border */
+    }
+    .tooltip.bs-tooltip-top .tooltip-arrow::before,
+    .tooltip.bs-tooltip-bottom .tooltip-arrow::before,
+    .tooltip.bs-tooltip-left .tooltip-arrow::before,
+    .tooltip.bs-tooltip-right .tooltip-arrow::before {
+        border-top-color: #ffffff !important;   /* Arrow color for top tooltips */
+        border-bottom-color: #ffffff !important; /* Arrow color for bottom tooltips */
+        border-left-color: #ffffff !important;  /* Arrow color for left tooltips */
+        border-right-color: #ffffff !important; /* Arrow color for right tooltips */
+    }
+    .tooltip-container {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    /* Tooltip content (hidden by default) */
+    .tooltip-content {
+        display: none;
+        position: absolute;
+        background-color: white;
+        padding: 10px;
+        border: 1px solid #ccc;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1;
+        white-space: nowrap;
+        max-width: 250px; /* Adjust the max-width as needed */
+        top: 50%;
+        right: 100%;
+        transform: translateY(-50%);
+        margin-right: 10px;
+    }
+
+    /* Show the tooltip content on hover */
+    .tooltip-container:hover .tooltip-content {
+        display: block;
+    }
+
+    /* Table styles */
+    .tooltip-content table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    .tooltip-content th, .tooltip-content td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+
+    .tooltip-content th {
+        background-color: #f2f2f2;
+    }
 </style>
 <div class="content-body">
-    <!-- <div id="hidden"></div> -->
     <div class="row" id="upload_view">
         <div class="col-12 col-md-12">
             <!-- <div class="card mb-0"> -->
@@ -28,10 +116,9 @@
                                     <h3 class="axiBold text-black">Upload Price Request Form</h3>
                                 </div>
                                 <div class="col text-end">
-                                    <button type="button" id="formcontrol" class="btn btn-light">
-                                        <!-- <img src="/static/app-assets/media/eye.svg" alt="View" class="icon-size-14" /> -->
-                                        Compress Form
-                                    </button>
+                                    <!-- <button type="button" id="formcontrol"> -->
+                                        <img id="formcontrol" src="/static/app-assets/media/angleLeft.svg" alt="View" width="24px" height="24px"/>
+                                    <!-- </button> -->
                                 </div>
                             </div>
                             <p>
@@ -61,22 +148,18 @@
                     style="position: relative; grid-area: 1 / 3 / span 1 / span 2; margin-bottom: 0; border-radius: 10px; padding: 0;">
                     <div class="card-body" style=" padding: 0;">
                         <div id="idcontroltable" class="top-div"
-                            style="overflow-x: auto; overflow-y: auto; margin-bottom: 60px; border-radius: 10px; height:250px;">
+                            style="margin-bottom: 60px; border-radius: 10px; height:250px;">
                         </div>
-                        <div id="price_model_row" class="row bottom-div mt-auto col-12 col-md-12 ps-1"
+                        <div id="price_model_row" class="bottom-div mt-auto col-12 col-md-12 ps-1"
                             style="position: absolute; bottom: 20px; width: 100%;">
-                            <div class="mt-1" style="width: 50%;">
-                                <button type="button" id="fetch_sheet" class="btn btn-primary btn-block"
+                                <button type="button" id="fetch_sheet" class="btn btn-primary"
                                     style="align-items: center; white-space: nowrap;">
                                     <img src="/static/app-assets/media/download.svg" class="me-1" /> Download file
                                 </button>
-                            </div>
-                            <div class="mt-1" style="width: 50%;">
-                                <button type="button" id="fetch_summary" class="btn btn-primary btn-block"
+                                <button type="button" id="fetch_summary" class="btn btn-primary"
                                     style="align-items: center; white-space: nowrap;">
                                     <img src="/static/app-assets/media/download.svg" class="me-1" /> Download summary
                                 </button>
-                            </div>
                         </div>
                     </div>
                 </div>

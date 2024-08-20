@@ -25,7 +25,7 @@ $(document).ready(function () {
     $("#idcontroltable").hide();
     $("#idcontroltableprice_model_row").hide();
     $("#summary_table_div").hide();
-    listners();   
+    listners();
 
 
     // new bootstrap.Tooltip($(".btn-demo").get(0),{title:"<div style='color: red; font-weight: bold;'>Dynamic HTML Content</div>",html:true});
@@ -33,6 +33,12 @@ $(document).ready(function () {
 
 function listners() {
     $('#fetch').on('click', function () {
+        var fileInput = document.getElementById('upload_file');
+
+        if (fileInput.files.length === 0) {
+            alert("Please select a file to upload.");
+        }
+        else{
         truelight.loader.show();
         // Create a FormData object from the form
         var formData = new FormData($('#priceform')[0]);
@@ -76,7 +82,8 @@ function listners() {
                 $('#priceform')[0].reset();
                 truelight.loader.hide();
             }
-        });
+        });       
+        }
     });
     $('#fetch_sheet').on('click', function () {
         download_price_sheet();
@@ -91,19 +98,20 @@ function listners() {
         else {
             $('#priceformpanel').css('grid-area', "1 / 1 / span 1 / span 4")
         }
-        $("#formcontrol").toggleClass("btn-light");
-        $("#formcontrol").toggleClass("btn-dark");
+        // $("#formcontrol").toggleClass("btn-light");
+        // $("#formcontrol").toggleClass("btn-dark");
         // $("#priceformpanel").toggle();
-        $("#idcontroltable").toggle();
-        $("#price_model_row").toggle();
+        // $("#idcontroltable").toggle();
+        // $("#price_model_row").toggle();
         $("#idcontroltableprice_model_row").toggle();
-        // $("#priceformpanel").toggleClass("col-12");
-        // $("#priceformpanel").toggleClass("col-md-12");
-        // $("#priceformpanel").toggleClass("col-6");
-        // $("#priceformpanel").toggleClass("col-md-6");
-        $("#formcontrol").html(function (i, orgtext) {
-            return orgtext === 'Compress Form' ? 'Expand Form' : orgtext === 'Expand Form' ? 'Compress Form' : 'Expand Form';
-        })
+        // var img = $(this).find("img");
+        var currentSrc = $(this).attr("src");
+    
+        if (currentSrc.includes("angleLeft.svg")) {
+            $(this).attr("src", "/static/app-assets/media/angleRight.svg");
+        } else {
+            $(this).attr("src", "/static/app-assets/media/angleLeft.svg");
+        }
     });
     // $('#generate_pie').on('click', function(){
     // 	generate_pie();
@@ -371,70 +379,34 @@ function generate_usage(i) {
 }
 function populate_control_table() {
     $('#idcontroltable').empty();
-    // $('#idcontroltable').show();
+    $('#idcontroltable').show();
 
     // Get the div element where the table will be added
     var div = $("#idcontroltable");
 
     // Create the table element
     var table = $("<table></table>")
-    table.css("tableLayout","fixed");
-    table.css("margin","0px");
-    
+    table.css("tableLayout", "fixed");
+    table.css("margin", "0px");
+
     var thead = $("<thead></thead>");
-    var headerRow =$('<tr class="table cHeader"></tr>');
-    headerRow.css("whiteSpace","nowrap");
+    var headerRow = $('<tr class="table cHeader"></tr>');
+    headerRow.css("whiteSpace", "nowrap");
 
     // Iterate over the keys of the JSON object to create table headers
     var th = $('<th style="padding:12px 12px; text-align:left;color:rgb(12,70,96);background-color:rgb(216,232,252);">Action</th>');
     headerRow.append(th);
 
     for (var key in price_input_list[0]) {
-        if (price_input_list[0].hasOwnProperty(key)) {
-            var thContent =$(`<th style="padding:12px 12px; color:rgb(12,70,96);background-color:rgb(216,232,252);">${key}</th>`);                        
+        if (price_input_list[0].hasOwnProperty(key)& (["Lookup ID4", "Account Name", "Account #", "Start Date", "Term (Months)"].includes(key))) {
+            var thContent = $(`<th style="padding:12px 12px; color:rgb(12,70,96);background-color:rgb(216,232,252);">${key}</th>`);
             headerRow.append(thContent);
         }
     }
 
     thead.append(headerRow);
     table.append(thead);
-
-
-
-
-
-
-    // var tooltipContent = document.getElementById('hidden');
-    // tooltipContent.classList.add('tooltip-content');
-    // var table2 = document.createElement('table');
-    // var thead2 = document.createElement('thead');
-    // var tbody2 = document.createElement('tbody');
-    // var headerRow2 = document.createElement('tr');
-    // var th1 = document.createElement('th');
-    // th1.textContent = 'Header 1';
-    // var th2 = document.createElement('th');
-    // th2.textContent = 'Header 2';
-    // headerRow2.appendChild(th1);
-    // headerRow2.appendChild(th2);
-    // thead2.appendChild(headerRow2);
-    // // Create table rows
-    // for (var i = 1; i <= 2; i++) {
-    //     var row2 = document.createElement('tr');
-    //     var cell1 = document.createElement('td');
-    //     cell1.textContent = 'Row ' + i + ', Cell 1';
-    //     var cell2 = document.createElement('td');
-    //     cell2.textContent = 'Row ' + i + ', Cell 2';
-    //     row2.appendChild(cell1);
-    //     row2.appendChild(cell2);
-    //     tbody2.appendChild(row2);
-    // }
-    // table2.appendChild(thead2);
-    // table2.appendChild(tbody2);
-    // tooltipContent.appendChild(table2);
-
-
-
-
+    
     // Create the table body (tbody)
     var tbody = $(`<tbody></tbody>`);
 
@@ -444,7 +416,7 @@ function populate_control_table() {
         var td = $(`<td style="padding:4px 12px;"></td>`);
 
         var button = $(`<button data-index="${i}" type="button" class="btn btn-light"></button>`);
-        
+
         var img = (`<img src="/static/app-assets/media/eye-pricedesk.svg" alt="View" class="icon-size-14" />`);
         button.append(img)
 
@@ -452,51 +424,130 @@ function populate_control_table() {
         td.append(button);
         valueRow.append(td);
         for (var key in price_input_list[i]) {
-            if (price_input_list[i].hasOwnProperty(key)) {
-                var td = $(`<td style="padding:4px 12px;">${price_input_list[i][key]}</td>`);                
+            if (price_input_list[i].hasOwnProperty(key) & (["Lookup ID4", "Account Name", "Account #", "Start Date", "Term (Months)"].includes(key))) {
+                var td = $(`<td style="padding:4px 12px;">${price_input_list[i][key]}</td>`);
                 valueRow.append(td);
             }
-        }        
+        }
+        valueRow.data("requestData", price_input_list[i]);
+        if (i==0){
+            valueRow.addClass('highlight');
+        }
         tbody.append(valueRow);
     }
 
     table.append(tbody);
-    
+
     // Append the table to the div
     div.append(table);
 
-    let tableButtons = table.find("button");    
-    // tableButtons.each(function(item){
-    //     new bootstrap.Tooltip(item,{title:"<div style='color: red; font-weight: bold;'>Dynamic HTML Content</div>",html:true});
-    // });
-    
-    tableButtons.click(function(){
-        var index = parseInt($(this).attr("data-index"),10);
+    let tableButtons = table.find("button");
+    tableButtons.each(function (index) {
+        var data = $(this).parents("tr:first").data("requestData");
+        //construct your table here...
+        var item = $(`<table style="table-layout: fixed; margin: 0px;">
+                    <tbody>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">Account #</th>
+                            <td style="padding: 1px 1px;">${data['Account #']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">Account Address</th>
+                            <td style="padding: 1px 1px;">${data['Account Address']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">Account Name</th>
+                            <td style="padding: 1px 1px;">${data['Account Name']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">Capacity Zone</th>
+                            <td style="padding: 1px 1px;">${data['Capacity Zone']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">Curve Date</th>
+                            <td style="padding: 1px 1px;">${data['Curve Date']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">End Date</th>
+                            <td style="padding: 1px 1px;">${data['End Date']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">Load Profile</th>
+                            <td style="padding: 1px 1px;">${data['Load Profile']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">Load Zone</th>
+                            <td style="padding: 1px 1px;">${data['Load Zone']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">Lookup ID4</th>
+                            <td style="padding: 1px 1px;">${data['Lookup ID4']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">Margin ($/MWh)</th>
+                            <td style="padding: 1px 1px;">${data['Margin ($/MWh)']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">Other 1 ($/MWh)</th>
+                            <td style="padding: 1px 1px;">${data['Other 1 ($/MWh)']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">Other 2 ($/MWh)</th>
+                            <td style="padding: 1px 1px;">${data['Other 2 ($/MWh)']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">Sleeve Fee ($/MWh)</th>
+                            <td style="padding: 1px 1px;">${data['Sleeve Fee ($/MWh)']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">Start Date</th>
+                            <td style="padding: 1px 1px;">${data['Start Date']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">State</th>
+                            <td style="padding: 1px 1px;">${data['State']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">Term (Months)</th>
+                            <td style="padding: 1px 1px;">${data['Term (Months)']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">TimeStamp</th>
+                            <td style="padding: 1px 1px;">${data['TimeStamp']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">Utility</th>
+                            <td style="padding: 1px 1px;">${data['Utility']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">Utility Billing Surcharge ($/MWh)</th>
+                            <td style="padding: 1px 1px;">${data['Utility Billing Surcharge ($/MWh)']}</td>
+                        </tr>
+                        <tr style="border-top: 0.5px solid rgb(211, 211, 211);">
+                            <th style="padding: 1px 1px; color: rgb(12, 70, 96); background-color: rgb(216, 232, 252);">Voltage</th>
+                            <td style="padding: 1px 1px;">${data['Voltage']}</td>
+                        </tr>
+                    </tbody>
+                </table>`);
+        new bootstrap.Tooltip(this, { title: item.get(0), html: true, databsPlacement: 'left' });
+    });
+
+    tableButtons.click(function () {
+        tbody.find('tr').removeClass('highlight');
+        $(this).closest('tr').addClass('highlight');
+
+        var index = parseInt($(this).attr("data-index"), 10);
         // ClickHandler(index);
-        $(".pricedeskoutput").animate({opacity:'0.3',width:'-=150px'});
+        $(".pricedeskoutput").animate({ opacity: '0.3', width: '-=150px' });
         setTimeout(() => {
             // $(".pricedeskoutput").fadeIn(1000);
-            $(".pricedeskoutput").animate({opacity:'1',width:'+=150px'});
+            $(".pricedeskoutput").animate({ opacity: '1', width: '+=150px' });
             generate_pie(index);
             generate_hourly(index);
             generate_usage(index);
             populate_summary_table(index);
         }, 400);
     });
-}
-function ClickHandler(index) {
-    return function () {
-        // $(".pricedeskoutput").fadeOut();
-        $(".pricedeskoutput").animate({opacity:'0.3',width:'-=150px'});
-        setTimeout(() => {
-            // $(".pricedeskoutput").fadeIn(1000);
-            $(".pricedeskoutput").animate({opacity:'1',width:'+=150px'});
-            generate_pie(index);
-            generate_hourly(index);
-            generate_usage(index);
-            populate_summary_table(index);
-        }, 400);
-    }
 }
 function populate_summary_table(index) {
     $('#summary_table').empty();
