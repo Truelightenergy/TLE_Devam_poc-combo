@@ -107,6 +107,7 @@ class LoadProfile:
             merged_inner = data_frame.join(hierarchy_frame, left_on='hierarchy_id', right_on='id', how='inner')
             print("time complexity merging: ", time.time()-temp_time)
             if dimension_check:
+                merged_inner = merged_inner.with_columns((pl.col('data')/1000).alias('data'))
                 temp_time = time.time()
                 pl_pivoted_df = merged_inner.pivot(
                     values="data",

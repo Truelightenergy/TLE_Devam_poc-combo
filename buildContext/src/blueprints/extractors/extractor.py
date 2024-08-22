@@ -87,7 +87,7 @@ class Extractor:
 
             
         elif type == 'ptc':
-            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month'], columns=["matching_id", "lookup_id", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "control_area_type", "utility_name", "profile_load"], aggfunc=list)
+            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month'], columns=["matching_id", "lookup_id", "control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", "control_area_type", "utility_name", "profile_load"], aggfunc='first')
             pivoted_df.columns.name = None
             pivoted_df.index.name = None
            
@@ -106,7 +106,7 @@ class Extractor:
             return flattened_df
         
         elif type =="energy":
-            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month', 'cob'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "my_order", "strip", "cost_group", "cost_component", 'sub_cost_component'], aggfunc=list)
+            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month', 'cob'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "my_order", "strip", "cost_group", "cost_component", 'sub_cost_component'], aggfunc='first')
             pivoted_df.columns.name = None
             pivoted_df.index.name = None
             
@@ -123,7 +123,7 @@ class Extractor:
             return flattened_df
         
         elif type =="nonenergy":
-            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "my_order", "strip", "cost_group", "cost_component", 'sub_cost_component'], aggfunc=list) #, "distribution_category"
+            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "my_order", "strip", "cost_group", "cost_component", 'sub_cost_component'], aggfunc='first') #, "distribution_category"
             pivoted_df.columns.name = None
             pivoted_df.index.name = None
             
@@ -186,7 +186,7 @@ class Extractor:
             return df
         
         else:
-            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'sub_cost_component'], aggfunc=list)
+            pivoted_df = pd.pivot_table(df, values='data', index=['curvestart', 'month'], columns=["control_area", "state", "load_zone", "capacity_zone", "utility", "strip", "cost_group", "cost_component", 'sub_cost_component'], aggfunc='first')
             pivoted_df.columns.name = None
             pivoted_df.index.name = None
             

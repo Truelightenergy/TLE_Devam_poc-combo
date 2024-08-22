@@ -64,6 +64,10 @@ truelight.notifications = truelight.notifications || {
 
         var rowTemplate = $(htmlTemplate);
         myDiv.html('');
+        if (window.notification_data.length == 0){
+            myDiv.append($(`<h6 class="mb-0 text-dark">No Significant Energy Movements Within the Past 24 Hours</h6>`));
+            $("marquee").html('No Significant Energy Movements Within the Past 24 Hours')
+        }
         var marqueeData = [];
 
         for (var i = 0; i < window.notification_data.length; i++) {

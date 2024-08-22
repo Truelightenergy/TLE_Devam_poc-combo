@@ -91,6 +91,7 @@ class NonEnergy:
                     join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                     where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
                     and lower(e.cost_component)<>'capacity scaling factor' and lower(e.cost_component)<>'capacity scaler'
+                    and LOWER(e.cost_component) not SIMILAR TO '%off%peak%|%on%peak%'
                     UNION
                     select 'Distributed' "my_order",id, month, curvestart, curveend, 
                     ROUND((case
@@ -114,6 +115,7 @@ class NonEnergy:
                     join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                     where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
                     and lower(e.cost_component)<>'capacity scaling factor' and lower(e.cost_component)<>'capacity scaler'
+                    and LOWER(e.cost_component) not SIMILAR TO '%off%peak%|%on%peak%'
                 """
                 psql_query_7x24 = f"""
                     union all
@@ -199,6 +201,7 @@ class NonEnergy:
                     join trueprice.monthly_reference_data r on to_char(e."month", 'YYYY-MM') = r."CalMonth" and r."ISO"='{control_area.upper()}'
                     where {strip_query} month::date >= '{start_date}' and month::date <= '{end_date}' curve_start_replace
                     and lower(e.cost_component)<>'capacity scaling factor' and lower(e.cost_component)<>'capacity scaler'
+                    and LOWER(e.cost_component) not SIMILAR TO '%off%peak%|%on%peak%'
                 """
                 psql_query_7x24 = f"""
                     union all

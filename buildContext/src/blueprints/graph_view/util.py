@@ -143,6 +143,7 @@ class Util:
         # fig = go.Figure()
         fig = []
         for i, params in enumerate(parameters_array):
+            params['operatin_day_timestamps_label'] = params['operatin_day_timestamps']
             if i>0:
                 try:
                     datetime_object = datetime.strptime(params['operatin_day_timestamps'], '%Y-%m-%d %H:%M')
@@ -178,7 +179,7 @@ class Util:
                 if params['cob']== True or params['cob']=='true':
                     update = 'COB'
                 # df = self.db_model.get_data(**params)  # Unpacking parameters for the get_data method
-                label =params["control_table"].split('_')[0].upper() + " " + params.get("label", f"{params['loadZone']}: {params['operatin_day_timestamps']} {update}")
+                label =params["control_table"].split('_')[0].upper() + " " + params.get("label", f"{params['loadZone']}: {params['operatin_day_timestamps_label']} {update}")
                 fig.append(dict(
                     x=list(df["month"].astype(str)), 
                     y=list(df["data"]), 
