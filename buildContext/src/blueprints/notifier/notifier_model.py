@@ -282,7 +282,11 @@ class NotifierUtil:
         try:
             results = self.engine.execute(query).fetchall()
             for row in results:
-                data.append({"File Type": row['File Type'], "File Name": row['File Name'],
+                data.append({"File Name": row['File Type'], 
+                             "ISO": row['File Name'].split('_')[1],
+                             "Operating Day": row['File Name'].split('_')[2],
+                             "Time Stamp": row['File Name'].split('_')[3].split('.')[0],
+                             "File Extension": row['File Name'].split('.')[-1],
                              "COB(Y/N)": row['COB(Y/N)']
                              })
 
