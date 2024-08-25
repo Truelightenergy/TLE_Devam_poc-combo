@@ -191,6 +191,12 @@ class Util:
         """
         return self.db_util.get_all_uploads()
     
+    def get_all_heirarchies(self):
+        """
+        fetch latest curvestart from the ingestion
+        """
+        return self.db_util.get_all_heirarchies()
+    
     def fetch_latest_time_stamp(self):
         """
         fetch latest curvestart from the ingestion

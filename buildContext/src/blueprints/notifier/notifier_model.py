@@ -293,7 +293,203 @@ class NotifierUtil:
             return data
         except:
             return data
+    
+    def get_all_heirarchies(self):
+        """
+        extract all the unique hierarchies by curve type
+        """
+        sql_queries = {
+            'Energy': """
+                SELECT DISTINCT 'Energy' AS "DataType", '' AS "Lookup ID1",control_area AS "Control Area", 
+                                state AS "State", 
+                                load_zone AS "Load Zone", 
+                                capacity_zone AS "Capacity Zone", 
+                                utility AS "Utility", 
+                                strip AS "Block Type", 
+                                cost_group AS "Cost Group", 
+                                cost_component AS "Cost Component"
+                FROM (
+                    SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
+                    FROM trueprice.ercot_energy
+                    UNION
+                    SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
+                    FROM trueprice.isone_energy
+                    UNION
+                    SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
+                    FROM trueprice.nyiso_energy
+                    UNION
+                    SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
+                    FROM trueprice.pjm_energy
+                ) AS t
+                ORDER BY control_area;
+            """,
+            'Non-Energy': """
+                SELECT DISTINCT 'Nonenergy' AS "DataType", '' AS "Lookup ID1",control_area AS "Control Area", 
+                                state AS "State", 
+                                load_zone AS "Load Zone", 
+                                capacity_zone AS "Capacity Zone", 
+                                utility AS "Utility", 
+                                strip AS "Block Type", 
+                                cost_group AS "Cost Group", 
+                                cost_component AS "Cost Component"
+                FROM (
+                    SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
+                    FROM trueprice.ercot_nonenergy
+                    UNION
+                    SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
+                    FROM trueprice.isone_nonenergy
+                    UNION
+                    SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
+                    FROM trueprice.nyiso_nonenergy
+                    UNION
+                    SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
+                    FROM trueprice.pjm_nonenergy
+                ) AS t
+                ORDER BY control_area;
+            """,
+            'Rec': """
+                SELECT DISTINCT 'REC/RPS' AS "DataType", '' AS "Lookup ID1", control_area AS "Control Area", 
+                                state AS "State", 
+                                load_zone AS "Load Zone", 
+                                capacity_zone AS "Capacity Zone", 
+                                utility AS "Utility", 
+                                strip AS "Block Type", 
+                                cost_group AS "Cost Group", 
+                                cost_component AS "Cost Component"
+                FROM (
+                    SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
+                    FROM trueprice.ercot_rec
+                    UNION
+                    SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
+                    FROM trueprice.isone_rec
+                    UNION
+                    SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
+                    FROM trueprice.nyiso_rec
+                    UNION
+                    SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
+                    FROM trueprice.pjm_rec
+                ) AS t
+                ORDER BY control_area;
+            """,
+            'Line Loss': """
+                SELECT DISTINCT * 
+                FROM (
+                    SELECT 'Line Loss' AS "DataType", '' AS "Lookup ID1", 
+                            ca."name" AS "Control Area", 
+                            s."name" AS "State", 
+                            lz."name" AS "Load Zone", 
+                            cz."name" AS "Capacity Zone", 
+                            u."name" AS "Utility", 
+                            bt."name" AS "Block Type", 
+                            cg."name" AS "Cost Group", 
+                            cc."name" AS "Cost Component"
+                    FROM trueprice."hierarchy" h
+                    INNER JOIN trueprice.curve_datatype cd ON cd.id = h.curve_datatype_id 
+                    INNER JOIN trueprice.control_area ca ON ca.id = h.control_area_id 
+                    INNER JOIN trueprice.state s ON s.id = h.state_id 
+                    INNER JOIN trueprice.load_zone lz ON lz.id = h.load_zone_id 
+                    INNER JOIN trueprice.capacity_zone cz ON cz.id = h.capacity_zone_id 
+                    INNER JOIN trueprice.utility u ON u.id = h.utility_id 
+                    INNER JOIN trueprice.block_type bt ON bt.id = h.block_type_id 
+                    INNER JOIN trueprice.cost_group cg ON cg.id = h.cost_group_id 
+                    INNER JOIN trueprice.cost_component cc ON cc.id = h.cost_group_id 
+                    WHERE cd."name" = 'lineloss'
+                ) AS t
+                ORDER BY "Control Area";
+            """,
+            'Shaping': """
+                SELECT DISTINCT * 
+                FROM (
+                    SELECT 'Shaping' AS "DataType", '' AS "Lookup ID1", 
+                            ca."name" AS "Control Area", 
+                            s."name" AS "State", 
+                            lz."name" AS "Load Zone", 
+                            cz."name" AS "Capacity Zone", 
+                            u."name" AS "Utility", 
+                            bt."name" AS "Block Type", 
+                            cg."name" AS "Cost Group", 
+                            cc."name" AS "Cost Component"
+                    FROM trueprice."hierarchy" h
+                    INNER JOIN trueprice.curve_datatype cd ON cd.id = h.curve_datatype_id 
+                    INNER JOIN trueprice.control_area ca ON ca.id = h.control_area_id 
+                    INNER JOIN trueprice.state s ON s.id = h.state_id 
+                    INNER JOIN trueprice.load_zone lz ON lz.id = h.load_zone_id 
+                    INNER JOIN trueprice.capacity_zone cz ON cz.id = h.capacity_zone_id 
+                    INNER JOIN trueprice.utility u ON u.id = h.utility_id 
+                    INNER JOIN trueprice.block_type bt ON bt.id = h.block_type_id 
+                    INNER JOIN trueprice.cost_group cg ON cg.id = h.cost_group_id 
+                    INNER JOIN trueprice.cost_component cc ON cc.id = h.cost_group_id 
+                    WHERE cd."name" = 'shaping'
+                ) AS t
+                ORDER BY "Control Area";
+            """,
+            'Load Profile': """
+                SELECT DISTINCT * 
+                FROM (
+                    SELECT 'Load Profile' AS "DataType", '' AS "Lookup ID1", 
+                            ca."name" AS "Control Area", 
+                            s."name" AS "State", 
+                            lz."name" AS "Load Zone", 
+                            cz."name" AS "Capacity Zone", 
+                            u."name" AS "Utility", 
+                            bt."name" AS "Block Type", 
+                            cg."name" AS "Cost Group", 
+                            cc."name" AS "Cost Component"
+                    FROM trueprice."hierarchy" h
+                    INNER JOIN trueprice.curve_datatype cd ON cd.id = h.curve_datatype_id 
+                    INNER JOIN trueprice.control_area ca ON ca.id = h.control_area_id 
+                    INNER JOIN trueprice.state s ON s.id = h.state_id 
+                    INNER JOIN trueprice.load_zone lz ON lz.id = h.load_zone_id 
+                    INNER JOIN trueprice.capacity_zone cz ON cz.id = h.capacity_zone_id 
+                    INNER JOIN trueprice.utility u ON u.id = h.utility_id 
+                    INNER JOIN trueprice.block_type bt ON bt.id = h.block_type_id 
+                    INNER JOIN trueprice.cost_group cg ON cg.id = h.cost_group_id 
+                    INNER JOIN trueprice.cost_component cc ON cc.id = h.cost_group_id 
+                    WHERE h.curve_datatype_id = 2
+                ) AS t
+                ORDER BY "Control Area";
+            """,
+            'VLR': """
+                SELECT DISTINCT * 
+                FROM (
+                    SELECT 'VLR' AS "DataType", '' AS "Lookup ID1", 
+                            ca."name" AS "Control Area", 
+                            s."name" AS "State", 
+                            lz."name" AS "Load Zone", 
+                            cz."name" AS "Capacity Zone", 
+                            u."name" AS "Utility", 
+                            bt."name" AS "Block Type", 
+                            cg."name" AS "Cost Group", 
+                            cc."name" AS "Cost Component"
+                    FROM trueprice."hierarchy" h
+                    INNER JOIN trueprice.curve_datatype cd ON cd.id = h.curve_datatype_id 
+                    INNER JOIN trueprice.control_area ca ON ca.id = h.control_area_id 
+                    INNER JOIN trueprice.state s ON s.id = h.state_id 
+                    INNER JOIN trueprice.load_zone lz ON lz.id = h.load_zone_id 
+                    INNER JOIN trueprice.capacity_zone cz ON cz.id = h.capacity_zone_id 
+                    INNER JOIN trueprice.utility u ON u.id = h.utility_id 
+                    INNER JOIN trueprice.block_type bt ON bt.id = h.block_type_id 
+                    INNER JOIN trueprice.cost_group cg ON cg.id = h.cost_group_id 
+                    INNER JOIN trueprice.cost_component cc ON cc.id = h.cost_group_id 
+                    WHERE h.curve_datatype_id = 4
+                ) AS t
+                ORDER BY "Control Area";
+            """
+        }
+        try:
+            # Fetch the data
+            dataframes = []
+            for sheet_name, query in sql_queries.items():
+                df = self.engine.execute(query).fetchall()
+                dataframes.append(df)
+                
+            # Define the corresponding sheet names
+            sheet_names = list(sql_queries.keys())
+            return dataframes, sheet_names
+        except:
+            return None
         
+            
     def fetch_latest_curve_date(self):
         query = "select MAX(DISTINCT(curvestart)) as curvestart from trueprice.ercot_energy;"
         date = None
