@@ -1,6 +1,8 @@
+import io
 import os
-from flask import Blueprint, Response, render_template, current_app
+from flask import Blueprint, Response, render_template, current_app, send_file
 from flask import request, jsonify, session, Flask, url_for, redirect
+import pandas as pd
 from .util import Util
 from .auth_model import AuthUtil
 from utils.revoke_tokens import RevokedTokens
@@ -211,10 +213,53 @@ def home():
     """
     return render_template("auths/index.html")
 
+@auths.route('/allcomponents', methods=['GET'])
+@roles.readonly_token_required
+def get_all_heirarchies():
+  data, sheet_names = notifier_util.get_all_heirarchies()
+  
+  # Ensure the method did not return None
+  if data is None or sheet_names is None:
+      return Response("No data available to export", status=400)
+                        
+  # Initialize an empty list to hold the DataFrames
+  dataframes = []
+  
+  # Convert each list of tuples into a pandas DataFrame
+  for record_set in data:
+      # Check if record_set is not empty before creating DataFrame
+      if record_set:
+          df = pd.DataFrame(record_set, columns=["DataType","Lookup ID1","Control Area", "State", "Load Zone", "Capacity Zone", "Utility", "Block Type", "Cost Group", "Cost Component"])
+          dataframes.append(df)
+      else:
+          # Add an empty DataFrame if the record_set is empty
+          dataframes.append(pd.DataFrame())
+  
+  # Create an in-memory bytes buffer to save the Excel file
+  output = io.BytesIO()
+  
+  # Create a Pandas Excel writer using openpyxl as the engine
+  with pd.ExcelWriter(output, engine='openpyxl') as writer:
+      # Write each DataFrame to a separate sheet
+      for df, sheet in zip(dataframes, sheet_names):
+          if not df.empty:  # Check if DataFrame is not empty
+              df.to_excel(writer, sheet_name=sheet, index=False)
+  
+  # Ensure there is at least one sheet written
+  if writer.sheets:
+      # Seek to the beginning of the stream
+      output.seek(0)
+      
+      # Create a Flask response with the Excel file
+      return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name='all_components.xlsx')
+  else:
+      # Handle the case where no data is available to write
+      return Response("No data available to export", status=400)
+
 @auths.route('/alluploads', methods=['GET'])
 @roles.readonly_token_required
-def get_all_uploads():
-  data = notifier_util.get_all_uploads()
+def get_all_hierarchies():
+  data = notifier_util.get()
   si = StringIO()
   cw = csv.writer(si)
   
