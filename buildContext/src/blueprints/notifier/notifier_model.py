@@ -320,6 +320,9 @@ class NotifierUtil:
                     UNION
                     SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
                     FROM trueprice.pjm_energy
+                    UNION
+                    SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
+                    FROM trueprice.miso_energy
                 ) AS t
                 ORDER BY control_area;
             """,
@@ -331,7 +334,7 @@ class NotifierUtil:
                                 utility AS "Utility", 
                                 strip AS "Block Type", 
                                 cost_group AS "Cost Group", 
-                                cost_component AS "Cost Component"
+                                replace( cost_component, ' ($/MWh)','') AS "Cost Component"
                 FROM (
                     SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
                     FROM trueprice.ercot_nonenergy
@@ -344,6 +347,9 @@ class NotifierUtil:
                     UNION
                     SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
                     FROM trueprice.pjm_nonenergy
+                    UNION
+                    SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
+                    FROM trueprice.miso_nonenergy
                 ) AS t
                 ORDER BY control_area;
             """,
@@ -392,7 +398,7 @@ class NotifierUtil:
                     INNER JOIN trueprice.utility u ON u.id = h.utility_id 
                     INNER JOIN trueprice.block_type bt ON bt.id = h.block_type_id 
                     INNER JOIN trueprice.cost_group cg ON cg.id = h.cost_group_id 
-                    INNER JOIN trueprice.cost_component cc ON cc.id = h.cost_group_id 
+                    INNER JOIN trueprice.cost_component cc ON cc.id = h.cost_component_id 
                     WHERE cd."name" = 'lineloss'
                 ) AS t
                 ORDER BY "Control Area";
@@ -418,7 +424,7 @@ class NotifierUtil:
                     INNER JOIN trueprice.utility u ON u.id = h.utility_id 
                     INNER JOIN trueprice.block_type bt ON bt.id = h.block_type_id 
                     INNER JOIN trueprice.cost_group cg ON cg.id = h.cost_group_id 
-                    INNER JOIN trueprice.cost_component cc ON cc.id = h.cost_group_id 
+                    INNER JOIN trueprice.cost_component cc ON cc.id = h.cost_component_id 
                     WHERE cd."name" = 'shaping'
                 ) AS t
                 ORDER BY "Control Area";
@@ -444,7 +450,7 @@ class NotifierUtil:
                     INNER JOIN trueprice.utility u ON u.id = h.utility_id 
                     INNER JOIN trueprice.block_type bt ON bt.id = h.block_type_id 
                     INNER JOIN trueprice.cost_group cg ON cg.id = h.cost_group_id 
-                    INNER JOIN trueprice.cost_component cc ON cc.id = h.cost_group_id 
+                    INNER JOIN trueprice.cost_component cc ON cc.id = h.cost_component_id 
                     WHERE h.curve_datatype_id = 2
                 ) AS t
                 ORDER BY "Control Area";
@@ -470,7 +476,7 @@ class NotifierUtil:
                     INNER JOIN trueprice.utility u ON u.id = h.utility_id 
                     INNER JOIN trueprice.block_type bt ON bt.id = h.block_type_id 
                     INNER JOIN trueprice.cost_group cg ON cg.id = h.cost_group_id 
-                    INNER JOIN trueprice.cost_component cc ON cc.id = h.cost_group_id 
+                    INNER JOIN trueprice.cost_component cc ON cc.id = h.cost_component_id 
                     WHERE h.curve_datatype_id = 4
                 ) AS t
                 ORDER BY "Control Area";
