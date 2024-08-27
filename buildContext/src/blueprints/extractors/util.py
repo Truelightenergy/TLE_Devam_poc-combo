@@ -141,7 +141,7 @@ class Util:
             query_strings["end"] = "".join(str(end).split("-"))
             
             if str(query_strings["curve_type"]).lower() == 'all':
-                curve_type_list = ["nonenergy", "energy", "rec", "ptc", "matrix", "headroom"]
+                curve_type_list = ['energy', 'nonenergy', 'rec', 'ptc', 'matrix', 'headroom', 'loadprofile', 'shaping', 'vlr', 'lineloss']
             else:
                 curve_type_list = [str(query_strings["curve_type"]).lower()]
             
