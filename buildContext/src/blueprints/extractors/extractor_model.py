@@ -61,12 +61,12 @@ class ExtractorUtil:
             else:
                 iso_list = [iso]
             
-            for curve in curve_list:
-                if curve in ['energy', 'nonenergy', 'rec', 'loadprofile', 'shaping', 'vlr']:
-                    for iso in iso_list:
-                        if curve == 'rec' and iso.lower() == 'miso':
+            for temp_curve in curve_list:
+                if temp_curve in ['energy', 'nonenergy', 'rec', 'loadprofile', 'shaping', 'vlr']:
+                    for temp_iso in iso_list:
+                        if temp_curve == 'rec' and temp_iso.lower() == 'miso':
                             continue
-                        table = f"{iso}_{curve}"
+                        table = f"{temp_iso}_{temp_curve}"
                         query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table};"
                         result = self.engine.execute(query)
                         if result.rowcount >0:
@@ -74,7 +74,7 @@ class ExtractorUtil:
                                 result = row
                                 operating_days.append(result[0].strftime('%Y-%m-%d'))
                 else:
-                    table = curve
+                    table = temp_curve
                     query = f"SELECT DISTINCT(DATE(curvestart::date)) AS latest_date FROM trueprice.{table}"
                     if iso != 'all':
                         query = query + f" WHERE control_area_type = '{iso}'"
