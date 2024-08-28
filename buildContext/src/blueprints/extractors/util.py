@@ -64,7 +64,10 @@ class Util:
         query_strings = dict()
         query_strings['iso'] = request.form.get('iso')
         query_strings["curve_type"] = request.form.get('curve_type')
-        query_strings["strip"] = request.form.getlist('strip')
+        if request.form.getlist('strip')[0] == 'strip_all':
+            query_strings["strip"] = ["strip_7x24","strip_5x16", "strip_7x8", "strip_2x16", "strip_wd", "strip_we"]
+        else:
+            query_strings["strip"] = request.form.getlist('strip')
         query_strings["type"] = request.form.get('type')
         query_strings["start"] = str(request.form.get('start'))
         query_strings["end"] = str(request.form.get('end'))

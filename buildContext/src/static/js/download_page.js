@@ -61,9 +61,8 @@ function data_loader() {
             success: function (response) {
                 $('#strip').empty();
                 $.each(response, function (index, value) {
-                    var html = `<option ${value === '7x24' ? 'selected' : ''} value="strip_${value.toLowerCase()}">${value}</option>`;
+                    var html = `<option ${(value.toLowerCase() === '7x24'|| value.toLowerCase() === 'all') ? 'selected' : ''} value="strip_${value.toLowerCase()}">${value}</option>`;
                     $('#strip').append(html);
-
                 });
                 $('#strip').selectpicker('refresh');
 

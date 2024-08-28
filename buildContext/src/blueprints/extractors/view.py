@@ -154,7 +154,10 @@ def get_data():
         setup_session(request.headers['Authorization'].split()[-1])
     args = request.args.to_dict()
     args["idcob"] = request.args.get("idcob","all")
-    args['strip'] = request.args.getlist('strip')
+    if request.args.getlist('strip')[0] == 'all':
+        args['strip'] = ["strip_7x24","strip_5x16", "strip_7x8", "strip_2x16", "strip_wd", "strip_we"]
+    else:
+        args['strip'] = request.args.getlist('strip')
     if request.args.get('history').lower()=="all":
         args['history'] = True
     else:
@@ -174,10 +177,12 @@ def get_options_for_strips():
     makes the current drop down dynamic
     """
     curve = request.json['curve']
-    if curve.lower() in ("nonenergy", "all"):
+    if curve.lower() == "nonenergy":
         option = ["7x24","5x16", "7x8", "2x16", "WD", "WE"]
     elif curve.lower() in ("energy", "shaping"):
         option = ["7x24", "5x16", "7x8", "2x16"]
+    elif curve.lower() == "all":
+        option = ["All"]
     else:
         option = ['7x24']
     return jsonify(option)
