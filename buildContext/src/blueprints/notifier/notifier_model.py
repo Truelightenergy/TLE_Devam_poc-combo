@@ -334,7 +334,7 @@ class NotifierUtil:
                                 utility AS "Utility", 
                                 strip AS "Block Type", 
                                 cost_group AS "Cost Group", 
-                                replace( cost_component, ' ($/MWh)','') AS "Cost Component"
+                                cost_component AS "Cost Component"
                 FROM (
                     SELECT control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component  
                     FROM trueprice.ercot_nonenergy
