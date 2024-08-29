@@ -767,4 +767,21 @@ def curves_catalog():
     except:
         return 'failed'
 
+@auths.route('/setup-notification', methods=['GET', 'POST'])
+@roles.readonly_token_required
+def setup():
+    """
+    setup-notification manual
+    """
+    api_util.setup_notification()
+    return redirect(url_for('auths.home'))
+
+@auths.route('/send-notification', methods=['GET', 'POST'])
+@roles.readonly_token_required
+def send():
+    """
+    send-notification manual
+    """
+    api_util.send_notification()
+    return redirect(url_for('auths.home'))
 
