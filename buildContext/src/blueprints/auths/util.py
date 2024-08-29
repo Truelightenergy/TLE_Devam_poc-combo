@@ -16,6 +16,8 @@ from flask import render_template
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 import logging
 from .auth_model import AuthUtil
+from blueprints.notifier.job_notifier import Process_Notifier as Notification_Process_Notifier
+from blueprints.notifier.util import Util as Notification_Util
 
 
 
@@ -253,4 +255,20 @@ class Util:
         else:
             logging.error(f"{session['user']}: User Unable Updated his password")
             return {"flash_message": True, "message_toast":"unable to update password", "message_flag":"error"},200
+    
+    def setup_notification(self,):
+        """
+        setup_notification
+        """
+        print("setup_notification trigered")
+        util = Notification_Util()
+        util.setup_notifications()
+    
+    def send_notification(self,):
+        """
+        send_notification
+        """
+        print("send_notification trigered")
+        notifier = Notification_Process_Notifier()
+        notifier.process_notification()
     
