@@ -258,8 +258,8 @@ def get_all_heirarchies():
 
 @auths.route('/alluploads', methods=['GET'])
 @roles.readonly_token_required
-def get_all_hierarchies():
-  data = notifier_util.get()
+def get_all_uploads():
+  data = notifier_util.get_all_uploads()
   si = StringIO()
   cw = csv.writer(si)
   
