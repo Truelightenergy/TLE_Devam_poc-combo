@@ -12,6 +12,7 @@ import json
 from io import BytesIO
 from io import StringIO
 import pandas as pd
+import polars as pl
 import datetime
 import utils.trueprice_database as tpdb
 from werkzeug.utils import secure_filename
@@ -63,7 +64,10 @@ class Util:
         query_strings = dict()
         query_strings['iso'] = request.form.get('iso')
         query_strings["curve_type"] = request.form.get('curve_type')
-        query_strings["strip"] = request.form.getlist('strip')
+        if request.form.getlist('strip')[0] == 'strip_all':
+            query_strings["strip"] = ["strip_7x24","strip_5x16", "strip_7x8", "strip_2x16", "strip_wd", "strip_we"]
+        else:
+            query_strings["strip"] = request.form.getlist('strip')
         query_strings["type"] = request.form.get('type')
         query_strings["start"] = str(request.form.get('start'))
         query_strings["end"] = str(request.form.get('end'))
@@ -80,16 +84,14 @@ class Util:
             logging.error(f"{session['user']}: Unable to download the data")
             
         return response, status
-         
+    
     def pd_str_to_excel(self, data_frame):
         """
-        converts the dataframe to excel
+        converts the dataframe to excel using polars
         """
-        data_frame = pd.read_csv(StringIO(data_frame), header = None)
+        data_frame = pl.read_csv(StringIO(data_frame), has_header = False)
         output = BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            data_frame.to_excel(writer, sheet_name='Sheet1', index=False, header=False)
-
+        data_frame.write_excel(output, include_header=False)
         output.seek(0)
         return output
     
@@ -142,7 +144,7 @@ class Util:
             query_strings["end"] = "".join(str(end).split("-"))
             
             if str(query_strings["curve_type"]).lower() == 'all':
-                curve_type_list = ["nonenergy", "energy", "rec", "ptc", "matrix", "headroom"]
+                curve_type_list = ['energy', 'nonenergy', 'rec', 'ptc', 'matrix', 'headroom', 'loadprofile', 'shaping', 'vlr', 'lineloss']
             else:
                 curve_type_list = [str(query_strings["curve_type"]).lower()]
             
@@ -169,7 +171,7 @@ class Util:
                             if (query_strings["curve_type"]).lower() == 'matrix':
                                 data = self.get_csv_string_with_disclaimer(data_frame.to_csv(header=None))
                                 data = self.pd_str_to_excel(data)
-                            elif(query_strings["curve_type"]).lower() == 'headroom':
+                            elif(query_strings["curve_type"]).lower() in ('headroom', 'lineloss'):
                                 data = self.get_csv_string_with_disclaimer(data_frame.to_csv(index=False))
                                 data = self.pd_str_to_excel(data)
                             else:
@@ -191,9 +193,8 @@ class Util:
                             data = data_frame.to_json(orient="records", indent=4)
                             response_dataframes.append((data, file_name+'.json'))
                         # logging.info(f"{session['user']}: Data Extracted Successfully")
-                
-                        # return resp
-                    # return None, status 
+                        if temp_curve == 'lineloss':
+                            break
             log_info = "Data Extracted Successfully"
             if len(response_dataframes)>1:
                 zip_buffer = BytesIO()

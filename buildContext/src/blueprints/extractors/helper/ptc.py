@@ -53,16 +53,16 @@ class Ptc:
             elif history:
                 psql_query = f"""
                     select id, month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc 
-                    where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
+                    where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'  curve_start_replace
                     UNION
                     select id, month, curvestart, curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc_history
-                    where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
+                    where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'  curve_start_replace
                     
                 """
             else:
                 psql_query = f"""
                     select id,    month, curvestart, TO_TIMESTAMP('9999-12-31 23:59:59','YYYY-MM-DD HH24:MI:SS') as curveend, matching_id, lookup_id,  data, control_area, state, load_zone, capacity_zone, utility, strip, cost_group, cost_component,  control_area_type, utility_name, profile_load from trueprice.ptc 
-                    where control_area_type = '{control_area}' and ({strip_query})  curve_start_replace
+                    where control_area_type = '{control_area}' and ({strip_query}) and month::date >= '{start_date}' and month::date <= '{end_date}'  curve_start_replace
                     
                 """
             

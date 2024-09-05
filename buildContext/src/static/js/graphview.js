@@ -235,7 +235,7 @@ truelight.graphview.view = {
                 var Price_Movement_12_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 12), commondatesfiltered[0]['hours'].slice(0, 12));
                 var Price_Movement_12_2 = self.weightedAverage(commondatesfiltered[i]['y'].slice(0, 12), commondatesfiltered[i]['hours'].slice(0, 12));
                 data.priceMovement12Month = Price_Movement_12_2 - Price_Movement_12_1;
-                data.priceMovement12MonthPercentage = (((Prompt_Month_curve2 - Prompt_Month_curve1) / Prompt_Month_curve1) * 100);
+                data.priceMovement12MonthPercentage = (((Price_Movement_12_2 - Price_Movement_12_1) / Price_Movement_12_1) * 100);
 
                 var Price_Movement_24_1 = self.weightedAverage(commondatesfiltered[0]['y'].slice(0, 24), commondatesfiltered[0]['hours'].slice(0, 24))
                 var Price_Movement_24_2 = self.weightedAverage(commondatesfiltered[i]['y'].slice(0, 24), commondatesfiltered[i]['hours'].slice(0, 24))
@@ -320,7 +320,8 @@ truelight.graphview.view = {
             difference_graph['marker'].line.color = modifiedresponse[i].line.color;
 
             // Set the name and showlegend properties
-            difference_graph.name = "Price Movement (" + commondatesfiltered[i]['name'].split(":")[0] + " vs " + commondatesfiltered[0]['name'].split(":")[0] + ")";
+            difference_graph.name = "Price Movement (" + commondatesfiltered[i]['name'] + " vs " + commondatesfiltered[0]['name'] + ")";
+            // difference_graph.name = "Price Movement (" + commondatesfiltered[i]['name'].split(":")[0] + " vs " + commondatesfiltered[0]['name'].split(":")[0] + ")";
             difference_graph.showlegend = true;
 
             // Add the difference graph to the list

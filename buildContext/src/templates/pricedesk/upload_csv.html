@@ -1,0 +1,202 @@
+{% extends 'master.html' %}
+
+{% block title %}Upload Price Request - TRUEPrice{% endblock %}
+{% block content %}
+<style>
+    .pricedeskoutput{
+        display: none;
+    }
+    #idcontroltableprice_model_row{
+        display: none;
+    }
+    .highlight {
+    background-color: #d3d3d3; /* Light gray background */
+    }
+    /* Fix the header row */
+    #idcontroltable thead th {
+        position: sticky;
+        top: 0;
+        z-index: 3; /* Ensure the header is above the body rows */
+        /*background-color: white; /* Adjust this color to match your table */
+    }
+
+    /* Fix the first column */
+    #idcontroltable tbody td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 2; /* Ensure the first column is above other cells */
+        /*background-color: white; /* Adjust this color to match your table */
+    }
+    #idcontroltable thead th:first-child{
+        position: sticky;
+        left: 0;
+        z-index: 4;
+    }
+
+    #idcontroltable tbody td:first-child button {
+        z-index: 1; /* Ensure this is above other table cells */
+    }
+
+    #idcontroltable {
+        overflow-x: auto;
+        overflow-y: auto;
+    }
+    .tooltip-inner {
+        background-color: #ffffff !important; /* White background */
+        color: #000000 !important;            /* Black text color */
+        border: 1px solid #ddd;               /* Optional: Add a border */
+    }
+    .tooltip.bs-tooltip-top .tooltip-arrow::before,
+    .tooltip.bs-tooltip-bottom .tooltip-arrow::before,
+    .tooltip.bs-tooltip-left .tooltip-arrow::before,
+    .tooltip.bs-tooltip-right .tooltip-arrow::before {
+        border-top-color: #ffffff !important;   /* Arrow color for top tooltips */
+        border-bottom-color: #ffffff !important; /* Arrow color for bottom tooltips */
+        border-left-color: #ffffff !important;  /* Arrow color for left tooltips */
+        border-right-color: #ffffff !important; /* Arrow color for right tooltips */
+    }
+    .tooltip-container {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    /* Tooltip content (hidden by default) */
+    .tooltip-content {
+        display: none;
+        position: absolute;
+        background-color: white;
+        padding: 10px;
+        border: 1px solid #ccc;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1;
+        white-space: nowrap;
+        max-width: 250px; /* Adjust the max-width as needed */
+        top: 50%;
+        right: 100%;
+        transform: translateY(-50%);
+        margin-right: 10px;
+    }
+
+    /* Show the tooltip content on hover */
+    .tooltip-container:hover .tooltip-content {
+        display: block;
+    }
+
+    /* Table styles */
+    .tooltip-content table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    .tooltip-content th, .tooltip-content td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+
+    .tooltip-content th {
+        background-color: #f2f2f2;
+    }
+</style>
+<div class="content-body">
+    <div class="row" id="upload_view">
+        <div class="col-12 col-md-12">
+            <!-- <div class="card mb-0"> -->
+            <!-- <div class="card-body"> -->
+            <div class="row grid-container" style="display: grid; grid-template-columns: 25% 25% 25% 25%; gap: 10px;">
+
+                <!-- <div class="row grid-item" style="display: grid; column-gap: 10px; grid-template-columns: auto auto auto;"> -->
+                <div id="priceformpanel" class="col-12 col-md-12 card"
+                    style="grid-area: 1 / 1 / span 1 / span 4; margin-bottom: 0; padding: 0;">
+                    <div class="card-body">
+                        <form id="priceform" enctype="multipart/form-data" method="post">
+                            <div class="row">
+                                <div class="col">
+                                    <h3 class="axiBold text-black">Upload Price Request Form</h3>
+                                </div>
+                                <div class="col text-end">
+                                    <!-- <button type="button" id="formcontrol"> -->
+                                        <img id="formcontrol" src="/static/app-assets/media/angleLeft.svg" alt="View" width="24px" height="24px"/>
+                                    <!-- </button> -->
+                                </div>
+                            </div>
+                            <p>
+                                <label for="formFileLg" class="form-label">Upload CSV file here with following
+                                    rules:</label>
+                            <ul class="instructions-list">
+                                <li>Sheet will extract exact operating day from energy curves.</li>
+                                <li>Sheet will extract latest operating day after energy curves for rest of curves.</li>
+                                <li>Price desk will match intersecting values that exist in DataBase for required
+                                    curves.</li>
+                            </ul>
+                            </p>
+                            <div class="form-control border-0 px-0">
+                                <label></label>
+                                <input type="file" name="file" class="form-control form-control-md flatpickr-basic"
+                                    id='upload_file' required id="file" />
+                            </div>
+                            <div>
+                                <button type="button" id="fetch" class="btn btn-primary btn-block w-100">
+                                    <img src="/static/app-assets/media/upload (2).svg" class="me-1" /> Fetch Price Model
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div id="idcontroltableprice_model_row" class="col-12 col-md-12 card grid-item"
+                    style="position: relative; grid-area: 1 / 3 / span 1 / span 2; margin-bottom: 0; border-radius: 10px; padding: 0;">
+                    <div class="card-body" style=" padding: 0;">
+                        <div id="idcontroltable" class="top-div"
+                            style="margin-bottom: 60px; border-radius: 10px; height:250px;">
+                        </div>
+                        <div id="price_model_row" class="bottom-div mt-auto col-12 col-md-12 ps-1"
+                            style="position: absolute; bottom: 20px; width: 100%;">
+                                <button type="button" id="fetch_sheet" class="btn btn-primary"
+                                    style="align-items: center; white-space: nowrap;">
+                                    <img src="/static/app-assets/media/download.svg" class="me-1" /> Download file
+                                </button>
+                                <button type="button" id="fetch_summary" class="btn btn-primary"
+                                    style="align-items: center; white-space: nowrap;">
+                                    <img src="/static/app-assets/media/download.svg" class="me-1" /> Download summary
+                                </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="summary_table_div" class="col-12 col-md-12 card grid-item pricedeskoutput"
+                    style="position: relative; grid-area: 2 / 1 / span 3 / span 1; padding: 0;  border-radius: 10px;">
+                    <div class="card-body" style="padding: 0;">
+                        <div id="summary_table" style="overflow-x: auto; border-radius: 10px;"></div>
+                    </div>
+                </div>
+                    <div id="barchart_hour_div" class="col-12 col-md-12 card grid-item pricedeskoutput"
+                        style="grid-area: 2 / 2 / span 1 / span 3; margin-bottom: 0;  padding: 0;">
+                        <div class="card-body" style=" padding: 0;">
+                            <h3 class="axiBold text-black" style="text-align: center;">FFR Hourly Pricing</h3>
+                            <div id='barchart_hour' class='chart' style="overflow-x: auto;"></div>
+                        </div>
+                    </div>
+                    <div id="piechart_div" class="col-12 col-md-12 card grid-item pricedeskoutput"
+                        style="grid-area: 3 / 2 / span 1 / span 3; margin-bottom: 0; padding: 0;">
+                        <div class="card-body"  style=" padding: 0;">
+                            <h3 class="axiBold text-black" style="text-align: center;">Cost Components</h3>
+                            <div id='piechart' class='chart' style="overflow-x: auto;"></div>
+                        </div>
+                    </div>
+                    <div id="barchart_usage_div" class="col-12 col-md-12 card grid-item pricedeskoutput"
+                        style="grid-area: 4 / 2 / span 1 / span 3; margin-bottom: 0; padding: 0;">
+                        <div class="card-body" style=" padding: 0;">
+                            <h3 class="axiBold text-black" style="text-align: center;">Usage</h3>
+                            <div id='barchart_usage' class='chart' style="overflow-x: auto;"></div>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scriptblock %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+<script src="static/js/pricedesk_upload.js"></script>
+{% endblock %}

@@ -2,6 +2,9 @@ flasgger
 pandas
 psycopg2-binary
 sqlalchemy<2.0 # issue with execute
+connectorx
+polars
+pyarrow
 flask
 werkzeug
 PyJWT
