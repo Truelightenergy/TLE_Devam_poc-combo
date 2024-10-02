@@ -123,8 +123,8 @@ class Ingestion:
         """
         store the data to s3 bucket
         """
-        return "Data Inserted"
-        # return self.upload_file(data.fileName)
+        # return "Data Inserted"
+        return self.upload_file(data.fileName)
 
     def upload_file(self, file_name, bucket='tle-trueprice-api-source-data', object_name=None):
 
