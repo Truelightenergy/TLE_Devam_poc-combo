@@ -1,0 +1,23 @@
+Control Area,,MISO,MISO,MISO,MISO,MISO,MISO,MISO,MISO,MISO,MISO,MISO,MISO,MISO,MISO,MISO
+State,,IL,IL,IL,IL,IL,IL,IL,IL,IL,IL,IL,IL,IL,IL,IL
+Load Zone,,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren
+Capacity Zone,,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren
+Utility,,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren,Ameren
+Block Type,,7x24,7x24,7x24,7x24,7x24,7x24,7x24,7x24,7x24,7x24,7x24,7x24,7x24,7x24,7x24
+Cost Group,,Commercial,Commercial,Commercial,Commercial,Commercial,Commercial,Commercial,Commercial,Commercial,Residential,Residential,Residential,Street or Outdoor Lighting,Street or Outdoor Lighting,Street or Outdoor Lighting
+Cost Component,,Rate Zone I BGS-2 High Voltage,Rate Zone I BGS-2 Primary,Rate Zone I BGS-2 Secondary,Rate Zone II BGS-2 High Voltage,Rate Zone II BGS-2 Primary,Rate Zone II BGS-2 Secondary,Rate Zone III BGS-2 High Voltage,Rate Zone III BGS-2 Primary,Rate Zone III BGS-2 Secondary,Rate Zone I BGS-1 Secondary,Rate Zone II BGS-1 Secondary,Rate Zone III BGS-1 Secondary,Rate Zone I BGS-5 Secondary,Rate Zone II BGS-5 Secondary,Rate Zone III BGS-5 Secondary
+Profile_load,,Rate Zone I BGS-2 High Voltage,Rate Zone I BGS-2 Primary,Rate Zone I BGS-2 Secondary,Rate Zone II BGS-2 High Voltage,Rate Zone II BGS-2 Primary,Rate Zone II BGS-2 Secondary,Rate Zone III BGS-2 High Voltage,Rate Zone III BGS-2 Primary,Rate Zone III BGS-2 Secondary,Rate Zone I BGS-1 Secondary,Rate Zone II BGS-1 Secondary,Rate Zone III BGS-1 Secondary,Rate Zone I BGS-5 Secondary,Rate Zone II BGS-5 Secondary,Rate Zone III BGS-5 Secondary
+Curve Update Date,Curve Start Month,,,,,,,,,,,,,,,
+2024-01-15 12:00:00+00:00,2024-02-01 00:00:00+00:00,0.09113,0.09213,0.09376,0.09113,0.09213,0.09376,0.09113,0.09213,0.09376,0.080224,0.080224,0.080224,0.06741,0.06741,0.06741
+2024-01-15 12:00:00+00:00,2024-03-01 00:00:00+00:00,0.09113,0.09213,0.09376,0.09113,0.09213,0.09376,0.09113,0.09213,0.09376,0.080224,0.080224,0.080224,0.06741,0.06741,0.06741
+2024-01-15 12:00:00+00:00,2024-04-01 00:00:00+00:00,0.09113,0.09213,0.09376,0.09113,0.09213,0.09376,0.09113,0.09213,0.09376,0.080224,0.080224,0.080224,0.06741,0.06741,0.06741
+2024-01-15 12:00:00+00:00,2024-05-01 00:00:00+00:00,0.09113,0.09213,0.09376,0.09113,0.09213,0.09376,0.09113,0.09213,0.09376,0.080224,0.080224,0.080224,0.06741,0.06741,0.06741
+2024-01-15 12:00:00+00:00,2024-06-01 00:00:00+00:00,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+2024-01-15 12:00:00+00:00,2024-07-01 00:00:00+00:00,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+2024-01-15 12:00:00+00:00,2024-08-01 00:00:00+00:00,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+2024-01-15 12:00:00+00:00,2024-09-01 00:00:00+00:00,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+2024-01-15 12:00:00+00:00,2024-10-01 00:00:00+00:00,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+2024-01-15 12:00:00+00:00,2024-11-01 00:00:00+00:00,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+2024-01-15 12:00:00+00:00,2024-12-01 00:00:00+00:00,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+
+"The information in this file is intended only for the use of authorized clients of TRUELight Energy's TRUEPrice products & services. If you are not the intended recipient of this file, or the person responsible for delivering this file to the intended recipient, you are strictly prohibited from disclosing, copying, distributing, or retaining this file or any part of it. This file contains information which is confidential and covered by legal, professional, or other privileges under applicable law. If you have received this file in error, please notify TRUELight by email at info@truelightenergy.com"

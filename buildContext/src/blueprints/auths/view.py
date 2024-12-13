@@ -45,6 +45,83 @@ def setup_session(auth_token):
     session["level"] = payload["role"]
 
 
+
+@auths.route('/refreshToken', methods=['POST'])
+def refresh_token():
+    refresh_token = session.get('refresh_token')
+    if refresh_token:
+        is_valid, payload = db_obj.decode_auth_token(refresh_token)
+        
+        if is_valid and payload:
+            client_email = payload['client_email']
+            client_role = payload['role']
+            is_valid, new_token = db_obj.encode_auth_token(client_email, "", client_role)
+            
+            if is_valid and new_token:
+                session['access_token'] = new_token
+                
+                return jsonify({
+                    "message": "Token refreshed successfully",
+                    "new_access_token": new_token
+                }), 200
+            else:
+                return jsonify({"error": "Failed to refresh token"}), 403
+        else:
+            return jsonify({"error": "Invalid refresh token"}), 403
+    else:
+        return jsonify({"error": "No refresh token provided"}), 400
+
+
+
+
+@auths.route('/login', methods=['GET', 'POST'])
+def login():
+    """
+    Login to the application.
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - name: email
+        in: query
+        type: string
+        required: true
+        description: Email address
+      - name: password
+        in: query
+        type: string
+        required: true
+        description: Password
+    responses:
+      200:
+        description: Login successful
+      400:
+        description: Incorrect parameters
+      403:
+        description: Login failed
+    """
+    
+    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
+    
+
+    if rest_api_condition:
+        email = request.args.get('email')
+        pswd = request.args.get('password')
+        json_obj, status_code = api_util.login(email, pswd)
+        return jsonify(json_obj), status_code
+    else:
+        if request.method=="POST":
+            email = request.form.get('email')
+            pswd = request.form.get('password')
+            json_obj, status_code = api_util.login(email, pswd)
+            if json_obj["message_flag"] == "success":
+                return api_util.application_startup()
+            else:
+                return render_template('auths/login.html',  flash_message=True, message_toast = "Login Failed", message_flag = "error"), 403
+        else:
+            return render_template('auths/login.html')
+
+
 @auths.route('/contactus', methods=['GET'])
 def contactus():
     """
@@ -94,55 +171,6 @@ def contactus():
         #         return render_template('auths/signup.html',  flash_message=True, message_toast = "Signup Failed", message_flag = "error"), 403
         # else:
     return render_template('auths/signup.html')
-        
-
-@auths.route('/login', methods=['GET', 'POST'])
-def login():
-    """
-    Login to the application.
-    ---
-    tags:
-      - Authentication
-    parameters:
-      - name: email
-        in: query
-        type: string
-        required: true
-        description: Email address
-      - name: password
-        in: query
-        type: string
-        required: true
-        description: Password
-    responses:
-      200:
-        description: Login successful
-      400:
-        description: Incorrect parameters
-      403:
-        description: Login failed
-    """
-    
-    rest_api_condition =  not ('text/html' in request.headers.get('Accept', ''))
-    
-
-    if rest_api_condition:
-        email = request.args.get('email')
-        pswd = request.args.get('password')
-        json_obj, status_code = api_util.login(email, pswd)
-        return jsonify(json_obj), status_code
-    else:
-        if request.method=="POST":
-            email = request.form.get('email')
-            pswd = request.form.get('password')
-            json_obj, status_code = api_util.login(email, pswd)
-            if json_obj["message_flag"] == "success":
-                return api_util.application_startup()
-            else:
-                return render_template('auths/login.html',  flash_message=True, message_toast = "Login Failed", message_flag = "error"), 403
-        else:
-            return render_template('auths/login.html')
-
     
 @auths.route('/logout', methods=['GET', 'POST'])
 @roles.readonly_token_required

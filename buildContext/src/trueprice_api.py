@@ -1,6 +1,7 @@
 import os
 import logging
 from flask import Flask
+from flask_cors import CORS
 from flasgger import Swagger
 from blueprints.auths.view import auths
 from blueprints.admins.view import admins
@@ -45,6 +46,8 @@ roles = RolesDecorator(revoked_jwt)
 
 def create_app():
     app = Flask(__name__)
+    CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+
     
 
     app.config['SESSION_TYPE'] = config['app_session_type']

@@ -728,7 +728,24 @@ def package_mgmt():
         return render_template('admins/package_mgmt.html', flash_message=True, message_toast = response['message_toast'], message_flag = "error")
     else:
         return render_template('admins/package_mgmt.html')
+
+        
+@admins.route('/subscription_management', methods=['GET','POST'])
+@roles.admin_token_required
+def package_mgmt_react():
+    """
+    handles multiple column Filters ingestions
     
+    """
+    if request.method == 'POST':
+        response, status_code = api_util.multiple_filters_ingestion()
+        if response["message_flag"]=="success":
+          metadata = {'flash_message': True, 'message_toast' : response['message_toast'], 'message_flag' : "success", 'status_code': status_code}
+          return response, metadata
+        return {'flash_message': True, 'message_toast' : response['message_toast'], 'message_flag' : "error"}
+
+    
+
 
   # application endpoint
 @admins.route('/reset_subscription', methods=['GET', 'POST'])

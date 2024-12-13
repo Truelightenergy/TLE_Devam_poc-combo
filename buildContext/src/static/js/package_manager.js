@@ -569,7 +569,7 @@ $(document).ready(function() {
             buttonJ.attr("type", "button");
          
             if (unselected_filters.includes(button.id)) {
-                buttonJ.addClass(' btn-warning');                
+                buttonJ.addClass('btn-warning');                
                 jcloseButton.addClass('btn-warning');                
               } else {
                 buttonJ.addClass('btn-success');                
@@ -626,9 +626,6 @@ $(document).ready(function() {
                 
             }   
         });
-
-        
-        
     });
 
     $('#user').trigger('change');
